@@ -4,26 +4,31 @@ import com.tambapps.http.garcon.io.RequestParser
 import groovy.transform.TupleConstructor
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
+import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 class Garcon {
 
-  private static final String CONNECTION_KEEP_ALIVE = 'keep-alive'
-  private static final String CONNECTION_CLOSE = 'close'
+  private static final String CONNECTION_KEEP_ALIVE = 'Keep-Alive'
+  private static final String CONNECTION_CLOSE = 'Close'
   private static final String CONNECTION_HEADER = 'Connection'
   private ExecutorService executorService
   private final AtomicBoolean running = new AtomicBoolean(false)
   private final RequestParser requestParser = new RequestParser()
-  private final ExecutorService requestsExecutorService = Executors.newFixedThreadPool(4)
+  private final Queue<Socket> connections = new ConcurrentLinkedQueue<>()
+  private ExecutorService requestsExecutorService
+  int nbThreads = 4
 
   void start() {
     running.set(true)
+    requestsExecutorService = Executors.newFixedThreadPool(nbThreads)
     try {
       ServerSocket serverSocket = new ServerSocket(8081, 2, InetAddress.getByName('localhost'))
       while (running.get()) {
         Socket socket = serverSocket.accept()
+        connections.add(socket)
         requestsExecutorService.submit(new RequestHandler(socket))
       }
     } catch (IOException e) {
@@ -50,6 +55,12 @@ class Garcon {
 
   void stop() {
     running.set(false)
+    requestsExecutorService?.shutdown()
+    requestsExecutorService = null
+    executorService?.shutdown()
+    executorService = null
+    connections.each(DefaultGroovyMethods.&closeQuietly)
+    connections.clear()
   }
 
   @TupleConstructor
@@ -68,12 +79,12 @@ class Garcon {
           connection = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
 
           HttpResponse response = new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: 200, message: 'OK',
-              headers: [Connection: 'close', ('Content-Length'): 'Hello World'.bytes.size().toString(),
+              headers: [Connection: connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE, ('Content-Length'): 'Hello World'.bytes.size().toString(),
                         Date: 'Mon, 23 May 2005 22:38:34 GMT'],
               body: 'Hello World'.bytes)
           response.writeInto(outputStream)
         }
-      } catch (EOFException e) {
+      } catch (EOFException|SocketException e) {
         // do nothing
       } catch (IOException e) {
         // TODO handle errors
@@ -84,6 +95,7 @@ class Garcon {
       } finally {
         // closing socket will also close InputStream and OutputStream
         DefaultGroovyMethods.closeQuietly(socket)
+        connections.remove(socket)
       }
     }
   }
