@@ -9,7 +9,6 @@ class EndpointDefiner {
   }
 
   void delete(String path, @DelegatesTo(Garcon.Context) Closure closure) {
-    closure.resolveStrategy = Closure.DELEGATE_FIRST
     endpointDefinitions.add(new EndpointDefinition(method: 'DELETE', path: path, closure: closure))
   }
 

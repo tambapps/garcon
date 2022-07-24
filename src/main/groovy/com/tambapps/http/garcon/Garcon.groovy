@@ -126,6 +126,7 @@ class Garcon {
           if (endpointDefinition != null) {
             response = newResponse(200, 'Ok', responseConnectionHeader, null)
             endpointDefinition.closure.resolveStrategy = Closure.DELEGATE_FIRST
+            // TODO doesn't work
             endpointDefinition.closure.delegate = new Context(garcon: Garcon.this, request: request, response: response)
             try {
               Object returnValue = endpointDefinition.closure(request)
@@ -133,20 +134,22 @@ class Garcon {
                 switch (returnValue) {
                   case byte[]:
                     response.body = (byte[]) returnValue
-                    response.headers['Content-Length'] = response.body.size()
                     break
                   case String:
                     response.body = ((String) returnValue).bytes
-                    response.headers['Content-Length'] = response.body.size()
                     break
                 }
               }
             } catch (Exception e) {
+              e.printStackTrace()
               response = newResponse(500, 'Internal Server Error', responseConnectionHeader, 'An internal server error occurred'.bytes)
             }
           } else {
             byte[] responseBody = "Resource at path ${request.path} was not found".bytes
             response = newResponse(404, 'Not Found', responseConnectionHeader, responseBody)
+          }
+          if (response.body != null) {
+            response.headers['Content-Length'] = response.body.size()
           }
           response.writeInto(outputStream)
         }

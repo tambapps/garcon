@@ -46,6 +46,24 @@ class GarconTest {
     assertEquals('Hello World', poet.get('/hello'))
     assertEquals('Hello World', poet.get('/hello?p=1&a=2'))
   }
+
+  @Test
+  void testMethodContext() {
+    garcon.serveAsync {
+      get '/path', {
+        return request.queryParams['hello']
+      }
+
+      get '/path2', {
+        response.body = request.queryParams['hello'].bytes
+      }
+    }
+
+    poet.errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(poet)
+    assertEquals('world', poet.get('/path?hello=world'))
+    assertEquals('world', poet.get('/path??hello=world'))
+  }
+
   @Test
   void testMethodNotAllowed() {
     garcon.serveAsync {
