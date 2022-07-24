@@ -11,7 +11,6 @@ class GarconTest {
 
   @Test
   void test() {
-    println(InetAddress.getByName('localhost'))
     Garcon garcon = new Garcon()
     garcon.serveAsync {
       get '/hello', {

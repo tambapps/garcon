@@ -85,9 +85,9 @@ class Garcon {
     connections.clear()
   }
 
-  private EndpointDefinition getMatchingEndpointDefinition(String method, String p) {
+  private EndpointDefinition getMatchingEndpointDefinition(String p) {
     def path = Paths.get(p)
-    return endpointDefinitions.find { Paths.get(it.path) == path && it.method == method }
+    return endpointDefinitions.find { Paths.get(it.path) == path }
   }
 
   @TupleConstructor
@@ -112,13 +112,17 @@ class Garcon {
           connection = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
           String responseConnection = connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE
 
-          EndpointDefinition endpointDefinition = getMatchingEndpointDefinition(request.method, request.path)
+          EndpointDefinition endpointDefinition = getMatchingEndpointDefinition(request.path)
+          if (endpointDefinition.method != request.method) {
+            newResponse(405, 'Method Not Allowed', CONNECTION_CLOSE,
+                "Method ${request.method} is not allowed at this path".bytes).writeInto(outputStream)
+            continue
+          }
           HttpResponse response
           if (endpointDefinition != null) {
             byte[] responseBody = endpointDefinition.closure(request)
             response = newResponse(200, 'Ok', responseConnection, responseBody)
           } else {
-            // TODO handle method not accepted
             byte[] responseBody = "Resource at path ${request.path} was not found".bytes
             response = newResponse(404, 'Not Found', responseConnection, responseBody)
           }
