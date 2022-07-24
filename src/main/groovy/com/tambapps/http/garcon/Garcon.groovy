@@ -1,5 +1,6 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.exception.RequestParsingException
 import com.tambapps.http.garcon.io.RequestParser
 import groovy.transform.TupleConstructor
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
@@ -101,26 +102,25 @@ class Garcon {
         OutputStream outputStream = socket.outputStream
         String connection = CONNECTION_KEEP_ALIVE
         while (running && connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE)) {
-          HttpRequest request = requestParser.parse(inputStream)
+          HttpRequest request
+          try {
+            request = requestParser.parse(inputStream)
+          } catch (RequestParsingException e) {
+            newResponse(400, 'Bad Request', CONNECTION_CLOSE, 'Request is malformed'.bytes).writeInto(outputStream)
+            continue
+          }
           connection = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
+          String responseConnection = connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE
 
           EndpointDefinition endpointDefinition = getMatchingEndpointDefinition(request.method, request.path)
           HttpResponse response
           if (endpointDefinition != null) {
             byte[] responseBody = endpointDefinition.closure(request)
-            response = new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: 200, message: 'OK',
-                headers: [Connection: connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE,
-                          ('Content-Length'): responseBody.size().toString(),
-                          Date: 'Mon, 23 May 2005 22:38:34 GMT'],
-                body: responseBody)
+            response = newResponse(200, 'Ok', responseConnection, responseBody)
           } else {
             // TODO handle method not accepted
             byte[] responseBody = "Resource at path ${request.path} was not found".bytes
-            response = new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: 404, message: 'NOT FOUND',
-                headers: [Connection: connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE,
-                          ('Content-Length'): responseBody.size().toString(),
-                          Date: 'Mon, 23 May 2005 22:38:34 GMT'],
-                body: responseBody)
+            response = newResponse(404, 'Not Found', responseConnection, responseBody)
           }
           response.writeInto(outputStream)
         }
@@ -137,6 +137,14 @@ class Garcon {
         DefaultGroovyMethods.closeQuietly(socket)
         connections.remove(socket)
       }
+    }
+
+    private HttpResponse newResponse(int status, String message, String connection, byte[] body) {
+      return new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: status, message: message,
+          headers: [Connection: connection,
+                    ('Content-Length'): body.size().toString(),
+                    Date: 'Mon, 23 May 2005 22:38:34 GMT'],
+          body: body)
     }
   }
 
