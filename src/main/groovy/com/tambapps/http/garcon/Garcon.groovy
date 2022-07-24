@@ -4,6 +4,8 @@ import com.tambapps.http.garcon.io.RequestParser
 import groovy.transform.TupleConstructor
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
+import java.nio.file.Path
+import java.nio.file.Paths
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -19,7 +21,26 @@ class Garcon {
   private final RequestParser requestParser = new RequestParser()
   private final Queue<Socket> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
+  private final List<EndpointDefinition> endpointDefinitions = []
   int nbThreads = 4
+
+  void define(@DelegatesTo(EndpointDefiner) Closure closure) {
+    EndpointDefiner definer = new EndpointDefiner()
+    closure.delegate = definer
+    closure.resolveStrategy = Closure.DELEGATE_FIRST
+    closure()
+    endpointDefinitions.addAll(definer.endpointDefinitions)
+  }
+
+  void serve(@DelegatesTo(EndpointDefiner) Closure closure) {
+    define(closure)
+    start()
+  }
+
+  void serveAsync(@DelegatesTo(EndpointDefiner) Closure closure) {
+    define(closure)
+    startAsync()
+  }
 
   void start() {
     running.set(true)
@@ -63,6 +84,11 @@ class Garcon {
     connections.clear()
   }
 
+  private EndpointDefinition getMatchingEndpointDefinition(String method, String p) {
+    def path = Paths.get(p)
+    return endpointDefinitions.find { Paths.get(it.path) == path && it.method == method }
+  }
+
   @TupleConstructor
   private class RequestHandler implements Runnable {
 
@@ -78,10 +104,24 @@ class Garcon {
           HttpRequest request = requestParser.parse(inputStream)
           connection = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
 
-          HttpResponse response = new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: 200, message: 'OK',
-              headers: [Connection: connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE, ('Content-Length'): 'Hello World'.bytes.size().toString(),
-                        Date: 'Mon, 23 May 2005 22:38:34 GMT'],
-              body: 'Hello World'.bytes)
+          EndpointDefinition endpointDefinition = getMatchingEndpointDefinition(request.method, request.path)
+          HttpResponse response
+          if (endpointDefinition != null) {
+            byte[] responseBody = endpointDefinition.closure(request)
+            response = new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: 200, message: 'OK',
+                headers: [Connection: connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE,
+                          ('Content-Length'): responseBody.size().toString(),
+                          Date: 'Mon, 23 May 2005 22:38:34 GMT'],
+                body: responseBody)
+          } else {
+            // TODO handle method not accepted
+            byte[] responseBody = "Resource at path ${request.path} was not found".bytes
+            response = new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: 404, message: 'NOT FOUND',
+                headers: [Connection: connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE,
+                          ('Content-Length'): responseBody.size().toString(),
+                          Date: 'Mon, 23 May 2005 22:38:34 GMT'],
+                body: responseBody)
+          }
           response.writeInto(outputStream)
         }
       } catch (EOFException|SocketException e) {
@@ -98,5 +138,10 @@ class Garcon {
         connections.remove(socket)
       }
     }
+  }
+
+
+  class Context {
+    // TODO
   }
 }
