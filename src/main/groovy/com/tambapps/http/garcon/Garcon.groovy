@@ -20,7 +20,7 @@ class Garcon {
   private ExecutorService executorService
   private final AtomicBoolean running = new AtomicBoolean(false)
   private final RequestParser requestParser = new RequestParser()
-  private final Queue<Socket> connections = new ConcurrentLinkedQueue<>()
+  private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
   private final List<EndpointDefinition> endpointDefinitions = []
   int nbThreads = 4
@@ -48,11 +48,14 @@ class Garcon {
     requestsExecutorService = Executors.newFixedThreadPool(nbThreads)
     try {
       ServerSocket serverSocket = new ServerSocket(8081, 2, InetAddress.getByName('localhost'))
+      connections.add(serverSocket)
       while (running.get()) {
         Socket socket = serverSocket.accept()
         connections.add(socket)
         requestsExecutorService.submit(new RequestHandler(socket))
       }
+    } catch (SocketException e) {
+      // the socket was probably closed, do nothing
     } catch (IOException e) {
       e.printStackTrace()
     }
