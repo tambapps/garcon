@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon.io
 
 import com.tambapps.http.garcon.HttpRequest
+import com.tambapps.http.garcon.ImmutableHeaders
 import com.tambapps.http.garcon.exception.RequestParsingException
 
 // https://fr.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Impl%C3%A9mentation
@@ -19,7 +20,7 @@ class RequestParser {
     if (is.available()) {
       body = is.bytes
     }
-    return new HttpRequest(method: method, path: path, httpVersion: httpVersion, headers: headers, body: body)
+    return new HttpRequest(method: method, path: path, httpVersion: httpVersion, headers: new ImmutableHeaders(headers), body: body)
   }
 
   private String[] parseCommand(String command) {
