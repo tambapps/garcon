@@ -10,11 +10,13 @@ class Garcon {
 
   private ExecutorService executorService
   private final AtomicBoolean shouldStop = new AtomicBoolean(false)
+  private final AtomicBoolean running = new AtomicBoolean(false)
   private final RequestParser requestParser = new RequestParser()
 
 
   void start() {
     shouldStop.set(false)
+    running.set(true)
     try {
       ServerSocket serverSocket = new ServerSocket(8081, 2, InetAddress.getByName('localhost'))
       while (!shouldStop.get()) {
@@ -40,8 +42,12 @@ class Garcon {
       e.printStackTrace()
       // TODO
     }
+    running.set(false)
   }
 
+  boolean isRunning() {
+    return running.get()
+  }
 
   void startAsync() {
     executorService ?= Executors.newSingleThreadExecutor()
