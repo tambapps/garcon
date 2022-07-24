@@ -7,12 +7,19 @@ class Headers implements Map<String, String> {
 
   private Set<AbstractMap.SimpleEntry<String, String>> entries = new HashSet<>()
 
-  void putAt(String name, String value) {
+  Headers() {
+  }
+
+  Headers(Map<String, String> map) {
+    map.each { name, value -> putAt(name, value) }
+  }
+
+  void putAt(String name, Object value) {
     def entry = findEntryWithName(name)
     if (entry != null) {
       entries.remove(entry)
     }
-    entries.add(new AbstractMap.SimpleEntry<>(name, value))
+    entries.add(new AbstractMap.SimpleEntry<>(name, String.valueOf(value)))
   }
 
   String getAt(String name) {

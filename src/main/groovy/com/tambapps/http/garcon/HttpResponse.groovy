@@ -1,14 +1,12 @@
 package com.tambapps.http.garcon
 
-import groovy.transform.Immutable
 
-@Immutable
 class HttpResponse {
 
   String httpVersion
   int statusCode
   String message
-  Map<String, String> headers
+  Headers headers
 
   // TODO make body lazy and allow to write it as a stream
   byte[] body

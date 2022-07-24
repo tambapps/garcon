@@ -3,6 +3,7 @@ package com.tambapps.http.garcon
 import com.tambapps.http.garcon.exception.RequestParsingException
 import com.tambapps.http.garcon.io.RequestParser
 import groovy.transform.TupleConstructor
+import jdk.nashorn.internal.ir.annotations.Immutable
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 import java.nio.file.Path
@@ -103,8 +104,8 @@ class Garcon {
       try {
         InputStream inputStream = socket.inputStream
         OutputStream outputStream = socket.outputStream
-        String connection = CONNECTION_KEEP_ALIVE
-        while (running && connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE)) {
+        String connectionHeader = CONNECTION_KEEP_ALIVE
+        while (running && connectionHeader.equalsIgnoreCase(CONNECTION_KEEP_ALIVE)) {
           HttpRequest request
           try {
             request = requestParser.parse(inputStream)
@@ -112,8 +113,8 @@ class Garcon {
             newResponse(400, 'Bad Request', CONNECTION_CLOSE, 'Request is malformed'.bytes).writeInto(outputStream)
             continue
           }
-          connection = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
-          String responseConnection = connection.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE
+          connectionHeader = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
+          String responseConnectionHeader = connectionHeader.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE
 
           EndpointDefinition endpointDefinition = getMatchingEndpointDefinition(request.path)
           if (endpointDefinition.method != request.method) {
@@ -123,11 +124,29 @@ class Garcon {
           }
           HttpResponse response
           if (endpointDefinition != null) {
-            byte[] responseBody = endpointDefinition.closure(request)
-            response = newResponse(200, 'Ok', responseConnection, responseBody)
+            response = newResponse(200, 'Ok', responseConnectionHeader, null)
+            endpointDefinition.closure.resolveStrategy = Closure.DELEGATE_FIRST
+            endpointDefinition.closure.delegate = new Context(garcon: Garcon.this, request: request, response: response)
+            try {
+              Object returnValue = endpointDefinition.closure(request)
+              if (response.body == null && returnValue != null) {
+                switch (returnValue) {
+                  case byte[]:
+                    response.body = (byte[]) returnValue
+                    response.headers['Content-Length'] = response.body.size()
+                    break
+                  case String:
+                    response.body = ((String) returnValue).bytes
+                    response.headers['Content-Length'] = response.body.size()
+                    break
+                }
+              }
+            } catch (Exception e) {
+              response = newResponse(500, 'Internal Server Error', responseConnectionHeader, 'An internal server error occurred'.bytes)
+            }
           } else {
             byte[] responseBody = "Resource at path ${request.path} was not found".bytes
-            response = newResponse(404, 'Not Found', responseConnection, responseBody)
+            response = newResponse(404, 'Not Found', responseConnectionHeader, responseBody)
           }
           response.writeInto(outputStream)
         }
@@ -147,16 +166,26 @@ class Garcon {
     }
 
     private HttpResponse newResponse(int status, String message, String connection, byte[] body) {
+      def headers = [Connection: connection,
+                     Server: 'Garcon (Tambapps)',
+                     Date: 'Mon, 23 May 2005 22:38:34 GMT']
+      if (body != null) {
+        headers.putAll([
+            ('Content-Length'): body.size().toString()
+        ])
+      }
       return new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: status, message: message,
-          headers: [Connection: connection,
-                    ('Content-Length'): body.size().toString(),
-                    Date: 'Mon, 23 May 2005 22:38:34 GMT'],
+          headers: new Headers(headers),
           body: body)
     }
   }
 
 
+  @Immutable
   class Context {
+    HttpRequest request
+    HttpResponse response
+    Garcon garcon
     // TODO
   }
 }

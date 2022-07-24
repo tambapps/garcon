@@ -10,7 +10,7 @@ class ImmutableHeaders extends Headers {
   }
 
   @Override
-  void putAt(String name, String value) {
+  void putAt(String name, Object value) {
     throw new UnsupportedOperationException('Cannot modify immutable map')
   }
 
