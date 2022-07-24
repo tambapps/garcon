@@ -14,7 +14,7 @@ class RequestParser {
     Map<String, String> headers = [:]
     while ((line = reader.readLine())) {
       def (headerName, headerValue) = line.split(/:/)
-      headers[headerName] = headerValue
+      headers[headerName] = headerValue.trim()
     }
     byte[] body = null
     if (is.available()) {
@@ -24,6 +24,9 @@ class RequestParser {
   }
 
   private String[] parseCommand(String command) {
+    if (command == null) {
+      throw new EOFException('End of stream')
+    }
     def fields = command.split(/\s/)
     if (fields.size() != 3) {
       throw new RequestParsingException('Request command is invalid')
