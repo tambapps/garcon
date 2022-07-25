@@ -1,5 +1,7 @@
 package com.tambapps.http.garcon
 
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
+
 
 class HttpResponse {
 
@@ -70,6 +72,7 @@ class HttpResponse {
         break
       case InputStream:
         os << (InputStream) body
+        DefaultGroovyMethods.closeQuietly(body)
         break
       default:
         throw new IllegalStateException("Cannot handled body of type ${body.class}")
