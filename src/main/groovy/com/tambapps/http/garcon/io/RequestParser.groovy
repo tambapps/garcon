@@ -4,6 +4,7 @@ import com.tambapps.http.garcon.HttpRequest
 import com.tambapps.http.garcon.ImmutableHeaders
 import com.tambapps.http.garcon.exception.RequestParsingException
 
+// TODO test this
 // https://fr.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Impl%C3%A9mentation
 class RequestParser {
 
