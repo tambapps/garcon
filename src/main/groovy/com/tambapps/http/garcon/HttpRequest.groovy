@@ -10,5 +10,5 @@ class HttpRequest {
   String httpVersion
   Headers headers
   // TODO make body lazy and allow to read it as a stream
-  byte[] body
+  byte[] requestBody
 }

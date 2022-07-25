@@ -22,7 +22,7 @@ class RequestParser {
     }
     def (String path, Map<String, String> queryParams) = extractQueryParams(pathWithParams)
     return new HttpRequest(method: method, path: path, queryParams: queryParams,
-        httpVersion: httpVersion, headers: new ImmutableHeaders(headers), body: body)
+        httpVersion: httpVersion, headers: new ImmutableHeaders(headers), requestBody: body)
   }
 
   private static String[] parseCommand(String command) {

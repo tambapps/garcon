@@ -51,11 +51,11 @@ class GarconTest {
   void testMethodContext() {
     garcon.serveAsync {
       get '/path', {
-        return request.queryParams['hello']
+        return queryParams['hello']
       }
 
       get '/path2', {
-        response.body = request.queryParams['hello'].bytes
+        body = queryParams['hello'].bytes
       }
     }
 
@@ -102,4 +102,16 @@ class GarconTest {
     assertEquals(405, poet.history.last().responseCode)
   }
 
+  @Test
+  void testStatus() {
+    garcon.serveAsync {
+      get '/hello', {
+        statusCode = 201
+        return 'Hello World'
+      }
+    }
+
+    assertEquals('Hello World', poet.get('/hello'))
+    assertEquals(201, poet.history.last().responseCode)
+  }
 }

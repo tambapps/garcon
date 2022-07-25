@@ -166,13 +166,25 @@ class Garcon {
   }
 
 
+  /**
+   * Context used for endpoint definition closures, as delegate
+   */
   static class Context {
     Context(HttpRequest request, HttpResponse response) {
       this.request = request
       this.response = response
     }
-    final HttpRequest request
+    // definition order matters because of @delegate
+    @Delegate
     final HttpResponse response
+    @Delegate
+    final HttpRequest request
 
+    Headers getRequestHeaders() {
+      return request.headers
+    }
+    Headers getResponseHeaders() {
+      return response.headers
+    }
   }
 }
