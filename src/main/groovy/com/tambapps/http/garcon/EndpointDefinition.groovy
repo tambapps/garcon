@@ -1,13 +1,20 @@
 package com.tambapps.http.garcon
 
-import groovy.transform.Immutable
 import groovy.transform.PackageScope
 
-@Immutable
 @PackageScope
 class EndpointDefinition {
 
   String method
   String path
-  Closure closure
+  private Closure closure
+
+  void rehydrate(Object delegate) {
+    closure.delegate = delegate
+    closure.resolveStrategy = Closure.DELEGATE_FIRST
+  }
+
+  Object call() {
+    return closure.call()
+  }
 }

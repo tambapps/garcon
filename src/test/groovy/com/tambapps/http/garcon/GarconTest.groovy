@@ -61,7 +61,7 @@ class GarconTest {
 
     poet.errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(poet)
     assertEquals('world', poet.get('/path?hello=world'))
-    assertEquals('world', poet.get('/path??hello=world'))
+    assertEquals('world', poet.get('/path?hello=world'))
   }
 
   @Test

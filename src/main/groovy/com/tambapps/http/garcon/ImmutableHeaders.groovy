@@ -5,8 +5,8 @@ package com.tambapps.http.garcon
  */
 class ImmutableHeaders extends Headers {
 
-  ImmutableHeaders(Map<String, String> map) {
-    map.each { name, value -> super.putAt(name, value) }
+  ImmutableHeaders(Map<?, ?> map) {
+    map.each { name, value -> super.putAt(String.valueOf(name), String.valueOf(value)) }
   }
 
   @Override

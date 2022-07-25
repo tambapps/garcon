@@ -3,11 +3,8 @@ package com.tambapps.http.garcon
 import com.tambapps.http.garcon.exception.RequestParsingException
 import com.tambapps.http.garcon.io.RequestParser
 import groovy.transform.TupleConstructor
-import jdk.nashorn.internal.ir.annotations.Immutable
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
-import java.nio.file.Path
-import java.nio.file.Paths
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
@@ -23,15 +20,12 @@ class Garcon {
   private final RequestParser requestParser = new RequestParser()
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
-  private final List<EndpointDefinition> endpointDefinitions = []
+  private final Context context = new Context()
+  private final EndpointsHandler endpointsHandler = new EndpointsHandler(context)
   int nbThreads = 4
 
-  void define(@DelegatesTo(EndpointDefiner) Closure closure) {
-    EndpointDefiner definer = new EndpointDefiner()
-    closure.delegate = definer
-    closure.resolveStrategy = Closure.DELEGATE_FIRST
-    closure()
-    endpointDefinitions.addAll(definer.endpointDefinitions)
+  void define(@DelegatesTo(EndpointsHandler) Closure closure) {
+    endpointsHandler.define(closure)
   }
 
   void serve(@DelegatesTo(EndpointDefiner) Closure closure) {
@@ -89,11 +83,6 @@ class Garcon {
     connections.clear()
   }
 
-  private EndpointDefinition getMatchingEndpointDefinition(String p) {
-    def path = Paths.get(p)
-    return endpointDefinitions.find { Paths.get(it.path) == path }
-  }
-
   @TupleConstructor
   private class RequestHandler implements Runnable {
 
@@ -113,10 +102,11 @@ class Garcon {
             newResponse(400, 'Bad Request', CONNECTION_CLOSE, 'Request is malformed'.bytes).writeInto(outputStream)
             continue
           }
+          context.threadLocalRequest.set(request)
           connectionHeader = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
           String responseConnectionHeader = connectionHeader.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE
 
-          EndpointDefinition endpointDefinition = getMatchingEndpointDefinition(request.path)
+          EndpointDefinition endpointDefinition = endpointsHandler.getAndRehydrateMatchingEndpointDefinition(request.path)
           if (endpointDefinition.method != request.method) {
             newResponse(405, 'Method Not Allowed', CONNECTION_CLOSE,
                 "Method ${request.method} is not allowed at this path".bytes).writeInto(outputStream)
@@ -125,11 +115,8 @@ class Garcon {
           HttpResponse response
           if (endpointDefinition != null) {
             response = newResponse(200, 'Ok', responseConnectionHeader, null)
-            endpointDefinition.closure.resolveStrategy = Closure.DELEGATE_FIRST
-            // TODO doesn't work
-            endpointDefinition.closure.delegate = new Context(garcon: Garcon.this, request: request, response: response)
             try {
-              Object returnValue = endpointDefinition.closure(request)
+              Object returnValue = endpointDefinition.call()
               if (response.body == null && returnValue != null) {
                 switch (returnValue) {
                   case byte[]:
@@ -148,10 +135,10 @@ class Garcon {
             byte[] responseBody = "Resource at path ${request.path} was not found".bytes
             response = newResponse(404, 'Not Found', responseConnectionHeader, responseBody)
           }
-          if (response.body != null) {
-            response.headers['Content-Length'] = response.body.size()
-          }
+          response.headers['Content-Length'] = response.body != null ? response.body.size() : 0
           response.writeInto(outputStream)
+          context.threadLocalRequest.set(null)
+          context.threadLocalResponse.set(null)
         }
       } catch (EOFException|SocketException e) {
         // do nothing
@@ -169,26 +156,31 @@ class Garcon {
     }
 
     private HttpResponse newResponse(int status, String message, String connection, byte[] body) {
-      def headers = [Connection: connection,
+      Map headers = [Connection: connection,
                      Server: 'Garcon (Tambapps)',
                      Date: 'Mon, 23 May 2005 22:38:34 GMT']
       if (body != null) {
-        headers.putAll([
-            ('Content-Length'): body.size().toString()
-        ])
+        headers['Content-Length'] = body.size()
       }
       return new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: status, message: message,
           headers: new Headers(headers),
-          body: body)
+          body: body).tap {
+        context.threadLocalResponse.set(it)
+      }
     }
   }
 
 
-  @Immutable
-  class Context {
-    HttpRequest request
-    HttpResponse response
-    Garcon garcon
-    // TODO
+  static class Context {
+    private final ThreadLocal<HttpRequest> threadLocalRequest = new ThreadLocal<>()
+    private final ThreadLocal<HttpResponse> threadLocalResponse = new ThreadLocal<>()
+
+    HttpRequest getRequest() {
+      threadLocalRequest.get()
+    }
+
+    HttpResponse getResponse() {
+      threadLocalResponse.get()
+    }
   }
 }

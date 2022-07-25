@@ -10,8 +10,8 @@ class Headers implements Map<String, String> {
   Headers() {
   }
 
-  Headers(Map<String, String> map) {
-    map.each { name, value -> putAt(name, value) }
+  Headers(Map<?, ?> map) {
+    map.each { name, value -> putAt(String.valueOf(name), String.valueOf(value)) }
   }
 
   void putAt(String name, Object value) {

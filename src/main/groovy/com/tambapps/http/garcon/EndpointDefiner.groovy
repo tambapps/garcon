@@ -2,7 +2,7 @@ package com.tambapps.http.garcon
 
 class EndpointDefiner {
 
-  private List<EndpointDefinition> endpointDefinitions = []
+  private List<EndpointDefinition> endpointDefinitions
 
   void get(String path, @DelegatesTo(Garcon.Context) Closure closure) {
     endpointDefinitions.add(new EndpointDefinition(method: 'GET', path: path, closure: closure))
