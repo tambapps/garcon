@@ -20,8 +20,7 @@ class Garcon {
   private final RequestParser requestParser = new RequestParser()
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
-  private final Context context = new Context()
-  private final EndpointsHandler endpointsHandler = new EndpointsHandler(context)
+  private final EndpointsHandler endpointsHandler = new EndpointsHandler()
   int nbThreads = 4
 
   void define(@DelegatesTo(EndpointsHandler) Closure closure) {
@@ -102,11 +101,10 @@ class Garcon {
             newResponse(400, 'Bad Request', CONNECTION_CLOSE, 'Request is malformed'.bytes).writeInto(outputStream)
             continue
           }
-          context.threadLocalRequest.set(request)
           connectionHeader = request.headers[CONNECTION_HEADER] ?: CONNECTION_CLOSE
           String responseConnectionHeader = connectionHeader.equalsIgnoreCase(CONNECTION_KEEP_ALIVE) ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE
 
-          EndpointDefinition endpointDefinition = endpointsHandler.getAndRehydrateMatchingEndpointDefinition(request.path)
+          EndpointDefinition endpointDefinition = endpointsHandler.getMatchingEndpointDefinition(request.path)
           if (endpointDefinition.method != request.method) {
             newResponse(405, 'Method Not Allowed', CONNECTION_CLOSE,
                 "Method ${request.method} is not allowed at this path".bytes).writeInto(outputStream)
@@ -115,6 +113,7 @@ class Garcon {
           HttpResponse response
           if (endpointDefinition != null) {
             response = newResponse(200, 'Ok', responseConnectionHeader, null)
+            endpointDefinition.rehydrate(new Context(request, response))
             try {
               Object returnValue = endpointDefinition.call()
               if (response.body == null && returnValue != null) {
@@ -137,8 +136,6 @@ class Garcon {
             response.headers['Content-Length'] = response.contentSize
           }
           response.writeInto(outputStream)
-          context.threadLocalRequest.set(null)
-          context.threadLocalResponse.set(null)
         }
       } catch (EOFException|SocketException e) {
         // do nothing
@@ -164,23 +161,18 @@ class Garcon {
       }
       return new HttpResponse(httpVersion: 'HTTP/1.1', statusCode: status, message: message,
           headers: new Headers(headers),
-          body: body).tap {
-        context.threadLocalResponse.set(it)
-      }
+          body: body)
     }
   }
 
 
   static class Context {
-    private final ThreadLocal<HttpRequest> threadLocalRequest = new ThreadLocal<>()
-    private final ThreadLocal<HttpResponse> threadLocalResponse = new ThreadLocal<>()
-
-    HttpRequest getRequest() {
-      threadLocalRequest.get()
+    Context(HttpRequest request, HttpResponse response) {
+      this.request = request
+      this.response = response
     }
+    final HttpRequest request
+    final HttpResponse response
 
-    HttpResponse getResponse() {
-      threadLocalResponse.get()
-    }
   }
 }

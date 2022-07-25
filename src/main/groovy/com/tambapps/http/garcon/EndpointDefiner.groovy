@@ -2,6 +2,9 @@ package com.tambapps.http.garcon
 
 class EndpointDefiner {
 
+  EndpointDefiner(List<EndpointDefinition> endpointDefinitions) {
+    this.endpointDefinitions = endpointDefinitions
+  }
   private List<EndpointDefinition> endpointDefinitions
 
   void get(String path, @DelegatesTo(Garcon.Context) Closure closure) {
@@ -12,7 +15,4 @@ class EndpointDefiner {
     endpointDefinitions.add(new EndpointDefinition(method: 'DELETE', path: path, closure: closure))
   }
 
-  List<EndpointDefinition> getEndpointDefinitions() {
-    return endpointDefinitions
-  }
 }
