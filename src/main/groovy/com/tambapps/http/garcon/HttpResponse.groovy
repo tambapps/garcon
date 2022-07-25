@@ -27,7 +27,7 @@ class HttpResponse {
         this.@body = body
         break
       default:
-        throw new IllegalStateException("Cannot handled body of type ${body.class}")
+        throw new IllegalStateException("Cannot handled body of type ${body.getClass()}")
     }
 
   }

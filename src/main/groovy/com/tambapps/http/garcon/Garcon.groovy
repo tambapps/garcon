@@ -116,8 +116,13 @@ class Garcon {
             endpointDefinition.rehydrate(new Context(request, response))
             try {
               Object returnValue = endpointDefinition.call()
-              if (response.body == null && returnValue != null) {
-                response.body = returnValue
+              if (response.body == null) {
+                if (endpointDefinition.contentType != null) {
+                  // TODO compose returnValue
+                }
+                if (returnValue != null) {
+                  response.body = returnValue
+                }
               }
             } catch (Exception e) {
               e.printStackTrace()

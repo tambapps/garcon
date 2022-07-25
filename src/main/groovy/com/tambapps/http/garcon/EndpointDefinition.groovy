@@ -8,6 +8,9 @@ class EndpointDefinition {
   String method
   String path
   private Closure closure
+  // TODO use me for request body
+  ContentType accept
+  ContentType contentType
 
   void rehydrate(Object delegate) {
     closure.delegate = delegate
