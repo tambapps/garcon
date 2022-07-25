@@ -118,24 +118,24 @@ class Garcon {
             try {
               Object returnValue = endpointDefinition.call()
               if (response.body == null && returnValue != null) {
-                switch (returnValue) {
-                  case byte[]:
-                    response.body = (byte[]) returnValue
-                    break
-                  case String:
-                    response.body = ((String) returnValue).bytes
-                    break
-                }
+                response.body = returnValue
               }
             } catch (Exception e) {
               e.printStackTrace()
+              responseConnectionHeader = CONNECTION_CLOSE
+              connectionHeader = CONNECTION_CLOSE
               response = newResponse(500, 'Internal Server Error', responseConnectionHeader, 'An internal server error occurred'.bytes)
             }
           } else {
             byte[] responseBody = "Resource at path ${request.path} was not found".bytes
             response = newResponse(404, 'Not Found', responseConnectionHeader, responseBody)
           }
-          response.headers['Content-Length'] = response.body != null ? response.body.size() : 0
+          if (response.indefiniteSize) {
+            response.headers['Connection'] = CONNECTION_CLOSE
+            connectionHeader = CONNECTION_CLOSE
+          } else {
+            response.headers['Content-Length'] = response.contentSize
+          }
           response.writeInto(outputStream)
           context.threadLocalRequest.set(null)
           context.threadLocalResponse.set(null)

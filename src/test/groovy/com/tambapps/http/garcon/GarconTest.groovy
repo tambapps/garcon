@@ -59,9 +59,35 @@ class GarconTest {
       }
     }
 
-    poet.errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(poet)
     assertEquals('world', poet.get('/path?hello=world'))
     assertEquals('world', poet.get('/path?hello=world'))
+  }
+
+  @Test
+  void testResponseBodyTypes() {
+    def responseBody = 'Hello World'
+    garcon.serveAsync {
+      get '/string', {
+        return responseBody
+      }
+      get '/bytes', {
+        return responseBody.bytes
+      }
+      get '/input-stream', {
+        return new ByteArrayInputStream(responseBody.bytes)
+      }
+
+      get '/unknown', {
+        return new Object()
+      }
+    }
+
+    assertEquals(responseBody, poet.get('/string'))
+    assertEquals(responseBody, poet.get('/bytes'))
+    assertEquals(responseBody, poet.get('/input-stream'))
+
+    poet.get('/unknown')
+    assertEquals(500, poet.history.last().responseCode)
   }
 
   @Test
@@ -72,7 +98,6 @@ class GarconTest {
       }
     }
 
-    poet.errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(poet)
     poet.delete('/hello')
     assertEquals(405, poet.history.last().responseCode)
   }
