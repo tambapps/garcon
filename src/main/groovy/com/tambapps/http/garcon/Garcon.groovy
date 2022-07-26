@@ -2,6 +2,8 @@ package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.exception.RequestParsingException
 import com.tambapps.http.garcon.io.RequestParser
+import com.tambapps.http.garcon.io.composer.Composers
+import com.tambapps.http.garcon.util.ContentTypeMap
 import groovy.transform.TupleConstructor
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
@@ -21,6 +23,7 @@ class Garcon {
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
   private final EndpointsHandler endpointsHandler = new EndpointsHandler()
+  final ContentTypeMap<Closure<?>> composers = Composers.map
   int nbThreads = 4
 
   void define(@DelegatesTo(EndpointsHandler) Closure closure) {
@@ -113,16 +116,17 @@ class Garcon {
           HttpResponse response
           if (endpointDefinition != null) {
             response = newResponse(200, 'Ok', responseConnectionHeader, null)
-            endpointDefinition.rehydrate(new Context(request, response))
+            endpointDefinition.rehydrate(new Context(request, response, composers))
             try {
               Object returnValue = endpointDefinition.call()
-              if (response.body == null) {
+              if (response.body == null && returnValue != null) {
                 if (endpointDefinition.contentType != null) {
-                  // TODO compose returnValue
+                  def composer = composers[endpointDefinition.contentType]
+                  if (composer) {
+                    returnValue = composer.call(returnValue)
+                  }
                 }
-                if (returnValue != null) {
-                  response.body = returnValue
-                }
+                response.body = returnValue
               }
             } catch (Exception e) {
               e.printStackTrace()
@@ -175,21 +179,35 @@ class Garcon {
    * Context used for endpoint definition closures, as delegate
    */
   static class Context {
-    Context(HttpRequest request, HttpResponse response) {
+    Context(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers) {
       this.request = request
       this.response = response
+      this.composers = composers
     }
     // definition order matters because of @delegate
     @Delegate
     final HttpResponse response
     @Delegate
     final HttpRequest request
+    private final ContentTypeMap<Closure<?>> composers
 
     Headers getRequestHeaders() {
       return request.headers
     }
     Headers getResponseHeaders() {
       return response.headers
+    }
+
+    // called when method is not found
+    def invokeMethod(String name, Object o) {
+      Object[] args = o instanceof Object[] ? o : new Object[] { o }
+      if (args.length == 1) {
+        def contentType = composers.keySet().find { it.subtype == name }
+        if (contentType != null) {
+          return composers[contentType].call(args[0])
+        }
+      }
+      throw new MissingMethodException(name, getClass(), args)
     }
   }
 }

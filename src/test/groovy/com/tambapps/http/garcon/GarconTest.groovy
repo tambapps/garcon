@@ -119,10 +119,10 @@ class GarconTest {
   void testContentType() {
     garcon.serveAsync {
       get '/path', contentType: ContentType.JSON, {
-        return [hello: 'World']
+        return [hello: 'world']
       }
       get '/path2', {
-        return json(hello: 'World')
+      return json(hello: 'world')
       }
     }
 
