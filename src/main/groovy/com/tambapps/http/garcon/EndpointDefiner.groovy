@@ -1,13 +1,18 @@
 package com.tambapps.http.garcon
 
 import groovy.transform.NamedParam
+import groovy.transform.PackageScope
 
 class EndpointDefiner {
 
-  EndpointDefiner(List<EndpointDefinition> endpointDefinitions) {
+  private final Garcon garcon
+  private final List<EndpointDefinition> endpointDefinitions
+
+  @PackageScope
+  EndpointDefiner(Garcon garcon, List<EndpointDefinition> endpointDefinitions) {
+    this.garcon = garcon
     this.endpointDefinitions = endpointDefinitions
   }
-  private List<EndpointDefinition> endpointDefinitions
 
   void get(String path, @DelegatesTo(Garcon.Context) Closure closure) {
     get(Collections.emptyMap(), path, closure)
@@ -32,4 +37,11 @@ class EndpointDefiner {
         accept: additionalParameters.accept, contentType: additionalParameters.contentType))
   }
 
+  void setContentType(ContentType contentType) {
+    garcon.contentType =contentType
+  }
+
+  void setAccept(ContentType contentType) {
+    garcon.accept = contentType
+  }
 }

@@ -126,9 +126,18 @@ class GarconTest {
       }
     }
 
-    // TODO allow setting default contentType at garcon level
-
     assertEquals($/{"hello":"world"}/$, poet.get('/path'))
     assertEquals($/{"hello":"world"}/$, poet.get('/path2'))
+  }
+
+  @Test
+  void testDefaultContentType() {
+    garcon.serveAsync {
+      contentType = ContentType.JSON
+      get '/path', {
+      return [hello: 'world']
+      }
+    }
+    assertEquals($/{"hello":"world"}/$, poet.get('/path'))
   }
 }

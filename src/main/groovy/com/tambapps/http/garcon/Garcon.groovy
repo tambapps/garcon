@@ -25,9 +25,12 @@ class Garcon {
   private final EndpointsHandler endpointsHandler = new EndpointsHandler()
   final ContentTypeMap<Closure<?>> composers = Composers.map
   int nbThreads = 4
+  // TODO use me
+  ContentType accept
+  ContentType contentType
 
   void define(@DelegatesTo(EndpointsHandler) Closure closure) {
-    endpointsHandler.define(closure)
+    endpointsHandler.define(this, closure)
   }
 
   void serve(@DelegatesTo(EndpointDefiner) Closure closure) {
@@ -120,8 +123,9 @@ class Garcon {
             try {
               Object returnValue = endpointDefinition.call()
               if (response.body == null && returnValue != null) {
-                if (endpointDefinition.contentType != null) {
-                  def composer = composers[endpointDefinition.contentType]
+                ContentType contentType = endpointDefinition.contentType ?: Garcon.this.contentType
+                if (contentType != null) {
+                  def composer = composers[contentType]
                   if (composer) {
                     returnValue = composer.call(returnValue)
                   }
