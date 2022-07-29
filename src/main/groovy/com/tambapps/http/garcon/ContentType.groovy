@@ -16,12 +16,10 @@ class ContentType implements Comparable<ContentType> {
   public static final String WILDCARD_TYPE = '*'
   public static final String HEADER = 'Content-Type'
 
-  public static final ContentType WILDCARD = new ContentType(type: '*', subtype: '*')
   public static final ContentType JSON = new ContentType(type: 'application', subtype: 'json')
   public static final ContentType XML = new ContentType(type: 'application',subtype: 'xml')
   public static final ContentType TEXT = new ContentType(type: 'text', subtype: 'plain')
   public static final ContentType HTML = new ContentType(type: 'text', subtype: 'html')
-  public static final ContentType CSV = new ContentType(type: 'text', subtype: 'csv')
   public static final ContentType BINARY = new ContentType(type: 'application', subtype: 'octet-stream')
   public static final ContentType URL_ENCODED = new ContentType(type: 'application', subtype: 'x-www-form-urlencoded')
   public static final ContentType MULTIPART_FORM = new ContentType(type: 'multipart', subtype: 'form-data')
@@ -150,14 +148,18 @@ class ContentType implements Comparable<ContentType> {
     return false
   }
 
-  @Override
-  String toString() {
+  String getHeaderValue() {
     StringBuilder builder = new StringBuilder()
     builder.append(this.type)
     builder.append('/')
     builder.append(this.subtype)
     parameters.forEach((key, value) -> builder.append(';').append(key).append('=').append(value))
     return builder.toString()
+  }
+
+  @Override
+  String toString() {
+    return headerValue
   }
 
   // comparison by specificity

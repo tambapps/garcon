@@ -52,6 +52,7 @@ class HttpExchangeHandler implements Runnable {
             if (response.body == null && returnValue != null) {
               ContentType contentType = endpointDefinition.contentType ?: garcon.contentType
               if (contentType != null) {
+                response.headers[ContentType.HEADER] = contentType.headerValue
                 def composer = garcon.composers[contentType]
                 if (composer) {
                   returnValue = composer.call(returnValue)
