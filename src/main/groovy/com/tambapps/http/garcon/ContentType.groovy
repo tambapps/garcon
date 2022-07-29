@@ -156,7 +156,7 @@ class ContentType implements Comparable<ContentType> {
     builder.append(this.type)
     builder.append('/')
     builder.append(this.subtype)
-    parameters.forEach((key, value) -> builder.append('').append(key).append('=').append(value))
+    parameters.forEach((key, value) -> builder.append(';').append(key).append('=').append(value))
     return builder.toString()
   }
 
