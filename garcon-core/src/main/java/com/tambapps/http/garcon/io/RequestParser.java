@@ -38,7 +38,7 @@ public class RequestParser {
     String line;
     Map<String, String> headers = new HashMap<>();
     // empty line is delimiter between headers and request body
-    while ((line = readLine()) != null && !line.isEmpty()) {
+    while (!(line = readLine()).isEmpty()) {
       String[] headerFields = line.split(":", 2);
       if (headerFields.length != 2) {
         throw new RequestParsingException("Request command is invalid");
