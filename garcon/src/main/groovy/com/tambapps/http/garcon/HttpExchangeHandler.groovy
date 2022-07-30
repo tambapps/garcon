@@ -29,7 +29,7 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
       statusCode = HttpStatus.OK
     }
 
-    endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers))
+    endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers, garcon.parsers, garcon.accept))
     try {
       Object returnValue = endpointDefinition.call()
       if (response.body == null && returnValue != null) {

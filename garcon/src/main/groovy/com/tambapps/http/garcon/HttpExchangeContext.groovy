@@ -13,11 +13,16 @@ class HttpExchangeContext {
   @Delegate
   final HttpRequest request
   private final ContentTypeMap<Closure<?>> composers
+  private final ContentTypeMap<Closure<?>> parsers
+  final ContentType accept
 
-  HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers) {
+  HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers,
+                      ContentTypeMap<Closure<?>> parsers, ContentType accept) {
     this.request = request
     this.response = response
     this.composers = composers
+    this.parsers = parsers
+    this.accept = accept
   }
 
   Headers getRequestHeaders() {
@@ -25,6 +30,19 @@ class HttpExchangeContext {
   }
   Headers getResponseHeaders() {
     return response.headers
+  }
+
+  def getParsedRequestBody() {
+    if (accept == null) {
+      return request.requestBody
+    } else {
+      def parser = parsers[accept]
+      if (parser) {
+        return parser.call(request.requestBody)
+      } else {
+        return request.requestBody
+      }
+    }
   }
 
   // called when method is not found

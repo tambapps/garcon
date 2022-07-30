@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.io.composer.Composers
+import com.tambapps.http.garcon.io.composer.Parsers
 import com.tambapps.http.garcon.util.ContentTypeMap
 import groovy.transform.PackageScope
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
@@ -15,6 +16,7 @@ class Garcon extends AbstractGarcon {
   @PackageScope
   final EndpointsHandler endpointsHandler = new EndpointsHandler()
   final ContentTypeMap<Closure<?>> composers = Composers.map
+  final ContentTypeMap<Closure<?>> parsers = Parsers.map
 
   ContentType accept
   ContentType contentType
