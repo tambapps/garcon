@@ -17,19 +17,16 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
     EndpointDefinition endpointDefinition = garcon.endpointsHandler.getMatchingEndpointDefinition(request.path)
     if (endpointDefinition == null) {
       return new HttpResponse().tap {
-        statusCode = 404
-        message = 'Not Found'
+        statusCode = HttpStatus.NOT_FOUND
       }
     } else if (endpointDefinition.method != request.method) {
       return new HttpResponse().tap {
-        statusCode = 405
-        message = 'Method Not Allowed'
+        statusCode = HttpStatus.METHOD_NOT_ALLOWED
       }
     }
 
     HttpResponse response = new HttpResponse().tap {
-      statusCode = 200
-      message = 'Ok'
+      statusCode = HttpStatus.OK
     }
 
     endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers))
@@ -50,8 +47,7 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
     } catch (Exception e) {
       e.printStackTrace()
       return new HttpResponse().tap {
-        statusCode = 500
-        message = 'Internal Server Error'
+        statusCode = HttpStatus.INTERNAL_SERVER_ERROR
       }
     }
   }

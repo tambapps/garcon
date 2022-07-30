@@ -107,7 +107,7 @@ class GarconTest {
   void testStatus() {
     garcon.serveAsync {
       get '/hello', {
-        statusCode = 201
+        statusCode = HttpStatus.CREATED
         return 'Hello World'
       }
     }

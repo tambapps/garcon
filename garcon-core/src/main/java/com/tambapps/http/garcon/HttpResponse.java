@@ -12,8 +12,7 @@ public class HttpResponse {
   private static final int DEFAULT_BUFFER_SIZE = 8192; // 8k
 
   final String httpVersion = "HTTP/1.1";
-  int statusCode;
-  String message;
+  HttpStatusCode statusCode;
   Headers headers = new Headers();
 
   // body can be a byte array, a string, or an input stream
@@ -22,8 +21,8 @@ public class HttpResponse {
    */
   Object body;
 
-  public boolean isSuccessful() {
-    return statusCode >= 200 && statusCode < 300;
+  public boolean is2xxSuccessful() {
+    return statusCode.getValue() >= 200 && statusCode.getValue() < 300;
   }
   void setBody(Object body) {
     if (body == null) {
@@ -54,7 +53,7 @@ public class HttpResponse {
 
   void writeInto(OutputStream os) throws IOException {
     PrintWriter writer = new PrintWriter(os);
-    writer.format("%s %d %s", httpVersion, statusCode, message).println();
+    writer.format("%s %d %s", httpVersion, statusCode.getValue(), statusCode.getMessage()).println();
     headers.forEach((name, value) -> writer.println(name + ": " + value));
     writer.println();
     writer.flush();

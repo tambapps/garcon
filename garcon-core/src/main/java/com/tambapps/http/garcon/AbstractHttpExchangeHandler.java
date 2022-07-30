@@ -5,7 +5,6 @@ import com.tambapps.http.garcon.io.RequestParser;
 import lombok.AllArgsConstructor;
 
 import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
-import static com.tambapps.http.garcon.Headers.CONNECTION_HEADER;
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 
 import java.io.Closeable;
@@ -37,8 +36,7 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
           response = processExchange(request);
         } catch (RequestParsingException e) {
           response = new HttpResponse();
-          response.setStatusCode(400);
-          response.setMessage("Bad Request");
+          response.setStatusCode(HttpStatus.BAD_REQUEST);
           response.getHeaders().putConnectionHeader(CONNECTION_CLOSE);
         }
         addDefaultHeaders(request, response);
@@ -74,7 +72,7 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
     String connectionHeader = headers.getConnectionHeader();
     if (connectionHeader == null) {
       // keep connection alive if response body is with definite length AND client want so
-      headers.putConnectionHeader(response.isSuccessful()
+      headers.putConnectionHeader(response.is2xxSuccessful()
           && contentLength != null
           && request != null
           && CONNECTION_KEEP_ALIVE.equals(request.getHeaders().getConnectionHeader())
