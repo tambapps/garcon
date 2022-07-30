@@ -1,5 +1,5 @@
 package com.tambapps.http.garcon;
 
-class GarconTest {
+public class JavaGarconTest {
 
 }
