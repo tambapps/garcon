@@ -34,7 +34,9 @@ class HttpExchangeContext {
       def contentType = composers.keySet().find { it.subtype == name }
       if (contentType != null) {
         response.headers.putContentTypeHeader(contentType.headerValue)
-        return composers[contentType].call(args[0])
+        // set response body here so that the HttpExchangeHandler doesn't compose it again
+        response.body = composers[contentType].call(args[0])
+        return response.body
       }
     }
     throw new MissingMethodException(name, getClass(), args)
