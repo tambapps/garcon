@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon.util;
 
 import java.io.ByteArrayOutputStream;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -20,5 +21,11 @@ public class IoUtils {
     ByteArrayOutputStream os = new ByteArrayOutputStream();
     write(is, os);
     return os.toByteArray();
+  }
+
+  public static void closeQuietly(Closeable closeable) {
+    try {
+      closeable.close();
+    } catch (IOException ignored) {}
   }
 }

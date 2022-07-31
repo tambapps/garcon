@@ -1,6 +1,5 @@
 package com.tambapps.http.garcon
 
-import com.tambapps.http.garcon.exception.ComposingException
 import com.tambapps.http.garcon.exception.ParsingException
 import groovy.transform.PackageScope
 
@@ -51,12 +50,28 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
         statusCode = HttpStatus.BAD_REQUEST
       }
     } catch (Exception e) {
-      // same behaviour for Composing Exception
-      e.printStackTrace()
+      onUnexpectedError(e)
       return new HttpResponse().tap {
         statusCode = HttpStatus.INTERNAL_SERVER_ERROR
       }
     }
   }
 
+  @PackageScope
+  @Override
+  void onConnectionClosed(IOException e) {
+    garcon.onConnectionClosed?.call(e)
+  }
+
+  @PackageScope
+  @Override
+  void onConnectionError(IOException e) {
+    garcon.onConnectionError?.call(e)
+  }
+
+  @PackageScope
+  @Override
+  void onUnexpectedError(Exception e) {
+    garcon.onConnectionUnexpectedError?.call(e)
+  }
 }

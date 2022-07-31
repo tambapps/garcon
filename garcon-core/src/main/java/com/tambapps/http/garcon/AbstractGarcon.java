@@ -1,8 +1,8 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.util.IoUtils;
 import lombok.Getter;
 import lombok.Setter;
-import lombok.SneakyThrows;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -30,12 +30,18 @@ abstract class AbstractGarcon {
 
   abstract Runnable newExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections);
 
-  @SneakyThrows
-  void start() {
+  abstract void onServerSocketClosed(SocketException e);
+  abstract void onServerException(IOException e);
+
+  public void start() {
+    if (running.get()) {
+      // already running
+      return;
+    }
     running.set(true);
     requestsExecutorService = Executors.newFixedThreadPool(nbThreads);
-    try {
-      ServerSocket serverSocket = new ServerSocket(8081, 2, InetAddress.getByName("localhost"));
+    // TODO make these parameters
+    try (ServerSocket serverSocket = new ServerSocket(8081, 2, InetAddress.getByName("localhost"))) {
       connections.add(serverSocket);
       while (running.get()) {
         Socket socket = serverSocket.accept();
@@ -44,17 +50,22 @@ abstract class AbstractGarcon {
       }
     } catch (SocketException e) {
       // the socket was probably closed, do nothing
+      onServerSocketClosed(e);
     } catch (IOException e) {
-      e.printStackTrace();
+      onServerException(e);
     }
     running.set(false);
   }
 
-  boolean isRunning() {
+  public boolean isRunning() {
     return running.get();
   }
 
-  void startAsync() {
+  public void startAsync() {
+    if (running.get()) {
+      // already running
+      return;
+    }
     if (executorService == null) {
       executorService = Executors.newSingleThreadExecutor();
     }
@@ -62,13 +73,14 @@ abstract class AbstractGarcon {
       try {
         start();
       } catch (Exception e) {
+        // shouldn't happen... but well...
         e.printStackTrace();
-        // TODO
+        running.set(false);
       }
     });
   }
 
-  void stop() {
+  public void stop() {
     running.set(false);
     if (requestsExecutorService != null) {
       requestsExecutorService.shutdown();
@@ -79,11 +91,7 @@ abstract class AbstractGarcon {
       executorService.shutdown();
     }
     executorService = null;
-    connections.forEach(c -> {
-      try {
-        c.close();
-      } catch (IOException e) {}
-    });
+    connections.forEach(IoUtils::closeQuietly);
     connections.clear();
   }
 }

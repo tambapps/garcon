@@ -4,12 +4,6 @@ import com.tambapps.http.garcon.io.composer.Composers
 import com.tambapps.http.garcon.io.composer.Parsers
 import com.tambapps.http.garcon.util.ContentTypeMap
 import groovy.transform.PackageScope
-import org.codehaus.groovy.runtime.DefaultGroovyMethods
-
-import java.util.concurrent.ConcurrentLinkedQueue
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
 
 class Garcon extends AbstractGarcon {
 
@@ -20,7 +14,11 @@ class Garcon extends AbstractGarcon {
 
   ContentType accept
   ContentType contentType
-
+  Closure onClosed
+  Closure onError
+  Closure onConnectionClosed
+  Closure onConnectionError
+  Closure onConnectionUnexpectedError
 
   void define(@DelegatesTo(EndpointsHandler) Closure closure) {
     endpointsHandler.define(this, closure)
@@ -39,5 +37,17 @@ class Garcon extends AbstractGarcon {
   @Override
   Runnable newExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections) {
     return new HttpExchangeHandler(socket, this, connections)
+  }
+
+  @PackageScope
+  @Override
+  void onServerSocketClosed(SocketException e) {
+    onClosed?.call(e)
+  }
+
+  @PackageScope
+  @Override
+  void onServerException(IOException e) {
+    onError?.call(e)
   }
 }

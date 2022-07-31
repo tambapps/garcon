@@ -2,6 +2,7 @@ package com.tambapps.http.garcon;
 
 import com.tambapps.http.garcon.exception.RequestParsingException;
 import com.tambapps.http.garcon.io.RequestParser;
+import com.tambapps.http.garcon.util.IoUtils;
 import lombok.AllArgsConstructor;
 
 import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
@@ -23,6 +24,9 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
   protected final AbstractGarcon garcon;
   private final Collection<Closeable> connections;
 
+  abstract void onConnectionClosed(IOException e);
+  abstract void onConnectionError(IOException e);
+  abstract void onUnexpectedError(Exception e);
   @Override
   public void run() {
     try {
@@ -47,17 +51,14 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
       }
     } catch (EOFException | SocketException e) {
       // do nothing
+      onConnectionClosed(e);
     } catch (IOException e) {
-      // TODO handle errors
-      e.printStackTrace();
+      onConnectionError(e);
     } catch (Exception e) {
-      // TODO handle errors
-      e.printStackTrace();
+      onUnexpectedError(e);
     } finally {
       // closing socket will also close InputStream and OutputStream
-      try {
-        socket.close();
-      }catch (IOException ignored) {}
+      IoUtils.closeQuietly(socket);
       connections.remove(socket);
     }
   }
