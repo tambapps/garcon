@@ -3,6 +3,8 @@ package com.tambapps.http.garcon
 import groovy.transform.NamedParam
 import groovy.transform.PackageScope
 
+import java.nio.file.Path
+
 class EndpointDefiner {
 
   private final Garcon garcon
@@ -79,4 +81,39 @@ class EndpointDefiner {
   void setAccept(ContentType contentType) {
     garcon.accept = contentType
   }
+
+  Closure file(String path) {
+    return file(Collections.emptyMap(), path)
+  }
+
+  Closure file(Path path) {
+    return file(Collections.emptyMap(), path)
+  }
+
+  Closure file(@NamedParam(value = 'contentType', type = ContentType.class)
+                   Map<?, ?> additionalParameters, String path) {
+    return file(additionalParameters, new File(path))
+  }
+
+  Closure file(@NamedParam(value = 'contentType', type = ContentType.class)
+                   Map<?, ?> additionalParameters, Path path) {
+    return file(additionalParameters, path.toFile())
+  }
+
+  Closure file(File f) {
+    return file(Collections.emptyMap(), f)
+  }
+
+  Closure file(
+      @NamedParam(value = 'contentType', type = ContentType.class)
+          Map<?, ?> additionalParameters,
+      File f) {
+    return {
+      response.body = new FileInputStream(f)
+      if (additionalParameters.contentType) {
+        response.contentType = additionalParameters.contentType
+      }
+    }
+  }
+
 }
