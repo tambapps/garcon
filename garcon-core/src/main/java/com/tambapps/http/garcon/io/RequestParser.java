@@ -18,6 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class RequestParser {
 
+  // TODO make max request size parameter
   public static HttpRequest parse(InputStream is) throws IOException {
     return new RequestParser().parseInputStream(is);
   }
