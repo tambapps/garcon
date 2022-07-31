@@ -7,6 +7,20 @@ import groovy.transform.PackageScope
 
 class Garcon extends AbstractGarcon {
 
+  Garcon() {}
+
+  Garcon(InetAddress address, int port) {
+    super()
+    this.address = address
+    this.port = port
+  }
+  Garcon(InetAddress address, int port, int backlog) {
+    super()
+    this.address = address
+    this.port = port
+    this.backlog = backlog
+  }
+
   @PackageScope
   final EndpointsHandler endpointsHandler = new EndpointsHandler()
   final ContentTypeMap<Closure<?>> composers = Composers.map

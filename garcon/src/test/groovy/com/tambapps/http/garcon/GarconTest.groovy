@@ -27,7 +27,7 @@ class GarconTest {
 
   @BeforeEach
   void init() {
-    garcon = new Garcon()
+    garcon = new Garcon(InetAddress.getByName("localhost"), 8081)
     firstCall = true
   }
 

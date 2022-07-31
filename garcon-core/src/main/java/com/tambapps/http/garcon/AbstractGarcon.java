@@ -26,6 +26,15 @@ abstract class AbstractGarcon {
 
   @Getter
   @Setter
+  private InetAddress address;
+  @Getter
+  @Setter
+  private Integer port;
+  @Getter
+  @Setter
+  private Integer backlog;
+  @Getter
+  @Setter
   private int nbThreads = 4;
 
   abstract Runnable newExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections);
@@ -40,8 +49,7 @@ abstract class AbstractGarcon {
     }
     running.set(true);
     requestsExecutorService = Executors.newFixedThreadPool(nbThreads);
-    // TODO make these parameters
-    try (ServerSocket serverSocket = new ServerSocket(8081, 2, InetAddress.getByName("localhost"))) {
+    try (ServerSocket serverSocket = newServerSocket()) {
       connections.add(serverSocket);
       while (running.get()) {
         Socket socket = serverSocket.accept();
@@ -55,6 +63,20 @@ abstract class AbstractGarcon {
       onServerException(e);
     }
     running.set(false);
+  }
+
+  private ServerSocket newServerSocket() {
+    int port = this.port != null ? this.port : 0;
+    int backlog = this.backlog != null ? this.backlog : 0;
+    try {
+      if (address != null) {
+        return new ServerSocket(port, backlog, address);
+      } else {
+        return new ServerSocket(port, backlog);
+      }
+    } catch (IOException e) {
+      throw new RuntimeException("Couldn't start server socket: " + e.getMessage(), e);
+    }
   }
 
   public boolean isRunning() {
