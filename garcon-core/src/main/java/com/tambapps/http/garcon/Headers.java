@@ -162,4 +162,38 @@ public class Headers implements Map<String, String> {
   public ImmutableHeaders asImmutable() {
     return new ImmutableHeaders(this);
   }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (!(obj instanceof Headers)) {
+      return false;
+    }
+    Headers h = (Headers) obj;
+    if (h.size() != size()) {
+      return false;
+    }
+    for (String key : keySet()) {
+      String value = get(key);
+      String otherValue = get(key);
+      if (value == null && otherValue != null || otherValue == null && value != null) {
+        return false;
+      }
+      if (value != null && !value.equalsIgnoreCase(otherValue)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  @Override
+  public int hashCode() {
+    return entrySet().stream().map(e -> String.format("%s=%s", e.getKey(), e.getValue()).toLowerCase())
+        .collect(Collectors.joining(",")).hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return entrySet().stream().map(e -> String.format("%s=%s", e.getKey(), e.getValue()))
+        .collect(Collectors.joining(", ", "{", "}"));
+  }
 }

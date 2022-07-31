@@ -1,10 +1,8 @@
 package com.tambapps.http.garcon.io;
 
-import com.tambapps.http.garcon.Headers;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.ImmutableHeaders;
 import com.tambapps.http.garcon.exception.RequestParsingException;
-import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import java.io.ByteArrayOutputStream;
@@ -16,16 +14,15 @@ import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
-// TODO test this
 // https://fr.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Impl%C3%A9mentation
-@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor
 public class RequestParser {
 
   public static HttpRequest parse(InputStream is) throws IOException {
     return new RequestParser().parseInputStream(is);
   }
 
-  private HttpRequest parseInputStream(InputStream is) throws IOException {
+  public HttpRequest parseInputStream(InputStream is) throws IOException {
     String[] firstFields = readLine(is).split("\\s");
     if (firstFields.length != 3) {
       throw new RequestParsingException("Request command is invalid");
