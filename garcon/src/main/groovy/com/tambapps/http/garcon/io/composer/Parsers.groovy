@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon.io.composer
 
 import com.tambapps.http.garcon.ContentType
+import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeMap
 import groovy.json.JsonSlurper
 import groovy.xml.XmlSlurper
@@ -10,7 +11,7 @@ class Parsers {
   private Parsers() {}
 
   static ContentTypeMap<Closure<?>> getMap() {
-    ContentTypeMap<Closure<?>> map = new ContentTypeMap<>()
+    ContentTypeMap<Closure<?>> map = new ParsingMap()
     // TODO compose closure and try catch to throw parsing exception instead, and handle it better
 
     map[ContentType.JSON] = new JsonSlurper().&parse
@@ -37,4 +38,28 @@ class Parsers {
     return answer.toString();
   }
 
+  private static class ParsingMap extends ContentTypeMap<Closure<?>> {
+
+    @Override
+    Closure<?> put(ContentType key, Closure<?> value) {
+      return super.put(key, new ParsingClosure(value))
+    }
+  }
+
+  private static class ParsingClosure extends Closure {
+
+    private final Closure closure
+    ParsingClosure(Closure closure) {
+      super(null)
+      this.closure = closure
+    }
+
+    def doCall(Object arg) {
+      try {
+        return closure.call(arg)
+      } catch (Exception e) {
+        throw new ParsingException(e)
+      }
+    }
+  }
 }

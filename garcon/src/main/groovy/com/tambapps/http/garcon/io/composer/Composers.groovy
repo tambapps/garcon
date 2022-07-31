@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon.io.composer
 
 import com.tambapps.http.garcon.ContentType
+import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeMap
 import groovy.json.JsonOutput
 import groovy.xml.XmlUtil
@@ -18,7 +19,7 @@ final class Composers {
   private Composers() {}
 
   static ContentTypeMap<Closure<?>> getMap() {
-    ContentTypeMap<Closure<?>> map = new ContentTypeMap<>()
+    ContentTypeMap<Closure<?>> map = new ComposingMap()
     // TODO compose closure and try catch to throw composing exception instead, and handle it better
     map.put(ContentType.JSON, JsonOutput.&toJson)
     map.put(ContentType.XML, Composers.&composeXmlBody)
@@ -66,5 +67,29 @@ final class Composers {
     }
   }
 
+  private static class ComposingMap extends ContentTypeMap<Closure<?>> {
+    @Override
+    Closure<?> put(ContentType key, Closure<?> value) {
+      return super.put(key, new ComposingClosure(value))
+    }
+  }
+
+  private static class ComposingClosure extends Closure {
+
+    private final Closure closure
+
+    ComposingClosure(Closure closure) {
+      super(null)
+      this.closure = closure
+    }
+
+    def doCall(Object arg) {
+      try {
+        return closure.call(arg)
+      } catch (Exception e) {
+        throw new ParsingException(e)
+      }
+    }
+  }
 
 }
