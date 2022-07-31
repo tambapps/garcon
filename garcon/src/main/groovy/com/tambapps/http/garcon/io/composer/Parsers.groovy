@@ -12,7 +12,6 @@ class Parsers {
 
   static ContentTypeMap<Closure<?>> getMap() {
     ContentTypeMap<Closure<?>> map = new ParsingMap()
-    // TODO compose closure and try catch to throw parsing exception instead, and handle it better
 
     map[ContentType.JSON] = new JsonSlurper().&parse
     map[ContentType.XML] = new XmlSlurper().&parse

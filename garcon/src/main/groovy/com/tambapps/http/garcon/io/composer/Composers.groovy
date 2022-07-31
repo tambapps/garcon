@@ -20,7 +20,6 @@ final class Composers {
 
   static ContentTypeMap<Closure<?>> getMap() {
     ContentTypeMap<Closure<?>> map = new ComposingMap()
-    // TODO compose closure and try catch to throw composing exception instead, and handle it better
     map.put(ContentType.JSON, JsonOutput.&toJson)
     map.put(ContentType.XML, Composers.&composeXmlBody)
     map.put(ContentType.TEXT, Composers.&composeStringBody)

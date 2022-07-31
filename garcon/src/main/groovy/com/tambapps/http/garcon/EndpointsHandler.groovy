@@ -6,7 +6,7 @@ class EndpointsHandler {
 
   private final List<EndpointDefinition> endpointDefinitions = []
 
-  void define(AbstractGarcon garcon, @DelegatesTo(EndpointDefiner) Closure closure) {
+  void define(Garcon garcon, @DelegatesTo(EndpointDefiner) Closure closure) {
     closure.delegate = new EndpointDefiner(garcon, endpointDefinitions)
     closure.resolveStrategy = Closure.DELEGATE_FIRST
     closure.call()
