@@ -1,5 +1,6 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.util.IoUtils;
 import lombok.Data;
 
 import java.io.IOException;
@@ -9,7 +10,6 @@ import java.io.PrintWriter;
 
 @Data
 public class HttpResponse {
-  private static final int DEFAULT_BUFFER_SIZE = 8192; // 8k
 
   final String httpVersion = "HTTP/1.1";
   HttpStatusCode statusCode;
@@ -69,11 +69,7 @@ public class HttpResponse {
     } else if (body instanceof String) {
       os.write(((String) body).getBytes());
     } else if (body instanceof InputStream) {
-      InputStream in = (InputStream) body;
-      byte[] buf = new byte[DEFAULT_BUFFER_SIZE];
-      for (int count; -1 != (count = in.read(buf)); ) {
-        os.write(buf, 0, count);
-      }
+      IoUtils.write((InputStream) body, os);
     } else {
       throw new IllegalStateException("Cannot handle body of type " + body.getClass());
     }

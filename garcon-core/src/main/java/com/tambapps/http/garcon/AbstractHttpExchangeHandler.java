@@ -63,19 +63,20 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
   }
 
   private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
-    Headers headers = response.getHeaders();
-    headers.put("Server", "Garcon (Tambapps)");
+    Headers responseHeaders = response.getHeaders();
+    responseHeaders.put("Server", "Garcon (Tambapps)");
     Long contentLength = response.getContentLength();
     if (contentLength != null) {
-      headers.put("Content-Length", contentLength.toString());
+      responseHeaders.put("Content-Length", contentLength.toString());
     }
-    String connectionHeader = headers.getConnectionHeader();
+    String connectionHeader = responseHeaders.getConnectionHeader();
     if (connectionHeader == null) {
-      // keep connection alive if response body is with definite length AND client want so
-      headers.putConnectionHeader(response.is2xxSuccessful()
+      // keep connection alive if request body and response body are with definite length AND client want so
+      responseHeaders.putConnectionHeader(response.is2xxSuccessful()
           && contentLength != null
           && request != null
           && CONNECTION_KEEP_ALIVE.equals(request.getHeaders().getConnectionHeader())
+          && request.getHeaders().getContentLength() != null
           ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
     }
   }

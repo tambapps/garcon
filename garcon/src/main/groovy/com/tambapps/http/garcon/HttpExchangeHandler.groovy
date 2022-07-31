@@ -31,7 +31,7 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
       statusCode = HttpStatus.OK
     }
 
-    endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers, garcon.parsers, garcon.accept))
+    endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers, garcon.parsers, endpointDefinition.accept ?: garcon.accept))
     try {
       Object returnValue = endpointDefinition.call()
       if (response.body == null && returnValue != null) {
@@ -47,7 +47,6 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
       }
       return response
     } catch (ParsingException e) {
-      e.printStackTrace()
       return new HttpResponse().tap {
         statusCode = HttpStatus.BAD_REQUEST
       }

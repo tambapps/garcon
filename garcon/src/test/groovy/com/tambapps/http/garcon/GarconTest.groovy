@@ -132,6 +132,25 @@ class GarconTest {
   }
 
   @Test
+  void testParseBadJson() {
+    garcon.serveAsync {
+      post '/path', accept: ContentType.JSON, {
+        parsedRequestBody
+        return [hello: 'world']
+      }
+      post '/path2', {
+        getParsedRequestBody(ContentType.JSON)
+        return [hello: 'world']
+      }
+    }
+
+    poet.post('/path', body: 'not json')
+    assertEquals(400, poet.history.last().responseCode)
+    poet.post('/path2', body: 'not json')
+    assertEquals(400, poet.history.last().responseCode)
+  }
+
+  @Test
   void testDefaultContentType() {
     garcon.serveAsync {
       contentType = ContentType.JSON

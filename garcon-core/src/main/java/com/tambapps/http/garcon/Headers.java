@@ -18,6 +18,7 @@ public class Headers implements Map<String, String> {
   public static final String CONNECTION_CLOSE = "Close";
   public static final String CONNECTION_HEADER = "Connection";
   public static final String CONTENT_TYPE_HEADER = "Content-Type";
+  public static final String CONTENT_LENGTH_HEADER = "Content-Length";
 
   private final Set<AbstractMap.SimpleEntry<String, String>> entries = new HashSet<>();
 
@@ -52,11 +53,36 @@ public class Headers implements Map<String, String> {
     putAt(CONNECTION_HEADER, value);
   }
 
+  public String getConnectionHeader() {
+    return getAt(CONNECTION_HEADER);
+  }
+
   public void putContentTypeHeader(String value) {
     putAt(CONTENT_TYPE_HEADER, value);
   }
-  public String getConnectionHeader() {
-    return getAt(CONNECTION_HEADER);
+
+  public String getContentTypeHeader() {
+    return getAt(CONTENT_TYPE_HEADER);
+  }
+  public ContentType getContentType() {
+    String header = getAt(CONTENT_TYPE_HEADER);
+    return header != null ? ContentType.valueOf(header) : null;
+  }
+
+  public void putContentLength(Number value) {
+    putAt(CONTENT_LENGTH_HEADER, value);
+  }
+
+  public Long getContentLength() {
+    String header = getAt(CONTENT_LENGTH_HEADER);
+    if (header == null) {
+      return null;
+    }
+    try {
+      return Long.parseLong(header);
+    } catch (NumberFormatException e) {
+      return null;
+    }
   }
 
   @Override

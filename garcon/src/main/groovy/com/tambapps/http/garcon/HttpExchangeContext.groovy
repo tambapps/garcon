@@ -33,6 +33,10 @@ class HttpExchangeContext {
   }
 
   def getParsedRequestBody() {
+    return getParsedRequestBody(accept)
+  }
+
+  def getParsedRequestBody(ContentType accept) {
     if (accept == null) {
       return request.requestBody
     } else {

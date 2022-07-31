@@ -1,16 +1,16 @@
 package com.tambapps.http.garcon.io;
 
+import com.tambapps.http.garcon.Headers;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.ImmutableHeaders;
 import com.tambapps.http.garcon.exception.RequestParsingException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.HashMap;
@@ -22,12 +22,11 @@ import java.util.Map;
 public class RequestParser {
 
   public static HttpRequest parse(InputStream is) throws IOException {
-    return new RequestParser(new BufferedReader(new InputStreamReader(is))).parseInputStream(is);
+    return new RequestParser().parseInputStream(is);
   }
 
-  private final BufferedReader reader;
   private HttpRequest parseInputStream(InputStream is) throws IOException {
-    String[] firstFields = readLine().split("\\s");
+    String[] firstFields = readLine(is).split("\\s");
     if (firstFields.length != 3) {
       throw new RequestParsingException("Request command is invalid");
     }
@@ -36,32 +35,45 @@ public class RequestParser {
     String httpVersion = firstFields[2];
 
     String line;
-    Map<String, String> headers = new HashMap<>();
+    Map<String, String> headersMap = new HashMap<>();
     // empty line is delimiter between headers and request body
-    while (!(line = readLine()).isEmpty()) {
-      String[] headerFields = line.split(":", 2);
+    while (!(line = readLine(is)).isEmpty()) {
+      String[] headerFields = line.split(":\\s", 2);
       if (headerFields.length != 2) {
         throw new RequestParsingException("Request command is invalid");
       }
-      headers.put(headerFields[0], headerFields[1]);
+      headersMap.put(headerFields[0], headerFields[1]);
     }
-    InputStream body = null;
-    if (is.available() > 0) {
-      body = is;
-    }
+
+    ImmutableHeaders headers = new ImmutableHeaders(headersMap);
+    Long contentLength = headers.getContentLength();
+    InputStream body = contentLength != null ? new BoundedInputStream(is, contentLength) : is;
     Map<String, String> queryParams = new HashMap<>();
     String path = extractQueryParams(pathWithParams, queryParams);
     return new HttpRequest(method, path, queryParams, httpVersion, new ImmutableHeaders(headers), body);
   }
 
-  private String readLine() throws IOException {
-    String line = reader.readLine();
-    if (line == null) {
-      // connection was probably closed
+  private String readLine(InputStream in) throws IOException {
+    // according to HTTP spec, separator should always be '\r\n': https://www.rfc-editor.org/rfc/rfc2616#section-2.2
+    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+    int lastChar1 = in.read();
+    if (lastChar1 < 0) {
       throw new EOFException();
     }
-    return line;
+    int lastChar2 = in.read();
+    if (lastChar2 < 0) {
+      throw new EOFException();
+    }
+
+    int b;
+    while (lastChar1 != '\r' && lastChar2 != '\n' && ((b = in.read()) > 0)) {
+      bos.write(lastChar1);
+      lastChar1 = lastChar2;
+      lastChar2 = (byte) b;
+    }
+    return bos.toString();
   }
+
   private static String extractQueryParams(String pathWithParams, Map<String, String> queryParams) {
     if (pathWithParams == null || pathWithParams.isEmpty()) {
       return pathWithParams;
