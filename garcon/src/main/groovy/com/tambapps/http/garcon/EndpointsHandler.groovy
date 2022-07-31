@@ -10,6 +10,9 @@ class EndpointsHandler {
     closure.delegate = new EndpointDefiner(garcon, endpointDefinitions)
     closure.resolveStrategy = Closure.DELEGATE_FIRST
     closure.call()
+    if (endpointDefinitions.unique { it.method + it.path }.size() != endpointDefinitions.size()) {
+      throw new IllegalStateException('There are some duplicate endpoints')
+    }
   }
 
   EndpointDefinition getMatchingEndpointDefinition(String p) {
