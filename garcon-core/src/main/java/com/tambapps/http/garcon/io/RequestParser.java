@@ -71,7 +71,7 @@ public class RequestParser {
     return bos.toString();
   }
 
-  private static String extractQueryParams(String pathWithParams, Map<String, String> queryParams) {
+  private static String extractQueryParams(String pathWithParams, Map<String, String> queryParams) throws IOException {
     if (pathWithParams == null || pathWithParams.isEmpty()) {
       return pathWithParams;
     }
@@ -85,18 +85,18 @@ public class RequestParser {
       String[] fields = param.split("=");
       if (fields.length == 2) {
         queryParams.put(urlDecode(fields[0]), urlDecode(fields[1]));
-      } else {
-        queryParams.put(urlDecode(fields[0]), null);
+      } else if (fields.length == 1) {
+        queryParams.put(urlDecode(fields[0]), String.valueOf(true));
       }
     }
     return pathWithParams.substring(0, start);
   }
 
-  private static String urlDecode(String s) {
+  private static String urlDecode(String s) throws IOException {
     try {
       return URLDecoder.decode(s, "UTF-8");
     } catch (UnsupportedEncodingException e) {
-      throw new RuntimeException("Couldn't URL decode", e);
+      throw new RequestParsingException("Couldn't URL decode", e);
     }
   }
 }

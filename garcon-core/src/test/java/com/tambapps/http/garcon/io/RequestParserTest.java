@@ -15,6 +15,7 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 
 public class RequestParserTest {
@@ -23,7 +24,7 @@ public class RequestParserTest {
 
   @Test
   public void testParseRequest() throws IOException {
-    String input = "GET /page.html HTTP/1.0\r\n"
+    String input = "GET /page.html?hello=world&bool&third=wheel HTTP/1.0\r\n"
         + "Host: example.com\r\n"
         + "Referer: http://example.com/\r\n"
         + "User-Agent: CERN-LineMode/2.15 libwww/2.17b3\r\n\r\n";
@@ -38,6 +39,11 @@ public class RequestParserTest {
       putAt("Referer", "http://example.com/");
       putAt("User-Agent", "CERN-LineMode/2.15 libwww/2.17b3");
     }}, request.getHeaders());
+    assertEquals(new HashMap<String, String>() {{
+      put("hello", "world");
+      put("bool", "true");
+      put("third", "wheel");
+    }}, request.getQueryParams());
   }
 
   @Test
