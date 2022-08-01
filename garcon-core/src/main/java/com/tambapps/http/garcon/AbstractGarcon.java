@@ -91,13 +91,16 @@ abstract class AbstractGarcon {
     if (executorService == null) {
       executorService = Executors.newSingleThreadExecutor();
     }
-    executorService.submit(() -> {
-      try {
-        start();
-      } catch (Exception e) {
-        // shouldn't happen... but well...
-        e.printStackTrace();
-        running.set(false);
+    executorService.submit(new Runnable() {
+      @Override
+      public void run() {
+        try {
+          start();
+        } catch (Exception e) {
+          // shouldn't happen... but well...
+          e.printStackTrace();
+          running.set(false);
+        }
       }
     });
   }
@@ -113,7 +116,9 @@ abstract class AbstractGarcon {
       executorService.shutdown();
     }
     executorService = null;
-    connections.forEach(IoUtils::closeQuietly);
+    for (Closeable connection : connections) {
+      IoUtils.closeQuietly(connection);
+    }
     connections.clear();
   }
 }
