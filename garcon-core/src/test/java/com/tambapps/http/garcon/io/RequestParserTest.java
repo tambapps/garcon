@@ -20,8 +20,6 @@ import java.util.List;
 
 public class RequestParserTest {
 
-  private final RequestParser requestParser = new RequestParser();
-
   @Test
   public void testParseRequest() throws IOException {
     String input = "GET /page.html?hello=world&bool&third=wheel HTTP/1.0\r\n"
@@ -29,7 +27,7 @@ public class RequestParserTest {
         + "Referer: http://example.com/\r\n"
         + "User-Agent: CERN-LineMode/2.15 libwww/2.17b3\r\n\r\n";
 
-    HttpRequest request = requestParser.parseInputStream(toInputStream(input));
+    HttpRequest request = RequestParser.parse(toInputStream(input));
     assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("GET", request.getMethod());
     assertEquals("/page.html", request.getPath());
@@ -51,7 +49,7 @@ public class RequestParserTest {
     String input = "POST /page HTTP/1.0\r\n"
         + "\r\nHello World";
 
-    HttpRequest request = requestParser.parseInputStream(toInputStream(input));
+    HttpRequest request = RequestParser.parse(toInputStream(input));
     assertEquals("HTTP/1.0", request.getHttpVersion());
     assertEquals("POST", request.getMethod());
     assertEquals("/page", request.getPath());
@@ -71,7 +69,7 @@ public class RequestParserTest {
 
     for (String input: inputs) {
       Exception exception =
-          assertThrows(Exception.class, () -> requestParser.parseInputStream(toInputStream(input)));
+          assertThrows(Exception.class, () -> RequestParser.parse(toInputStream(input)));
       assertTrue(exception.getClass() == RequestParsingException.class || exception.getClass() == EOFException.class);
     }
   }

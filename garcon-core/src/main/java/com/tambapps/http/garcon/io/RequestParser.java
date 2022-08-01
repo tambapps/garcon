@@ -18,12 +18,7 @@ import java.util.Map;
 @AllArgsConstructor
 public class RequestParser {
 
-  // TODO make max request size parameter
   public static HttpRequest parse(InputStream is) throws IOException {
-    return new RequestParser().parseInputStream(is);
-  }
-
-  public HttpRequest parseInputStream(InputStream is) throws IOException {
     String[] firstFields = readLine(is).split("\\s");
     if (firstFields.length != 3) {
       throw new RequestParsingException("Request command is invalid");
@@ -51,7 +46,7 @@ public class RequestParser {
     return new HttpRequest(method, path, queryParams, httpVersion, new ImmutableHeaders(headers), body);
   }
 
-  private String readLine(InputStream in) throws IOException {
+  private static String readLine(InputStream in) throws IOException {
     // according to HTTP spec, separator should always be '\r\n': https://www.rfc-editor.org/rfc/rfc2616#section-2.2
     ByteArrayOutputStream bos = new ByteArrayOutputStream();
     int lastChar1 = in.read();

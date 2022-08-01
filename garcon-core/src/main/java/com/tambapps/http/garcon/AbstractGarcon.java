@@ -36,6 +36,9 @@ abstract class AbstractGarcon {
   @Getter
   @Setter
   private int nbThreads = 4;
+  @Getter
+  @Setter
+  private Long maxRequestBytes = null;
 
   abstract Runnable newExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections);
 

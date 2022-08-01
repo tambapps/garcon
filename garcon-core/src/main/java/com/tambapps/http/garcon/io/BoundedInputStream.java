@@ -32,6 +32,9 @@ public class BoundedInputStream extends InputStream {
     /** the number of bytes already returned */
     private long pos;
 
+    /** the number of bytes read */
+    private long bytesRead;
+
     /** the marked position */
     private long mark = EOF;
 
@@ -130,6 +133,7 @@ public class BoundedInputStream extends InputStream {
         }
         final int result = in.read();
         pos++;
+        bytesRead++;
         return result;
     }
 
@@ -161,6 +165,7 @@ public class BoundedInputStream extends InputStream {
         }
         final long maxRead = max >= 0 ? Math.min(len, max - pos) : len;
         final int bytesRead = in.read(b, off, (int) maxRead);
+        this.bytesRead += bytesRead;
 
         if (bytesRead == EOF) {
             return EOF;
@@ -204,6 +209,7 @@ public class BoundedInputStream extends InputStream {
         final long toSkip = max >= 0 ? Math.min(n, max - pos) : n;
         final long skippedBytes = in.skip(toSkip);
         pos += skippedBytes;
+        bytesRead += skippedBytes;
         return skippedBytes;
     }
 
@@ -214,5 +220,9 @@ public class BoundedInputStream extends InputStream {
     @Override
     public String toString() {
         return in.toString();
+    }
+
+    public long getBytesRead() {
+        return bytesRead;
     }
 }

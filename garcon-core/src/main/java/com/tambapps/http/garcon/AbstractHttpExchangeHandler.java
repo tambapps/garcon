@@ -1,6 +1,8 @@
 package com.tambapps.http.garcon;
 
 import com.tambapps.http.garcon.exception.RequestParsingException;
+import com.tambapps.http.garcon.exception.StreamTooLongException;
+import com.tambapps.http.garcon.io.LimitedInputStream;
 import com.tambapps.http.garcon.io.RequestParser;
 import com.tambapps.http.garcon.util.IoUtils;
 import lombok.AllArgsConstructor;
@@ -30,17 +32,26 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
   @Override
   public void run() {
     try {
-      InputStream inputStream = socket.getInputStream();
+      InputStream inputStream = garcon.getMaxRequestBytes() != null
+          ? new LimitedInputStream(socket.getInputStream(), garcon.getMaxRequestBytes())
+          : socket.getInputStream();
       OutputStream outputStream = socket.getOutputStream();
       while (garcon.isRunning()) {
         HttpRequest request = null;
         HttpResponse response;
+        if (inputStream instanceof LimitedInputStream) {
+          ((LimitedInputStream) inputStream).resetBytesRead();
+        }
         try {
           request = RequestParser.parse(inputStream);
           response = processExchange(request);
         } catch (RequestParsingException e) {
           response = new HttpResponse();
           response.setStatusCode(HttpStatus.BAD_REQUEST);
+          response.getHeaders().putConnectionHeader(CONNECTION_CLOSE);
+        } catch (StreamTooLongException e) {
+          response = new HttpResponse();
+          response.setStatusCode(HttpStatus.REQUEST_ENTITY_TOO_LARGE);
           response.getHeaders().putConnectionHeader(CONNECTION_CLOSE);
         }
         addDefaultHeaders(request, response);
