@@ -39,7 +39,7 @@ class GarconTest {
   @Test
   void test() {
     garcon.serveAsync {
-      get '/hello', {
+      get 'hello', {
         return 'Hello World'
       }
     }

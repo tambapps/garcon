@@ -17,7 +17,7 @@ class EndpointsHandler {
 
   EndpointDefinition getMatchingEndpointDefinition(String p) {
     def path = Paths.get(p)
-    return endpointDefinitions.find { Paths.get(it.path) == path }
+    return endpointDefinitions.find { it.matches(path) }
   }
 
 }
