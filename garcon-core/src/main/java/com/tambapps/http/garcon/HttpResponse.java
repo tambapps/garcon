@@ -12,7 +12,7 @@ import java.io.PrintWriter;
 public class HttpResponse {
 
   final String httpVersion = "HTTP/1.1";
-  HttpStatusCode statusCode;
+  HttpStatusCode statusCode = HttpStatus.OK;
   Headers headers = new Headers();
 
   // body can be a byte array, a string, or an input stream
