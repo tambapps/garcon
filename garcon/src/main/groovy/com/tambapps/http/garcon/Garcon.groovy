@@ -11,14 +11,14 @@ class Garcon extends AbstractGarcon {
 
   Garcon(InetAddress address, int port) {
     super()
-    this.address = address
-    this.port = port
+    super.setAddress(address)
+    super.setPort(port)
   }
   Garcon(InetAddress address, int port, int backlog) {
     super()
-    this.address = address
-    this.port = port
-    this.backlog = backlog
+    super.setAddress(address)
+    super.setPort(port)
+    super.setBacklog(backlog)
   }
 
   @PackageScope
