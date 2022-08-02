@@ -25,16 +25,12 @@ abstract class AbstractGarcon {
   private ExecutorService requestsExecutorService;
 
   @Getter
-  @Setter
   private InetAddress address;
   @Getter
-  @Setter
   private Integer port;
   @Getter
-  @Setter
   private Integer backlog;
   @Getter
-  @Setter
   private int nbThreads = 4;
   @Getter
   @Setter
@@ -123,5 +119,31 @@ abstract class AbstractGarcon {
       IoUtils.closeQuietly(connection);
     }
     connections.clear();
+  }
+
+  public void setAddress(InetAddress address) {
+    checkRunning("Cannot modify address while running");
+    this.address = address;
+  }
+
+  public void setBacklog(Integer backlog) {
+    checkRunning("Cannot modify backlog while running");
+    this.backlog = backlog;
+  }
+
+  public void setPort(Integer port) {
+    checkRunning("Cannot modify port while running");
+    this.port = port;
+  }
+
+  public void setNbThreads(int nbThreads) {
+    checkRunning("Cannot modify nbThreads while running");
+    this.nbThreads = nbThreads;
+  }
+
+  private void checkRunning(String errorMessage) {
+    if (isRunning()) {
+      throw new IllegalStateException(errorMessage);
+    }
   }
 }
