@@ -40,7 +40,10 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
         HttpRequest request = null;
         HttpResponse response;
         if (inputStream instanceof LimitedInputStream) {
-          ((LimitedInputStream) inputStream).resetBytesRead();
+          LimitedInputStream limitedInputStream = (LimitedInputStream) inputStream;
+          limitedInputStream.resetBytesRead();
+          // in case it has been modified since
+          limitedInputStream.setMaxBytes(garcon.getMaxRequestBytes());
         }
         try {
           request = RequestParser.parse(inputStream);

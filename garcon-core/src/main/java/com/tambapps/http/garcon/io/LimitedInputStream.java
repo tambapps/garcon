@@ -1,7 +1,8 @@
 package com.tambapps.http.garcon.io;
 
 import com.tambapps.http.garcon.exception.StreamTooLongException;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -10,13 +11,19 @@ import java.io.InputStream;
 /**
  * InputStream that throws an exception if the number of bytes read exceed a provided length
  */
-@RequiredArgsConstructor
 public class LimitedInputStream extends InputStream {
 
+  private final InputStream inputStream;
+  @Setter
+  @Getter
+  private Long maxBytes;
   private long bytesRead = 0;
 
-  private final InputStream inputStream;
-  private final long maxBytes;
+  public LimitedInputStream(InputStream inputStream, long maxBytes) {
+    this.inputStream = inputStream;
+    this.maxBytes = maxBytes;
+  }
+
 
 
   @Override
@@ -52,7 +59,7 @@ public class LimitedInputStream extends InputStream {
   }
 
   private void checkBytesRead() throws IOException {
-    if (bytesRead > maxBytes) {
+    if (maxBytes != null && bytesRead > maxBytes) {
       resetBytesRead();
       throw new StreamTooLongException();
     }
