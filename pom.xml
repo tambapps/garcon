@@ -122,6 +122,23 @@
             </execution>
           </executions>
         </plugin>
+        <plugin>
+          <groupId>org.apache.maven.plugins</groupId>
+          <artifactId>maven-jar-plugin</artifactId>
+          <version>3.2.2</version>
+          <configuration>
+            <archive>
+              <manifest>
+                <packageName>com.tambapps.http.garcon</packageName>
+              </manifest>
+              <manifestEntries>
+                <Built-By>Tambapps</Built-By>
+                <Bundle-Name>${project.name}</Bundle-Name>
+                <Bundle-Version>${project.version}</Bundle-Version>
+              </manifestEntries>
+            </archive>
+          </configuration>
+        </plugin>
 
       </plugins>
     </pluginManagement>
