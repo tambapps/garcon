@@ -29,6 +29,12 @@
         <version>3.0.11</version>
         <type>pom</type>
         <scope>provided</scope>
+        <exclusions>
+          <exclusion>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+          </exclusion>
+        </exclusions>
       </dependency>
       <dependency>
         <groupId>com.tambapps.http</groupId>
