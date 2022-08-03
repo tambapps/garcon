@@ -38,18 +38,21 @@ class Garcon extends AbstractGarcon {
   Closure onConnectionError
   Closure onConnectionUnexpectedError
 
-  void define(@DelegatesTo(EndpointsHandler) Closure closure) {
+  Garcon define(@DelegatesTo(EndpointDefiner) Closure closure) {
     endpointsHandler.define(this, closure)
+    return this
   }
 
-  void serve(@DelegatesTo(EndpointDefiner) Closure closure) {
+  Garcon serve(@DelegatesTo(EndpointDefiner) Closure closure) {
     define(closure)
     start()
+    return this
   }
 
-  void serveAsync(@DelegatesTo(EndpointDefiner) Closure closure) {
+  Garcon serveAsync(@DelegatesTo(EndpointDefiner) Closure closure) {
     define(closure)
     startAsync()
+    return this
   }
 
   @Override
