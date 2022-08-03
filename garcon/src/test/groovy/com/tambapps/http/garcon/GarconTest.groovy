@@ -136,6 +136,8 @@ class GarconTest {
     garcon.serveAsync {
       post '/path', accept: ContentType.JSON, {
         parsedRequestBody
+        // get it a second time, shouldn't throw any exception
+        parsedRequestBody
         return [hello: 'world']
       }
       post '/path2', {

@@ -15,6 +15,8 @@ class HttpExchangeContext {
   private final ContentTypeMap<Closure<?>> composers
   private final ContentTypeMap<Closure<?>> parsers
   final ContentType accept
+  private boolean hasParsedRequestBody
+  private Object parsedBody
 
   HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers,
                       ContentTypeMap<Closure<?>> parsers, ContentType accept) {
@@ -37,16 +39,22 @@ class HttpExchangeContext {
   }
 
   def getParsedRequestBody(ContentType accept) {
-    if (accept == null) {
-      return request.requestBody
-    } else {
-      def parser = parsers[accept]
-      if (parser) {
-        return parser.call(request.requestBody)
+    if (!hasParsedRequestBody) {
+      def b
+      if (accept == null) {
+        b = request.requestBody
       } else {
-        return request.requestBody
+        def parser = parsers[accept]
+        if (parser) {
+          b = parser.call(request.requestBody)
+        } else {
+          b = request.requestBody
+        }
       }
+      this.@parsedBody = b
+      hasParsedRequestBody = true
     }
+    return this.@parsedBody
   }
 
   // called when method is not found
