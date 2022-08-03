@@ -24,7 +24,7 @@ public class HttpResponse {
   public boolean is2xxSuccessful() {
     return statusCode.getValue() >= 200 && statusCode.getValue() < 300;
   }
-  void setBody(Object body) {
+  public void setBody(Object body) {
     if (body == null) {
       return;
     }
@@ -33,11 +33,11 @@ public class HttpResponse {
     }
     this.body = body;
   }
-  boolean isIndefiniteLength() {
+  public boolean isIndefiniteLength() {
     return getContentLength() == null;
   }
 
-  Long getContentLength() {
+  public Long getContentLength() {
     if (body == null) {
       return 0L;
     } else if (body instanceof byte[]) {
@@ -51,7 +51,7 @@ public class HttpResponse {
     }
   }
 
-  void writeInto(OutputStream os) throws IOException {
+  public void writeInto(OutputStream os) throws IOException {
     PrintWriter writer = new PrintWriter(os);
     writer.format("%s %d %s", httpVersion, statusCode.getValue(), statusCode.getMessage()).println();
     headers.forEach((name, value) -> writer.println(name + ": " + value));
