@@ -9,6 +9,10 @@ class Garcon extends AbstractGarcon {
 
   Garcon() {}
 
+  Garcon(String address, int port) {
+    this(InetAddress.getByName(address), port)
+  }
+
   Garcon(InetAddress address, int port) {
     super()
     super.setAddress(address)

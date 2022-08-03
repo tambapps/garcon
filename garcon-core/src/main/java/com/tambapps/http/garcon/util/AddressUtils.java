@@ -1,9 +1,10 @@
 package com.tambapps.http.garcon.util;
 
+import lombok.SneakyThrows;
+
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -77,9 +78,10 @@ public class AddressUtils {
     return isInRange(address, "172.16.0.0", "172.31.255.255");
   }
 
+  @SneakyThrows
   public static boolean isInRange(InetAddress address, String lowestAddress,
       String highestAddress) {
-    return isInRange(address, getAddress(lowestAddress), getAddress(highestAddress));
+    return isInRange(address, InetAddress.getByName(lowestAddress), InetAddress.getByName(highestAddress));
   }
 
   public static boolean isInRange(InetAddress address, InetAddress lowestAddress,
@@ -98,14 +100,6 @@ public class AddressUtils {
       result |= octet & 0xff;
     }
     return result;
-  }
-
-  public static InetAddress getAddress(String address) {
-    try {
-      return InetAddress.getByName(address);
-    } catch (UnknownHostException e) {
-      throw new IllegalArgumentException("Unknown host", e);
-    }
   }
 
 }

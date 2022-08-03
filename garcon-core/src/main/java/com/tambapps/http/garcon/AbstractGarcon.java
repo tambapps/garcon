@@ -3,6 +3,7 @@ package com.tambapps.http.garcon;
 import com.tambapps.http.garcon.util.IoUtils;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.SneakyThrows;
 
 import java.io.Closeable;
 import java.io.IOException;
@@ -119,6 +120,11 @@ abstract class AbstractGarcon {
       IoUtils.closeQuietly(connection);
     }
     connections.clear();
+  }
+
+  @SneakyThrows
+  public void setAddress(String address) {
+    setAddress(InetAddress.getByName(address));
   }
 
   public void setAddress(InetAddress address) {
