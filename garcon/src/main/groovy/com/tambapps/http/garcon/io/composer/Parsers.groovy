@@ -3,8 +3,9 @@ package com.tambapps.http.garcon.io.composer
 import com.tambapps.http.garcon.ContentType
 import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeMap
-import groovy.json.JsonSlurper
-import groovy.xml.XmlSlurper
+import org.codehaus.groovy.runtime.MethodClosure
+
+import static com.tambapps.http.garcon.util.ClassUtils.doIfClassExists
 
 class Parsers {
 
@@ -13,8 +14,12 @@ class Parsers {
   static ContentTypeMap<Closure<?>> getMap() {
     ContentTypeMap<Closure<?>> map = new ParsingMap()
 
-    map[ContentType.JSON] = new JsonSlurper().&parse
-    map[ContentType.XML] = new XmlSlurper().&parse
+    doIfClassExists('groovy.json.JsonSlurper') { Class c ->
+      map[ContentType.JSON] = new MethodClosure(c.getDeclaredConstructor().newInstance(), 'parse')
+    }
+    doIfClassExists('groovy.xml.XmlSlurper') { Class c ->
+      map[ContentType.XML] = new MethodClosure(c.getDeclaredConstructor().newInstance(), 'parse')
+    }
     map.setDefaultValue(Parsers.&parseStringResponseBody)
     map[ContentType.HTML] = map.getDefaultValue()
     map[ContentType.TEXT] = map.getDefaultValue()

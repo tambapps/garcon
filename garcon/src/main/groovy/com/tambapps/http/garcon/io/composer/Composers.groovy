@@ -3,8 +3,9 @@ package com.tambapps.http.garcon.io.composer
 import com.tambapps.http.garcon.ContentType
 import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeMap
-import groovy.json.JsonOutput
-import groovy.xml.XmlUtil
+import org.codehaus.groovy.runtime.MethodClosure
+
+import static com.tambapps.http.garcon.util.ClassUtils.doIfClassExists
 
 /**
  * Utility class holding several common composers.
@@ -20,8 +21,13 @@ final class Composers {
 
   static ContentTypeMap<Closure<?>> getMap() {
     ContentTypeMap<Closure<?>> map = new ComposingMap()
-    map.put(ContentType.JSON, JsonOutput.&toJson)
-    map.put(ContentType.XML, Composers.&composeXmlBody)
+    doIfClassExists('groovy.json.JsonOutput') { Class c ->
+      map[ContentType.JSON] = new MethodClosure(c, 'toJson')
+    }
+    doIfClassExists('groovy.xml.XmlSlurper') { Class c ->
+      map[ContentType.XML] = Composers.&composeXmlBody
+    }
+
     map.put(ContentType.TEXT, Composers.&composeStringBody)
     map.put(ContentType.HTML, Composers.&composeStringBody)
     map.put(ContentType.BINARY, Composers.&composeBytesBody)
@@ -31,16 +37,12 @@ final class Composers {
     return map
   }
 
-  static String composeJsonBody(Object body) {
-    return JsonOutput.toJson(body)
-  }
-
   static String composeXmlBody(Object body) {
     String xmlData
     if (body instanceof CharSequence) {
       xmlData = body.toString()
     } else if (body instanceof Node) {
-      xmlData = XmlUtil.serialize((Node) body)
+      xmlData = groovy.xml.XmlUtil.serialize((Node) body)
     } else {
       throw new IllegalArgumentException("body must be a String or a groovy.util.Node to be serialized to XML")
     }
