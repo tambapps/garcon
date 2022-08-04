@@ -37,6 +37,7 @@ class Garcon extends AbstractGarcon {
   ContentType contentType
   Closure onClosed
   Closure onError
+  Closure onStarted
   Closure onConnectionClosed
   Closure onConnectionError
   Closure onConnectionUnexpectedError
@@ -61,6 +62,11 @@ class Garcon extends AbstractGarcon {
   @Override
   Runnable newExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections) {
     return new HttpExchangeHandler(socket, this, connections)
+  }
+
+  @Override
+  protected void onStarted(InetAddress address, int port) {
+    this.onStarted?.call(address, port)
   }
 
   @PackageScope

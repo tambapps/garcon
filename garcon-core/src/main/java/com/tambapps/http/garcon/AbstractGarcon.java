@@ -51,6 +51,7 @@ abstract class AbstractGarcon {
     requestsExecutorService = Executors.newFixedThreadPool(nbThreads);
     try (ServerSocket serverSocket = newServerSocket()) {
       connections.add(serverSocket);
+      onStarted(serverSocket.getInetAddress(), serverSocket.getLocalPort());
       while (running.get()) {
         Socket socket = serverSocket.accept();
         connections.add(socket);
@@ -146,6 +147,8 @@ abstract class AbstractGarcon {
     checkRunning("Cannot modify nbThreads while running");
     this.nbThreads = nbThreads;
   }
+
+  protected void onStarted(InetAddress address, int port) {}
 
   private void checkRunning(String errorMessage) {
     if (isRunning()) {
