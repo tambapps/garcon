@@ -3,8 +3,10 @@ package com.tambapps.http.garcon
 import com.tambapps.http.garcon.io.composer.Composers
 import com.tambapps.http.garcon.io.composer.Parsers
 import com.tambapps.http.garcon.util.ContentTypeMap
+import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
+@CompileStatic
 class Garcon extends AbstractGarcon {
 
   Garcon() {}
@@ -18,6 +20,7 @@ class Garcon extends AbstractGarcon {
     super.setAddress(address)
     super.setPort(port)
   }
+
   Garcon(InetAddress address, int port, int backlog) {
     super()
     super.setAddress(address)
