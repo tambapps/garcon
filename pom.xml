@@ -12,7 +12,7 @@
   <modules>
     <module>garcon-core</module>
     <module>garcon</module>
-    <module>garcon-java</module>
+    <module>garcon-android</module>
   </modules>
 
   <dependencyManagement>
@@ -35,6 +35,12 @@
             <artifactId>junit</artifactId>
           </exclusion>
         </exclusions>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.groovy</groupId>
+        <artifactId>groovy-all</artifactId>
+        <version>4.0.4</version>
+        <type>pom</type>
       </dependency>
       <dependency>
         <groupId>com.tambapps.http</groupId>
@@ -75,14 +81,6 @@
               </goals>
             </execution>
           </executions>
-          <dependencies>
-            <dependency>
-              <groupId>org.codehaus.groovy</groupId>
-              <artifactId>groovy</artifactId>
-              <version>3.0.11</version>
-              <scope>runtime</scope>
-            </dependency>
-          </dependencies>
           <configuration>
             <testSources>
               <testSource>
