@@ -18,7 +18,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-abstract class AbstractGarcon {
+public abstract class AbstractGarcon {
 
   private ExecutorService executorService;
   private final AtomicBoolean running = new AtomicBoolean(false);
@@ -38,6 +38,9 @@ abstract class AbstractGarcon {
   @Getter
   @Setter
   private Long maxRequestBytes = null;
+
+  // package private constructor
+  AbstractGarcon() {}
 
   abstract Runnable newExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections);
 
