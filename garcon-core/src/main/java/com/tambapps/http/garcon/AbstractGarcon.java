@@ -32,7 +32,9 @@ abstract class AbstractGarcon {
   @Getter
   private Integer backlog;
   @Getter
-  private int nbThreads = 4;
+  private int nbThreads = 200;
+  @Getter
+  private int requestReadTimeoutMillis = 4000;
   @Getter
   @Setter
   private Long maxRequestBytes = null;
@@ -54,6 +56,7 @@ abstract class AbstractGarcon {
       onStarted(serverSocket.getInetAddress(), serverSocket.getLocalPort());
       while (running.get()) {
         Socket socket = serverSocket.accept();
+        socket.setSoTimeout(requestReadTimeoutMillis);
         connections.add(socket);
         requestsExecutorService.submit(newExchangeHandler(socket, this, connections));
       }
@@ -146,6 +149,11 @@ abstract class AbstractGarcon {
   public void setNbThreads(int nbThreads) {
     checkRunning("Cannot modify nbThreads while running");
     this.nbThreads = nbThreads;
+  }
+
+  public void setRequestReadTimeoutMillis(int requestReadTimeoutMillis) {
+    checkRunning("Cannot modify requestReadTimeoutMillis while running");
+    this.requestReadTimeoutMillis = requestReadTimeoutMillis;
   }
 
   protected void onStarted(InetAddress address, int port) {}
