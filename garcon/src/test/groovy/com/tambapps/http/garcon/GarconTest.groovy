@@ -132,6 +132,17 @@ class GarconTest {
   }
 
   @Test
+  void testAccept() {
+    garcon.serveAsync {
+      post '/path', accept: ContentType.JSON, {
+        parsedRequestBody
+        return 'yes'
+      }
+    }
+    assertEquals('yes', poet.post('/path', body: [hello: 'world'], contentType: com.tambapps.http.hyperpoet.ContentType.JSON))
+  }
+
+  @Test
   void testParseBadJson() {
     garcon.serveAsync {
       post '/path', accept: ContentType.JSON, {
