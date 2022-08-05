@@ -6,9 +6,10 @@ class EndpointsHandler {
 
   private final List<EndpointDefinition> endpointDefinitions = []
 
-  void define(Garcon garcon, @DelegatesTo(EndpointDefiner) Closure closure) {
-    closure.delegate = new EndpointDefiner(garcon, endpointDefinitions)
-    closure.resolveStrategy = Closure.DELEGATE_FIRST
+  void define(AbstractGarcon garcon, @DelegatesTo(EndpointDefiner) Closure closure) {
+    // using setter to avoid having callsite on compiled code
+    closure.setDelegate(new EndpointDefiner(garcon, endpointDefinitions))
+    closure.setResolveStrategy(Closure.DELEGATE_FIRST)
     closure.call()
     if (endpointDefinitions.unique { it.method + it.path }.size() != endpointDefinitions.size()) {
       throw new IllegalStateException('There are some duplicate endpoints')

@@ -72,12 +72,14 @@
           <executions>
             <execution>
               <goals>
+                <goal>addSources</goal>
+                <goal>generateStubs</goal>
                 <goal>compile</goal>
+                <goal>removeStubs</goal>
                 <goal>addTestSources</goal>
                 <goal>generateTestStubs</goal>
                 <goal>compileTests</goal>
                 <goal>removeTestStubs</goal>
-                <goal>removeStubs</goal>
               </goals>
             </execution>
           </executions>

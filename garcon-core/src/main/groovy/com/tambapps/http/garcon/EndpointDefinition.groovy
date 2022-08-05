@@ -24,6 +24,6 @@ class EndpointDefinition {
   }
 
   boolean matches(Path otherPath) {
-    return Paths.get(path.startsWith('/') ? path : ("/$path")) == otherPath
+    return Paths.get(path.startsWith('/') ? path : ("/$path".toString())) == otherPath
   }
 }

@@ -23,7 +23,7 @@
       <scope>test</scope>
     </dependency>
     <dependency>
-      <groupId>org.apache.groovy</groupId>
+      <groupId>org.codehaus.groovy</groupId>
       <artifactId>groovy-all</artifactId>
       <type>pom</type>
       <scope>provided</scope>
@@ -43,6 +43,13 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-source-plugin</artifactId>
+      </plugin>
+      <plugin>
+        <groupId>org.codehaus.gmavenplus</groupId>
+        <artifactId>gmavenplus-plugin</artifactId>
+        <configuration>
+          <configScript>${project.basedir}/compiler-config.groovy</configScript>
+        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
