@@ -26,7 +26,7 @@ class AndroidGarcon extends AbstractGarcon {
   AndroidGarcon() {}
 
   AndroidGarcon(String address, int port) {
-    this(InetAddress.getByName(address), port)
+    this((InetAddress) InetAddress.getByName(address), port)
   }
 
   AndroidGarcon(InetAddress address, int port) {
