@@ -76,23 +76,8 @@ public class RequestParser {
       return pathWithParams;
     }
     String paramsString = pathWithParams.substring(start + 1);
-    String[] params = paramsString.split("&");
-    for (String param : params) {
-      String[] fields = param.split("=");
-      if (fields.length == 2) {
-        queryParams.put(urlDecode(fields[0]), urlDecode(fields[1]));
-      } else if (fields.length == 1) {
-        queryParams.put(urlDecode(fields[0]), String.valueOf(true));
-      }
-    }
+    QueryParamParser.parseQueryParams(paramsString, queryParams);
     return pathWithParams.substring(0, start);
   }
 
-  private static String urlDecode(String s) throws IOException {
-    try {
-      return URLDecoder.decode(s, "UTF-8");
-    } catch (UnsupportedEncodingException e) {
-      throw new RequestParsingException("Couldn't URL decode", e);
-    }
-  }
 }
