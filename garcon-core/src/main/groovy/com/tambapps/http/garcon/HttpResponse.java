@@ -60,7 +60,7 @@ public class HttpResponse {
     writeBody(os);
   }
 
-  private void writeBody(OutputStream os) throws IOException {
+  public void writeBody(OutputStream os) throws IOException {
     if (body == null) {
       return;
     }

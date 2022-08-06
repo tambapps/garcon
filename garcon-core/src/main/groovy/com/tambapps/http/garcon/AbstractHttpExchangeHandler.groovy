@@ -4,32 +4,31 @@ import com.tambapps.http.garcon.exception.RequestParsingException;
 import com.tambapps.http.garcon.exception.StreamTooLongException;
 import com.tambapps.http.garcon.io.LimitedInputStream;
 import com.tambapps.http.garcon.io.RequestParser;
-import com.tambapps.http.garcon.util.IoUtils;
-import lombok.AllArgsConstructor;
+import com.tambapps.http.garcon.util.IoUtils
+import groovy.transform.PackageScope;
 
 import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 
-import java.io.Closeable;
-import java.io.EOFException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
-import java.util.Collection;
-
+@PackageScope
 // TODO remove from core and/or merge it with HttpExchangeHandler
-@AllArgsConstructor
-abstract class AbstractHttpExchangeHandler implements Runnable {
+abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler, Runnable {
 
   private final Socket socket;
   protected final AbstractGarcon garcon;
   private final Collection<Closeable> connections;
 
+  AbstractHttpExchangeHandler(Socket socket, AbstractGarcon garcon, Collection<Closeable> connections) {
+    this.socket = socket
+    this.garcon = garcon
+    this.connections = connections
+  }
+
+  @PackageScope
   abstract void onConnectionClosed(IOException e);
+  @PackageScope
   abstract void onConnectionError(IOException e);
+  @PackageScope
   abstract void onUnexpectedError(Exception e);
   @Override
   public void run() {
@@ -78,25 +77,6 @@ abstract class AbstractHttpExchangeHandler implements Runnable {
       // closing socket will also close InputStream and OutputStream
       IoUtils.closeQuietly(socket);
       connections.remove(socket);
-    }
-  }
-
-  private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
-    Headers responseHeaders = response.getHeaders();
-    responseHeaders.put("Server", "Garcon (Tambapps)");
-    Long contentLength = response.getContentLength();
-    if (contentLength != null) {
-      responseHeaders.put("Content-Length", contentLength.toString());
-    }
-    String connectionHeader = responseHeaders.getConnectionHeader();
-    if (connectionHeader == null) {
-      // keep connection alive if request body and response body are with definite length AND client want so
-      responseHeaders.putConnectionHeader(response.is2xxSuccessful()
-          && contentLength != null
-          && request != null
-          && CONNECTION_KEEP_ALIVE.equals(request.getHeaders().getConnectionHeader())
-          && request.getHeaders().getContentLength() != null
-          ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
     }
   }
 

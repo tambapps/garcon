@@ -50,7 +50,7 @@ class AndroidGarcon extends AbstractGarcon {
         Socket socket = serverSocket.accept()
         socket.setSoTimeout(requestReadTimeoutMillis)
         connections.add(socket)
-        requestsExecutorService.submit(new HttpExchangeHandler(socket, this, endpointsHandler, connections))
+        requestsExecutorService.submit(new HttpExchangeHandlerRunnable(socket, this, endpointsHandler, connections))
       }
     } catch (SocketException e) {
       // the socket was probably closed, do nothing
