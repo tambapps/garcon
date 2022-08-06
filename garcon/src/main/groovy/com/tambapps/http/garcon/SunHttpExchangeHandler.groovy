@@ -3,8 +3,10 @@ package com.tambapps.http.garcon
 import com.sun.net.httpserver.HttpExchange
 import com.sun.net.httpserver.HttpHandler
 import com.tambapps.http.garcon.io.QueryParamParser
+import groovy.transform.CompileStatic
 import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
+@CompileStatic
 class SunHttpExchangeHandler implements HttpHandler, HttpExchangeHandler {
 
   AbstractGarcon garcon

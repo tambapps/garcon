@@ -1,6 +1,5 @@
 package com.tambapps.http.garcon
 
-import com.sun.net.httpserver.HttpContext
 import com.sun.net.httpserver.HttpServer
 import groovy.transform.CompileStatic
 
