@@ -28,9 +28,7 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
       }
     }
 
-    HttpResponse response = new HttpResponse().tap {
-      statusCode = HttpStatus.OK
-    }
+    HttpResponse response = new HttpResponse()
 
     endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers, garcon.parsers, endpointDefinition.accept ?: garcon.accept))
     try {

@@ -1,5 +1,8 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.io.Composers;
+import com.tambapps.http.garcon.io.Parsers;
+import com.tambapps.http.garcon.util.ContentTypeMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import lombok.Getter;
@@ -52,6 +55,9 @@ abstract class AbstractGarcon {
   @Setter
   Closure<?> onConnectionUnexpectedError;
 
+
+  public final ContentTypeMap<Closure<?>> composers = Composers.getMap();
+  public final ContentTypeMap<Closure<?>> parsers = Parsers.getMap();
   private final EndpointsHandler endpointsHandler = new EndpointsHandler();
   private ExecutorService executorService;
 
@@ -62,6 +68,9 @@ abstract class AbstractGarcon {
 
 
   public void start() {
+    if (address == null || port == null) {
+      throw new IllegalStateException("Cannot start server without address and port");
+    }
     doStart(endpointsHandler);
   }
 

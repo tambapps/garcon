@@ -21,4 +21,7 @@ class EndpointsHandler {
     return endpointDefinitions.find { it.matches(path) }
   }
 
+  Map<String, List<EndpointDefinition>> getDefinitionsPerPath() {
+    return endpointDefinitions.groupBy { it.path }
+  }
 }

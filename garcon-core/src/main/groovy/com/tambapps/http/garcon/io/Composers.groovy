@@ -1,4 +1,4 @@
-package com.tambapps.http.garcon.io.composer
+package com.tambapps.http.garcon.io
 
 import com.tambapps.http.garcon.ContentType
 import com.tambapps.http.garcon.exception.ParsingException

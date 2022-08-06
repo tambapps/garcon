@@ -1,8 +1,5 @@
 package com.tambapps.http.garcon
 
-import com.tambapps.http.garcon.io.composer.Composers
-import com.tambapps.http.garcon.io.composer.Parsers
-import com.tambapps.http.garcon.util.ContentTypeMap
 import com.tambapps.http.garcon.util.IoUtils
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
@@ -14,9 +11,6 @@ import java.util.concurrent.atomic.AtomicBoolean
 
 @CompileStatic
 class AndroidGarcon extends AbstractGarcon {
-
-  final ContentTypeMap<Closure<?>> composers = Composers.map
-  final ContentTypeMap<Closure<?>> parsers = Parsers.map
 
   private final AtomicBoolean running = new AtomicBoolean(false)
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
