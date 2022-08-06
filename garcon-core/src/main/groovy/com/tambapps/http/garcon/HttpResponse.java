@@ -43,7 +43,7 @@ public class HttpResponse {
     } else if (body instanceof byte[]) {
       return (long) ((byte[]) body).length;
     } else if (body instanceof String) {
-      return (long) ((String) body).length();
+      return (long) ((String) body).getBytes().length;
     } else if (body instanceof InputStream) {
       return null;
     } else {
