@@ -13,7 +13,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 @CompileStatic
-class Garcon extends AbstractGarcon {
+class AndroidGarcon extends AbstractGarcon {
 
   final ContentTypeMap<Closure<?>> composers = Composers.map
   final ContentTypeMap<Closure<?>> parsers = Parsers.map
@@ -26,19 +26,19 @@ class Garcon extends AbstractGarcon {
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
 
-  Garcon() {}
+  AndroidGarcon() {}
 
-  Garcon(String address, int port) {
+  AndroidGarcon(String address, int port) {
     this(InetAddress.getByName(address), port)
   }
 
-  Garcon(InetAddress address, int port) {
+  AndroidGarcon(InetAddress address, int port) {
     super()
     super.setAddress(address)
     super.setPort(port)
   }
 
-  Garcon(InetAddress address, int port, int backlog) {
+  AndroidGarcon(InetAddress address, int port, int backlog) {
     super()
     super.setAddress(address)
     super.setPort(port)
@@ -70,18 +70,18 @@ class Garcon extends AbstractGarcon {
     running.set(false)
   }
 
-  Garcon define(@DelegatesTo(EndpointDefiner) Closure closure) {
+  AndroidGarcon define(@DelegatesTo(EndpointDefiner) Closure closure) {
     endpointsHandler.define(this, closure)
     return this
   }
 
-  Garcon serve(@DelegatesTo(EndpointDefiner) Closure closure) {
+  AndroidGarcon serve(@DelegatesTo(EndpointDefiner) Closure closure) {
     define(closure)
     start()
     return this
   }
 
-  Garcon serveAsync(@DelegatesTo(EndpointDefiner) Closure closure) {
+  AndroidGarcon serveAsync(@DelegatesTo(EndpointDefiner) Closure closure) {
     define(closure)
     startAsync()
     return this

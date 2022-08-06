@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 
-class GarconTest {
+class AndroidGarconTest {
 
   private final HttpPoet poet = new HttpPoet(url: 'http://localhost:8081').tap {
     errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(it)
@@ -22,12 +22,12 @@ class GarconTest {
       }
     }
   }
-  private Garcon garcon
+  private AndroidGarcon garcon
   private boolean firstCall
 
   @BeforeEach
   void init() {
-    garcon = new Garcon(InetAddress.getByName("localhost"), 8081)
+    garcon = new AndroidGarcon(InetAddress.getByName("localhost"), 8081)
     firstCall = true
   }
 

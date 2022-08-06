@@ -6,9 +6,9 @@ import groovy.transform.PackageScope
 @PackageScope
 class HttpExchangeHandler extends AbstractHttpExchangeHandler {
 
-  private final Garcon garcon
+  private final AndroidGarcon garcon
 
-  HttpExchangeHandler(Socket socket, Garcon garcon, Collection<Closeable> connections) {
+  HttpExchangeHandler(Socket socket, AndroidGarcon garcon, Collection<Closeable> connections) {
     super(socket, garcon, connections)
     this.garcon = garcon
   }
