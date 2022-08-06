@@ -7,12 +7,15 @@ import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
+import java.time.Duration
+
 import static org.junit.jupiter.api.Assertions.assertEquals
 
 class AndroidGarconTest {
 
   private final HttpPoet poet = new HttpPoet(url: 'http://localhost:8081').tap {
     errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(it)
+    configureOkHttpClient { it.readTimeout(Duration.ofMillis(10_000))}
     enableHistory(1)
     onPreExecute = {
       // to give time garcon to start
@@ -27,7 +30,11 @@ class AndroidGarconTest {
 
   @BeforeEach
   void init() {
-    garcon = new AndroidGarcon(InetAddress.getByName("localhost"), 8081)
+    garcon = new AndroidGarcon(InetAddress.getByName("localhost"), 8081).tap {
+      onError = { Exception e -> e.printStackTrace() }
+      onConnectionUnexpectedError = { Exception e -> e.printStackTrace() }
+      onConnectionError = { Exception e -> e.printStackTrace() }
+    }
     firstCall = true
   }
 
@@ -146,8 +153,6 @@ class AndroidGarconTest {
   void testParseBadJson() {
     garcon.serveAsync {
       post '/path', accept: ContentType.JSON, {
-        parsedRequestBody
-        // get it a second time, shouldn't throw any exception
         parsedRequestBody
         return [hello: 'world']
       }
