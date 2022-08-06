@@ -84,6 +84,7 @@
             </execution>
           </executions>
           <configuration>
+            <targetBytecode>${maven.compiler.target}</targetBytecode>
             <testSources>
               <testSource>
                 <directory>${project.basedir}/src/test/java</directory>
