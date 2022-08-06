@@ -1,13 +1,14 @@
 package com.tambapps.http.garcon;
 
 import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.net.InetAddress;
 
-public abstract class AbstractGarcon {
+abstract class AbstractGarcon {
 
   @Getter
   private InetAddress address;
@@ -48,10 +49,35 @@ public abstract class AbstractGarcon {
   @Getter
   @Setter
   Closure<?> onConnectionUnexpectedError;
+
+  final EndpointsHandler endpointsHandler = new EndpointsHandler();
+
   // package private constructor
   AbstractGarcon() {}
 
   abstract boolean isRunning();
+
+  abstract void start();
+  abstract void startAsync();
+
+  abstract void stop();
+
+  public AbstractGarcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+    endpointsHandler.define(this, closure);
+    return this;
+  }
+
+  public AbstractGarcon serve(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+    define(closure);
+    start();
+    return this;
+  }
+
+  public AbstractGarcon serveAsync(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+    define(closure);
+    startAsync();
+    return this;
+  }
 
   @SneakyThrows
   public void setAddress(String address) {

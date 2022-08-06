@@ -18,9 +18,6 @@ class AndroidGarcon extends AbstractGarcon {
   final ContentTypeMap<Closure<?>> composers = Composers.map
   final ContentTypeMap<Closure<?>> parsers = Parsers.map
 
-  @PackageScope
-  final EndpointsHandler endpointsHandler = new EndpointsHandler()
-
   private ExecutorService executorService
   private final AtomicBoolean running = new AtomicBoolean(false)
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
@@ -45,6 +42,7 @@ class AndroidGarcon extends AbstractGarcon {
     super.setBacklog(backlog)
   }
 
+  @Override
   void start() {
     if (running.get()) {
       // already running
@@ -59,7 +57,7 @@ class AndroidGarcon extends AbstractGarcon {
         Socket socket = serverSocket.accept()
         socket.setSoTimeout(requestReadTimeoutMillis)
         connections.add(socket)
-        requestsExecutorService.submit(newExchangeHandler(socket))
+        requestsExecutorService.submit(new HttpExchangeHandler(socket, this, connections))
       }
     } catch (SocketException e) {
       // the socket was probably closed, do nothing
@@ -68,27 +66,6 @@ class AndroidGarcon extends AbstractGarcon {
       onServerException(e)
     }
     running.set(false)
-  }
-
-  AndroidGarcon define(@DelegatesTo(EndpointDefiner) Closure closure) {
-    endpointsHandler.define(this, closure)
-    return this
-  }
-
-  AndroidGarcon serve(@DelegatesTo(EndpointDefiner) Closure closure) {
-    define(closure)
-    start()
-    return this
-  }
-
-  AndroidGarcon serveAsync(@DelegatesTo(EndpointDefiner) Closure closure) {
-    define(closure)
-    startAsync()
-    return this
-  }
-
-  Runnable newExchangeHandler(Socket socket) {
-    return new HttpExchangeHandler(socket, this, connections)
   }
 
   protected void onStarted(InetAddress address, int port) {
@@ -119,10 +96,12 @@ class AndroidGarcon extends AbstractGarcon {
     }
   }
 
+  @Override
   boolean isRunning() {
     return running.get()
   }
 
+  @Override
   void startAsync() {
     if (running.get()) {
       // already running
@@ -142,6 +121,7 @@ class AndroidGarcon extends AbstractGarcon {
     }
   }
 
+  @Override
   void stop() {
     running.set(false)
     if (requestsExecutorService != null) {
