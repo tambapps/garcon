@@ -12,18 +12,20 @@ class HttpExchangeContext {
   final HttpResponse response
   @Delegate
   final HttpRequest request
-  private final ContentTypeMap<Closure<?>> composers
-  private final ContentTypeMap<Closure<?>> parsers
+  final ContentTypeMap<Closure<?>> composers
+  final ContentTypeMap<Closure<?>> parsers
+  final ContentType contentType
   final ContentType accept
   private boolean hasParsedRequestBody
   private Object parsedBody
 
   HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers,
-                      ContentTypeMap<Closure<?>> parsers, ContentType accept) {
+                      ContentTypeMap<Closure<?>> parsers, ContentType contentType, ContentType accept) {
     this.request = request
     this.response = response
     this.composers = composers
     this.parsers = parsers
+    this.contentType = contentType
     this.accept = accept
   }
 

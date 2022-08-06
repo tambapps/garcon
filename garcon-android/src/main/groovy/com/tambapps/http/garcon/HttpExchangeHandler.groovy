@@ -1,6 +1,5 @@
 package com.tambapps.http.garcon
 
-import com.tambapps.http.garcon.exception.ParsingException
 import groovy.transform.PackageScope
 
 @PackageScope
@@ -28,27 +27,10 @@ class HttpExchangeHandler extends AbstractHttpExchangeHandler {
       }
     }
 
-    HttpResponse response = new HttpResponse()
-
-    endpointDefinition.rehydrate(new HttpExchangeContext(request, response, garcon.composers, garcon.parsers, endpointDefinition.accept ?: garcon.accept))
     try {
-      Object returnValue = endpointDefinition.call()
-      if (response.body == null && returnValue != null) {
-        ContentType contentType = endpointDefinition.contentType ?: garcon.contentType
-        if (contentType != null) {
-          response.headers.putContentTypeHeader(contentType.headerValue)
-          def composer = garcon.composers[contentType]
-          if (composer) {
-            returnValue = composer.call(returnValue)
-          }
-        }
-        response.body = returnValue
-      }
-      return response
-    } catch (ParsingException e) {
-      return new HttpResponse().tap {
-        statusCode = HttpStatus.BAD_REQUEST
-      }
+      return endpointDefinition.call(new HttpExchangeContext(request, new HttpResponse(), garcon.composers, garcon.parsers,
+              endpointDefinition.contentType ?: garcon.contentType,
+              endpointDefinition.accept ?: garcon.accept))
     } catch (Exception e) {
       onUnexpectedError(e)
       return new HttpResponse().tap {
