@@ -41,7 +41,7 @@ public class ContentTypeMap<T> extends TreeMap<ContentType, T> {
     }
   }
 
-  T getAt(ContentType contentType) {
+  public T getAt(ContentType contentType) {
     if (contentType == null) {
       return super.get(null);
     }
