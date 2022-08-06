@@ -13,7 +13,6 @@ trait HttpExchangeHandler {
       responseHeaders.put("Content-Length", contentLength.toString())
     }
 
-    // TODO do this only for android garcon
     String connectionHeader = responseHeaders.getConnectionHeader()
     if (connectionHeader == null) {
       // keep connection alive if request body and response body are with definite length AND client want so
