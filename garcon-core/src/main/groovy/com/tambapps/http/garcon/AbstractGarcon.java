@@ -7,6 +7,8 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.net.InetAddress;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 abstract class AbstractGarcon {
 
@@ -51,16 +53,42 @@ abstract class AbstractGarcon {
   Closure<?> onConnectionUnexpectedError;
 
   final EndpointsHandler endpointsHandler = new EndpointsHandler();
+  private ExecutorService executorService;
 
   // package private constructor
   AbstractGarcon() {}
 
-  abstract boolean isRunning();
+  public abstract boolean isRunning();
 
-  abstract void start();
-  abstract void startAsync();
+  public abstract void start();
+  public void startAsync() {
+    if (isRunning()) {
+      // already running
+      return;
+    }
+    if (executorService == null) {
+      executorService = Executors.newSingleThreadExecutor();
+    }
+    executorService.submit(() -> {
+      try {
+        start();
+      } catch (Exception e) {
+        // shouldn't happen... but well...
+        e.printStackTrace();
+        doStop();
+      }
+    });
+  }
 
-  abstract void stop();
+  abstract void doStop();
+
+  public void stop() {
+    if (executorService != null) {
+      executorService.shutdown();
+    }
+    executorService = null;
+    doStop();
+  }
 
   public AbstractGarcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
     endpointsHandler.define(this, closure);

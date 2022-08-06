@@ -18,7 +18,6 @@ class AndroidGarcon extends AbstractGarcon {
   final ContentTypeMap<Closure<?>> composers = Composers.map
   final ContentTypeMap<Closure<?>> parsers = Parsers.map
 
-  private ExecutorService executorService
   private final AtomicBoolean running = new AtomicBoolean(false)
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
   private ExecutorService requestsExecutorService
@@ -102,37 +101,13 @@ class AndroidGarcon extends AbstractGarcon {
   }
 
   @Override
-  void startAsync() {
-    if (running.get()) {
-      // already running
-      return
-    }
-    if (executorService == null) {
-      executorService = Executors.newSingleThreadExecutor()
-    }
-    executorService.submit {
-      try {
-        start()
-      } catch (Exception e) {
-        // shouldn't happen... but well...
-        e.printStackTrace()
-        this.@running.set(false)
-      }
-    }
-  }
-
-  @Override
-  void stop() {
+  void doStop() {
     running.set(false)
     if (requestsExecutorService != null) {
       requestsExecutorService.shutdown()
     }
     requestsExecutorService = null
 
-    if (executorService != null) {
-      executorService.shutdown()
-    }
-    executorService = null
     for (Closeable connection : connections) {
       IoUtils.closeQuietly(connection)
     }
