@@ -7,15 +7,17 @@ import groovy.transform.PackageScope
 class HttpExchangeHandler extends AbstractHttpExchangeHandler {
 
   private final AndroidGarcon garcon
+  private final EndpointsHandler endpointsHandler
 
-  HttpExchangeHandler(Socket socket, AndroidGarcon garcon, Collection<Closeable> connections) {
+  HttpExchangeHandler(Socket socket, AndroidGarcon garcon, EndpointsHandler endpointsHandler, Collection<Closeable> connections) {
     super(socket, garcon, connections)
     this.garcon = garcon
+    this.endpointsHandler = endpointsHandler
   }
 
   @Override
   protected HttpResponse processExchange(HttpRequest request) {
-    EndpointDefinition endpointDefinition = garcon.endpointsHandler.getMatchingEndpointDefinition(request.path)
+    EndpointDefinition endpointDefinition = endpointsHandler.getMatchingEndpointDefinition(request.path)
     if (endpointDefinition == null) {
       return new HttpResponse().tap {
         statusCode = HttpStatus.NOT_FOUND

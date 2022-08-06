@@ -52,7 +52,7 @@ abstract class AbstractGarcon {
   @Setter
   Closure<?> onConnectionUnexpectedError;
 
-  final EndpointsHandler endpointsHandler = new EndpointsHandler();
+  private final EndpointsHandler endpointsHandler = new EndpointsHandler();
   private ExecutorService executorService;
 
   // package private constructor
@@ -60,7 +60,13 @@ abstract class AbstractGarcon {
 
   public abstract boolean isRunning();
 
-  public abstract void start();
+
+  public void start() {
+    doStart(endpointsHandler);
+  }
+
+  abstract void doStart(EndpointsHandler endpointsHandler);
+
   public void startAsync() {
     if (isRunning()) {
       // already running

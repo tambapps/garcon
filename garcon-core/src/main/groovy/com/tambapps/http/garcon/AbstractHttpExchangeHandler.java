@@ -20,6 +20,7 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
 
+// TODO remove from core and/or merge it with HttpExchangeHandler
 @AllArgsConstructor
 abstract class AbstractHttpExchangeHandler implements Runnable {
 

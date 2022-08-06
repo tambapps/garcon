@@ -42,7 +42,7 @@ class AndroidGarcon extends AbstractGarcon {
   }
 
   @Override
-  void start() {
+  void doStart(EndpointsHandler endpointsHandler) {
     if (running.get()) {
       // already running
       return
@@ -56,7 +56,7 @@ class AndroidGarcon extends AbstractGarcon {
         Socket socket = serverSocket.accept()
         socket.setSoTimeout(requestReadTimeoutMillis)
         connections.add(socket)
-        requestsExecutorService.submit(new HttpExchangeHandler(socket, this, connections))
+        requestsExecutorService.submit(new HttpExchangeHandler(socket, this, endpointsHandler, connections))
       }
     } catch (SocketException e) {
       // the socket was probably closed, do nothing
