@@ -5,11 +5,13 @@ import com.tambapps.http.garcon.exception.StreamTooLongException
 import com.tambapps.http.garcon.io.LimitedInputStream
 import com.tambapps.http.garcon.io.RequestParser
 import com.tambapps.http.garcon.util.IoUtils
+import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
 import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE
 
+@CompileStatic
 @PackageScope
 class AndroidHttpExchangeHandler implements HttpExchangeHandler, Runnable {
 

@@ -2,11 +2,13 @@ package com.tambapps.http.garcon
 
 import com.sun.net.httpserver.HttpServer
 import groovy.transform.CompileStatic
+import groovy.transform.PackageScope
 
 import java.util.concurrent.atomic.AtomicReference
 
 // this garcon doesn't handle path variables, because sun HttpServer only handle static paths
 @CompileStatic
+@PackageScope
 class SunGarcon extends AbstractGarcon {
 
   private final AtomicReference<HttpServer> serverReference = new AtomicReference<>()
