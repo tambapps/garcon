@@ -6,7 +6,6 @@ import lombok.Data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 
 @Data
 public class HttpResponse {
@@ -49,15 +48,6 @@ public class HttpResponse {
     } else {
       throw new IllegalStateException("Cannot handle body of type " + body.getClass());
     }
-  }
-
-  public void writeInto(OutputStream os) throws IOException {
-    PrintWriter writer = new PrintWriter(os);
-    writer.format("%s %d %s", httpVersion, statusCode.getValue(), statusCode.getMessage()).println();
-    headers.forEach((name, value) -> writer.println(name + ": " + value));
-    writer.println();
-    writer.flush();
-    writeBody(os);
   }
 
   public void writeBody(OutputStream os) throws IOException {

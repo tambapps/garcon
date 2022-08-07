@@ -48,8 +48,14 @@ class AndroidHttpExchangeHandler implements HttpExchangeHandler, Runnable {
           response.getHeaders().putConnectionHeader(CONNECTION_CLOSE)
         }
         addDefaultHeaders(request, response)
-        response.writeInto(outputStream)
-        if (CONNECTION_KEEP_ALIVE != response.getHeaders().getConnectionHeader()) {
+        // writting response
+        PrintWriter writer = new PrintWriter(outputStream);
+        writer.format("%s %d %s", response.httpVersion, response.statusCode.value, response.statusCode.message).println();
+        response.headers.forEach((name, value) -> writer.println(name + ": " + value))
+        writer.println()
+        writer.flush()
+        response.writeBody(outputStream)
+        if (!CONNECTION_KEEP_ALIVE.equalsIgnoreCase(response.getHeaders().getConnectionHeader())) {
           break
         }
       }
