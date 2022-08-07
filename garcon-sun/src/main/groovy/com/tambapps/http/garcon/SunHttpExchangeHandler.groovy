@@ -9,7 +9,7 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
 @CompileStatic
 class SunHttpExchangeHandler implements HttpHandler, HttpExchangeHandler {
 
-  List<EndpointDefinition> pathEndpointDefinitions
+  private List<EndpointDefinition> pathEndpointDefinitions
 
   @Override
   void handle(HttpExchange exchange) throws IOException {
