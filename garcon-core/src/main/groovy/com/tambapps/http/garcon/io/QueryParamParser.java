@@ -17,6 +17,9 @@ public class QueryParamParser {
   }
 
   public static void parseQueryParams(String paramsString, Map<String, String> queryParams) throws IOException {
+    if (paramsString == null || paramsString.isEmpty()) {
+      return;
+    }
     String[] params = paramsString.split("&");
     for (String param : params) {
       String[] fields = param.split("=");

@@ -15,22 +15,8 @@ class HttpExchangeHandlerRunnable extends AbstractHttpExchangeHandler {
   }
 
   @Override
-  protected HttpResponse processExchange(HttpRequest request) {
-    EndpointDefinition endpointDefinition = endpointsHandler.getMatchingEndpointDefinition(request.path)
-    if (endpointDefinition == null) {
-      return default404Response()
-    } else if (endpointDefinition.method != request.method) {
-      return default405Response()
-    }
-
-    try {
-      return endpointDefinition.call(new HttpExchangeContext(request, new HttpResponse(), garcon.composers, garcon.parsers,
-              endpointDefinition.contentType ?: garcon.contentType,
-              endpointDefinition.accept ?: garcon.accept))
-    } catch (Exception e) {
-      onUnexpectedError(e)
-      return default500Response()
-    }
+  List<EndpointDefinition> findPathEndpoints(String path) {
+    return endpointsHandler.getDefinitionsForPath(path)
   }
 
   @PackageScope

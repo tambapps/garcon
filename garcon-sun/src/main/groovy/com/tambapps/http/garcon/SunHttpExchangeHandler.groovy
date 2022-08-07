@@ -9,20 +9,11 @@ import org.codehaus.groovy.runtime.DefaultGroovyMethods
 @CompileStatic
 class SunHttpExchangeHandler implements HttpHandler, HttpExchangeHandler {
 
-  AbstractGarcon garcon
   List<EndpointDefinition> pathEndpointDefinitions
 
   @Override
   void handle(HttpExchange exchange) throws IOException {
-    Map<String, String> queryParams = [:]
-    String query = exchange.requestURI.query
-    if (query) {
-      QueryParamParser.parseQueryParams(query, queryParams)
-    }
-
-    Headers headers = new Headers()
-    exchange.requestHeaders.each { key, value -> headers[key] = value.join(', ') }
-    HttpRequest request = new HttpRequest(exchange.requestMethod, exchange.requestURI.path, queryParams, exchange.protocol, headers.asImmutable(), exchange.requestBody)
+    HttpRequest request = toGarconRequest(exchange)
     try {
       HttpResponse response = processExchange(request)
       def responseHeaders = exchange.responseHeaders
@@ -45,18 +36,21 @@ class SunHttpExchangeHandler implements HttpHandler, HttpExchangeHandler {
     }
   }
 
-  private HttpResponse processExchange(HttpRequest request) {
-    def definition = pathEndpointDefinitions.find { it.method == request.method }
-    if (definition == null) {
-      return default405Response()
+  private static HttpRequest toGarconRequest(HttpExchange exchange) {
+    Map<String, String> queryParams = [:]
+    String query = exchange.requestURI.query
+    if (query) {
+      QueryParamParser.parseQueryParams(query, queryParams)
     }
-    def context = new HttpExchangeContext(request, new HttpResponse(), garcon.composers, garcon.parsers, definition.contentType ?: garcon.contentType, definition.accept ?: garcon.accept)
 
-    try {
-      return definition.call(context)
-    } catch (Exception e) {
-      garcon.onConnectionUnexpectedError?.call(e)
-      return default500Response()
-    }
+    Headers headers = new Headers()
+    exchange.requestHeaders.each { key, value -> headers[key] = value.join(', ') }
+    return new HttpRequest(exchange.requestMethod, exchange.requestURI.path, queryParams, exchange.protocol, headers.asImmutable(), exchange.requestBody)
+  }
+
+  @Override
+  List<EndpointDefinition> findPathEndpoints(String path) {
+    // we know the path will always be the same as this handler if for a specific static path
+    return pathEndpointDefinitions
   }
 }

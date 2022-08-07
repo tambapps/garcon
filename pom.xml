@@ -11,8 +11,9 @@
 
   <modules>
     <module>garcon-core</module>
-    <module>garcon-sun</module>
     <module>garcon-android</module>
+    <module>garcon-netty</module>
+    <module>garcon-sun</module>
   </modules>
 
   <dependencyManagement>
@@ -41,6 +42,11 @@
         <artifactId>groovy-all</artifactId>
         <version>4.0.4</version>
         <type>pom</type>
+      </dependency>
+      <dependency>
+        <groupId>io.netty</groupId>
+        <artifactId>netty-all</artifactId>
+        <version>4.1.79.Final</version>
       </dependency>
       <dependency>
         <groupId>com.tambapps.http</groupId>

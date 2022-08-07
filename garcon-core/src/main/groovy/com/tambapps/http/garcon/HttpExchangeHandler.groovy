@@ -5,6 +5,8 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE
 
 trait HttpExchangeHandler {
 
+  protected AbstractGarcon garcon
+
   void addDefaultHeaders(HttpRequest request, HttpResponse response) {
     Headers responseHeaders = response.getHeaders()
     responseHeaders.put("Server", "Garcon (Tambapps)")
@@ -35,5 +37,27 @@ trait HttpExchangeHandler {
 
   HttpResponse default500Response() {
     return new HttpResponse(statusCode: HttpStatus.INTERNAL_SERVER_ERROR)
+  }
+
+ abstract List<EndpointDefinition> findPathEndpoints(String path)
+
+  HttpResponse processExchange(HttpRequest request) {
+    def pathDefinitions = findPathEndpoints(request.path)
+    if (!pathDefinitions) {
+      return default404Response()
+    }
+
+    def definition = pathDefinitions.find { it.method == request.method }
+    if (definition == null) {
+      return default405Response()
+    }
+    def context = new HttpExchangeContext(request, new HttpResponse(), garcon.composers, garcon.parsers, definition.contentType ?: garcon.contentType, definition.accept ?: garcon.accept)
+
+    try {
+      return definition.call(context)
+    } catch (Exception e) {
+      garcon.onConnectionUnexpectedError?.call(e)
+      return default500Response()
+    }
   }
 }

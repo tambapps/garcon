@@ -16,9 +16,9 @@ class EndpointsHandler {
     }
   }
 
-  EndpointDefinition getMatchingEndpointDefinition(String p) {
+  List<EndpointDefinition> getDefinitionsForPath(String p) {
     def path = Paths.get(p)
-    return endpointDefinitions.find { it.matches(path) }
+    return endpointDefinitions.findAll { it.matches(path) }
   }
 
   Map<String, List<EndpointDefinition>> getDefinitionsPerPath() {
