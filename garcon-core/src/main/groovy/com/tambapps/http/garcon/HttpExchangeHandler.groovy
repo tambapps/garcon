@@ -21,8 +21,7 @@ trait HttpExchangeHandler {
       responseHeaders.putConnectionHeader(response.is2xxSuccessful()
           && contentLength != null
           && request != null
-          && CONNECTION_KEEP_ALIVE.equals(request.getHeaders().getConnectionHeader())
-          && request.getHeaders().getContentLength() != null
+          && CONNECTION_KEEP_ALIVE.equalsIgnoreCase(request.getHeaders().getConnectionHeader())
           ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE)
     }
   }
