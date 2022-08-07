@@ -5,3 +5,5 @@ Garçon (pronounced `gar·son`, as in [garcon de café](https://en.wiktionary.or
 
 The library is designed for Groovy, but it also has a Java version that doesn't require Groovy.
 
+## TODO
+- handle path variables
