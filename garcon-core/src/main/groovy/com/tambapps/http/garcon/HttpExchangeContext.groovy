@@ -41,6 +41,9 @@ class HttpExchangeContext {
   }
 
   def getParsedRequestBody(ContentType accept) {
+    if (request.requestBody == null) {
+      return null
+    }
     if (!hasParsedRequestBody) {
       def b
       if (accept == null) {
