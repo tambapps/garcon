@@ -13,7 +13,7 @@ import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-abstract class AbstractGarcon {
+abstract class Garcon {
 
   @Getter
   private InetAddress address;
@@ -62,7 +62,7 @@ abstract class AbstractGarcon {
   private ExecutorService executorService;
 
   // package private constructor
-  AbstractGarcon() {}
+  Garcon() {}
 
   public abstract boolean isRunning();
 
@@ -105,18 +105,18 @@ abstract class AbstractGarcon {
     doStop();
   }
 
-  public AbstractGarcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+  public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
     endpointsHandler.define(this, closure);
     return this;
   }
 
-  public AbstractGarcon serve(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+  public Garcon serve(@DelegatesTo(EndpointDefiner.class) Closure closure) {
     define(closure);
     start();
     return this;
   }
 
-  public AbstractGarcon serveAsync(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+  public Garcon serveAsync(@DelegatesTo(EndpointDefiner.class) Closure closure) {
     define(closure);
     startAsync();
     return this;

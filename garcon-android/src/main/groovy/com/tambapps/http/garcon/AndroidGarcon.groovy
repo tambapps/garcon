@@ -10,7 +10,7 @@ import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicBoolean
 
 @CompileStatic
-class AndroidGarcon extends AbstractGarcon {
+class AndroidGarcon extends Garcon {
 
   private final AtomicBoolean running = new AtomicBoolean(false)
   private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()

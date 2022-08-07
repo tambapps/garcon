@@ -6,7 +6,7 @@ class EndpointsHandler {
 
   private final List<EndpointDefinition> endpointDefinitions = []
 
-  void define(AbstractGarcon garcon, @DelegatesTo(EndpointDefiner) Closure closure) {
+  void define(Garcon garcon, @DelegatesTo(EndpointDefiner) Closure closure) {
     // using setter to avoid having callsite on compiled code
     closure.setDelegate(new EndpointDefiner(garcon, endpointDefinitions))
     closure.setResolveStrategy(Closure.DELEGATE_FIRST)

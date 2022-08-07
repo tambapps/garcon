@@ -7,11 +7,11 @@ import java.nio.file.Path
 
 class EndpointDefiner {
 
-  private final AbstractGarcon garcon
+  private final Garcon garcon
   private final List<EndpointDefinition> endpointDefinitions
 
   @PackageScope
-  EndpointDefiner(AbstractGarcon garcon, List<EndpointDefinition> endpointDefinitions) {
+  EndpointDefiner(Garcon garcon, List<EndpointDefinition> endpointDefinitions) {
     this.garcon = garcon
     this.endpointDefinitions = endpointDefinitions
   }
