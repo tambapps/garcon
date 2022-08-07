@@ -1,20 +1,18 @@
 package com.tambapps.http.garcon
 
-import com.tambapps.http.garcon.util.IoUtils
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
 
-import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
-import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 @CompileStatic
 class AndroidGarcon extends Garcon {
 
-  private final AtomicBoolean running = new AtomicBoolean(false)
-  private final Queue<Closeable> connections = new ConcurrentLinkedQueue<>()
-  private ExecutorService requestsExecutorService
+  private int nbThreads = 200
+  private final AtomicReference<HttpServer> serverReference = new AtomicReference()
+  private ExecutorService executorService
 
   AndroidGarcon() {}
 
@@ -35,30 +33,34 @@ class AndroidGarcon extends Garcon {
     super.setBacklog(backlog)
   }
 
+  void startAsync() {
+    if (isRunning()) {
+      // already running
+      return;
+    }
+    if (executorService == null) {
+      executorService = Executors.newSingleThreadExecutor();
+    }
+    executorService.submit {
+      try {
+        start()
+      } catch (Exception e) {
+        // shouldn't happen... but well...
+        e.printStackTrace()
+        doStop()
+      }
+    }
+  }
+
   @Override
   void doStart(EndpointsHandler endpointsHandler) {
-    if (running.get()) {
+    if (isRunning()) {
       // already running
       return
     }
-    running.set(true)
-    requestsExecutorService = Executors.newFixedThreadPool(nbThreads)
-    try (ServerSocket serverSocket = newServerSocket()) {
-      connections.add(serverSocket)
-      onStarted(serverSocket.getInetAddress(), serverSocket.getLocalPort())
-      while (running.get()) {
-        Socket socket = serverSocket.accept()
-        socket.setSoTimeout(requestReadTimeoutMillis)
-        connections.add(socket)
-        requestsExecutorService.submit(new AndroidHttpExchangeHandler(garcon: this, socket: socket, connections: connections, endpointsHandler: endpointsHandler))
-      }
-    } catch (SocketException e) {
-      // the socket was probably closed, do nothing
-      onServerSocketClosed(e)
-    } catch (IOException e) {
-      onServerException(e)
-    }
-    running.set(false)
+    HttpServer server = HttpServer.create(this, address, port ?: 0, backlog ?: 0, requestReadTimeoutMillis, nbThreads)
+    serverReference.set(server)
+    server.run()
   }
 
   protected void onStarted(InetAddress address, int port) {
@@ -75,36 +77,30 @@ class AndroidGarcon extends Garcon {
     onError?.call(e)
   }
 
-  private ServerSocket newServerSocket() {
-    int port = this.port != null ? this.port : 0
-    int backlog = this.backlog != null ? this.backlog : 0
-    try {
-      if (address != null) {
-        return new ServerSocket(port, backlog, address)
-      } else {
-        return new ServerSocket(port, backlog)
-      }
-    } catch (IOException e) {
-      throw new RuntimeException("Couldn't start server socket: " + e.getMessage(), e)
-    }
+
+  int getNbThreads() {
+    return this.@nbThreads
   }
+
+  void setNbThreads(int nbThreads) {
+    checkRunning("Cannot modify nbThreads while running");
+    this.nbThreads = nbThreads;
+  }
+
 
   @Override
   boolean isRunning() {
-    return running.get()
+    return serverReference.get() != null
   }
 
   @Override
   void doStop() {
-    running.set(false)
-    if (requestsExecutorService != null) {
-      requestsExecutorService.shutdown()
+    HttpServer server = serverReference.get()
+    server.stop()
+    serverReference.set(null)
+    if (executorService != null) {
+      executorService.shutdown()
     }
-    requestsExecutorService = null
-
-    for (Closeable connection : connections) {
-      IoUtils.closeQuietly(connection)
-    }
-    connections.clear()
+    executorService = null
   }
 }

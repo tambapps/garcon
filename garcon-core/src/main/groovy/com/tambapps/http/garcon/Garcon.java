@@ -10,8 +10,6 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.net.InetAddress;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
 
 public abstract class Garcon {
 
@@ -21,8 +19,6 @@ public abstract class Garcon {
   private Integer port;
   @Getter
   private Integer backlog;
-  @Getter
-  private int nbThreads = 200;
   @Getter
   private int requestReadTimeoutMillis = 4000;
   @Getter
@@ -58,8 +54,7 @@ public abstract class Garcon {
 
   public final ContentTypeMap<Closure<?>> composers = Composers.getMap();
   public final ContentTypeMap<Closure<?>> parsers = Parsers.getMap();
-  private final EndpointsHandler endpointsHandler = new EndpointsHandler();
-  private ExecutorService executorService;
+  final EndpointsHandler endpointsHandler = new EndpointsHandler();
 
   // package private constructor
   Garcon() {}
@@ -71,38 +66,22 @@ public abstract class Garcon {
     if (address == null || port == null) {
       throw new IllegalStateException("Cannot start server without address and port");
     }
+    if (isRunning()) {
+      return;
+    }
     doStart(endpointsHandler);
   }
 
   abstract void doStart(EndpointsHandler endpointsHandler);
 
-  public void startAsync() {
-    if (isRunning()) {
-      // already running
-      return;
-    }
-    if (executorService == null) {
-      executorService = Executors.newSingleThreadExecutor();
-    }
-    executorService.submit(() -> {
-      try {
-        start();
-      } catch (Exception e) {
-        // shouldn't happen... but well...
-        e.printStackTrace();
-        doStop();
-      }
-    });
-  }
+  abstract void startAsync();
 
   abstract void doStop();
 
   public void stop() {
-    if (executorService != null) {
-      executorService.shutdown();
+    if (isRunning()) {
+      doStop();
     }
-    executorService = null;
-    doStop();
   }
 
   public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
@@ -142,17 +121,12 @@ public abstract class Garcon {
     this.port = port;
   }
 
-  public void setNbThreads(int nbThreads) {
-    checkRunning("Cannot modify nbThreads while running");
-    this.nbThreads = nbThreads;
-  }
-
   public void setRequestReadTimeoutMillis(int requestReadTimeoutMillis) {
     checkRunning("Cannot modify requestReadTimeoutMillis while running");
     this.requestReadTimeoutMillis = requestReadTimeoutMillis;
   }
 
-  private void checkRunning(String errorMessage) {
+  protected void checkRunning(String errorMessage) {
     if (isRunning()) {
       throw new IllegalStateException(errorMessage);
     }
