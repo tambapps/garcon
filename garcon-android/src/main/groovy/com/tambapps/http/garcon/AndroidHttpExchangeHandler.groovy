@@ -11,7 +11,7 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE
 
 @PackageScope
-class HttpExchangeHandlerRunnable implements HttpExchangeHandler, Runnable {
+class AndroidHttpExchangeHandler implements HttpExchangeHandler, Runnable {
 
   private Socket socket
   private Collection<Closeable> connections
