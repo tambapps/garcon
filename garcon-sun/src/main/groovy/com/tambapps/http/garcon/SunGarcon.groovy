@@ -5,7 +5,7 @@ import groovy.transform.CompileStatic
 
 import java.util.concurrent.atomic.AtomicReference
 
-// this garcon doesn't handle path variables
+// this garcon doesn't handle path variables, because sun HttpServer only handle static paths
 @CompileStatic
 class SunGarcon extends AbstractGarcon {
 

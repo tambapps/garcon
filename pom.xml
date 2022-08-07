@@ -11,7 +11,7 @@
 
   <modules>
     <module>garcon-core</module>
-    <module>garcon</module>
+    <module>garcon-sun</module>
     <module>garcon-android</module>
   </modules>
 
