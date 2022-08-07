@@ -11,7 +11,7 @@ import java.time.Duration
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 
-class StaticGarconTest {
+class SunGarconTest {
   private final HttpPoet poet = new HttpPoet(url: 'http://localhost:8081').tap {
     errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(it)
     configureOkHttpClient { it.readTimeout(Duration.ofMillis(10_000))}
@@ -24,12 +24,12 @@ class StaticGarconTest {
       }
     }
   }
-  private StaticGarcon garcon
+  private SunGarcon garcon
   private boolean firstCall
 
   @BeforeEach
   void init() {
-    garcon = new StaticGarcon(InetAddress.getByName("localhost"), 8081).tap {
+    garcon = new SunGarcon(InetAddress.getByName("localhost"), 8081).tap {
       onError = { Exception e -> e.printStackTrace() }
       onConnectionUnexpectedError = { Exception e -> e.printStackTrace() }
       onConnectionError = { Exception e -> e.printStackTrace() }

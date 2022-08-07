@@ -7,17 +7,17 @@ import java.util.concurrent.atomic.AtomicReference
 
 // this garcon doesn't handle path variables
 @CompileStatic
-class StaticGarcon extends AbstractGarcon {
+class SunGarcon extends AbstractGarcon {
 
   private final AtomicReference<HttpServer> serverReference = new AtomicReference<>()
 
-  StaticGarcon() {}
+  SunGarcon() {}
 
-  StaticGarcon(String address, int port) {
+  SunGarcon(String address, int port) {
     this((InetAddress) InetAddress.getByName(address), port)
   }
 
-  StaticGarcon(InetAddress address, int port) {
+  SunGarcon(InetAddress address, int port) {
     super()
     super.setAddress(address)
     super.setPort(port)
