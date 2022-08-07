@@ -14,7 +14,8 @@ class SunGarcon extends AbstractGarcon {
   SunGarcon() {}
 
   SunGarcon(String address, int port) {
-    this((InetAddress) InetAddress.getByName(address), port)
+    // don't know why, groovy complains about it when just using class name
+    this((java.net.InetAddress) InetAddress.getByName(address), port)
   }
 
   SunGarcon(InetAddress address, int port) {
