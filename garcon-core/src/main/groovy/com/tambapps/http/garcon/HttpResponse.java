@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon;
 
-import com.tambapps.http.garcon.util.IoUtils;
 import lombok.Data;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -59,7 +59,7 @@ public class HttpResponse {
     } else if (body instanceof String) {
       os.write(((String) body).getBytes());
     } else if (body instanceof InputStream) {
-      IoUtils.write((InputStream) body, os);
+      IOGroovyMethods.leftShift(os, (InputStream) body);
     } else {
       throw new IllegalStateException("Cannot handle body of type " + body.getClass());
     }

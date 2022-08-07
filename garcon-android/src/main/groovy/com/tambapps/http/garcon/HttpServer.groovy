@@ -1,6 +1,6 @@
 package com.tambapps.http.garcon
 
-import com.tambapps.http.garcon.util.IoUtils
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
@@ -74,7 +74,7 @@ class HttpServer {
   void stop() {
     running.set(false)
     for (Closeable connection : connections) {
-      IoUtils.closeQuietly(connection)
+      DefaultGroovyMethods.closeQuietly(connection)
     }
     connections.clear()
   }

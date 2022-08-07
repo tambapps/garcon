@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import com.tambapps.http.garcon.Headers;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.exception.RequestParsingException;
-import com.tambapps.http.garcon.util.IoUtils;
+import org.codehaus.groovy.runtime.IOGroovyMethods;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayInputStream;
@@ -54,7 +54,7 @@ public class RequestParserTest {
     assertEquals("POST", request.getMethod());
     assertEquals("/page", request.getPath());
     assertEquals(new Headers(), request.getHeaders());
-    assertEquals("Hello World", new String(IoUtils.readAllBytes(request.getRequestBody())));
+    assertEquals("Hello World", new String(IOGroovyMethods.getBytes(request.getRequestBody())));
   }
 
   @Test

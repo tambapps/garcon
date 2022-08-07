@@ -4,9 +4,9 @@ import com.tambapps.http.garcon.exception.RequestParsingException
 import com.tambapps.http.garcon.exception.StreamTooLongException
 import com.tambapps.http.garcon.io.LimitedInputStream
 import com.tambapps.http.garcon.io.RequestParser
-import com.tambapps.http.garcon.util.IoUtils
 import groovy.transform.CompileStatic
 import groovy.transform.PackageScope
+import org.codehaus.groovy.runtime.DefaultGroovyMethods
 
 import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE
@@ -70,7 +70,7 @@ class AndroidHttpExchangeHandler implements HttpExchangeHandler, Runnable {
       onUnexpectedError(e)
     } finally {
       // closing socket will also close InputStream and OutputStream
-      IoUtils.closeQuietly(socket)
+      DefaultGroovyMethods.closeQuietly(socket)
       connections.remove(socket)
     }
   }
