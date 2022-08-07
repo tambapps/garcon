@@ -3,19 +3,15 @@ package com.tambapps.http.garcon.io;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.ImmutableHeaders;
 import com.tambapps.http.garcon.exception.RequestParsingException;
-import lombok.AllArgsConstructor;
 
 import java.io.ByteArrayOutputStream;
 import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
-import java.net.URLDecoder;
 import java.util.HashMap;
 import java.util.Map;
 
 // https://fr.wikipedia.org/wiki/Hypertext_Transfer_Protocol#Impl%C3%A9mentation
-@AllArgsConstructor
 public class RequestParser {
 
   public static HttpRequest parse(InputStream is) throws IOException {
