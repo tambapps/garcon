@@ -5,7 +5,7 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE
 
 trait HttpExchangeHandler {
 
-  protected AbstractGarcon garcon
+  AbstractGarcon garcon
 
   void addDefaultHeaders(HttpRequest request, HttpResponse response) {
     Headers responseHeaders = response.getHeaders()

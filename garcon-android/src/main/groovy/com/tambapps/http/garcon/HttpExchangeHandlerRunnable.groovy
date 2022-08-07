@@ -1,17 +1,70 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.exception.RequestParsingException
+import com.tambapps.http.garcon.exception.StreamTooLongException
+import com.tambapps.http.garcon.io.LimitedInputStream
+import com.tambapps.http.garcon.io.RequestParser
+import com.tambapps.http.garcon.util.IoUtils
 import groovy.transform.PackageScope
 
+import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE
+import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE
+
 @PackageScope
-class HttpExchangeHandlerRunnable extends AbstractHttpExchangeHandler {
+class HttpExchangeHandlerRunnable implements HttpExchangeHandler, Runnable {
 
-  private final AndroidGarcon garcon
-  private final EndpointsHandler endpointsHandler
+  private Socket socket
+  private Collection<Closeable> connections
+  private EndpointsHandler endpointsHandler
 
-  HttpExchangeHandlerRunnable(Socket socket, AndroidGarcon garcon, EndpointsHandler endpointsHandler, Collection<Closeable> connections) {
-    super(socket, garcon, connections)
-    this.garcon = garcon
-    this.endpointsHandler = endpointsHandler
+  @Override
+  void run() {
+    try {
+      InputStream inputStream = garcon.getMaxRequestBytes() != null
+          ? new LimitedInputStream(socket.getInputStream(), garcon.getMaxRequestBytes())
+          : socket.getInputStream()
+      OutputStream outputStream = socket.getOutputStream()
+      while (garcon.isRunning()) {
+        HttpRequest request = null
+        HttpResponse response
+        if (inputStream instanceof LimitedInputStream) {
+          LimitedInputStream limitedInputStream = (LimitedInputStream) inputStream
+          limitedInputStream.resetBytesRead()
+          // in case it has been modified since
+          limitedInputStream.setMaxBytes(garcon.getMaxRequestBytes())
+        }
+        try {
+          request = RequestParser.parse(inputStream)
+          response = processExchange(request)
+        } catch (RequestParsingException e) {
+          response = new HttpResponse()
+          response.setStatusCode(HttpStatus.BAD_REQUEST)
+          response.getHeaders().putConnectionHeader(CONNECTION_CLOSE)
+        } catch (StreamTooLongException e) {
+          response = new HttpResponse()
+          response.setStatusCode(HttpStatus.REQUEST_ENTITY_TOO_LARGE)
+          response.getHeaders().putConnectionHeader(CONNECTION_CLOSE)
+        }
+        addDefaultHeaders(request, response)
+        response.writeInto(outputStream)
+        if (CONNECTION_KEEP_ALIVE != response.getHeaders().getConnectionHeader()) {
+          break
+        }
+      }
+    } catch (EOFException | SocketException e) {
+      // do nothing
+      onConnectionClosed(e)
+    } catch (SocketTimeoutException e) {
+      // client took too much time to write anything
+    } catch (IOException e) {
+      onConnectionError(e)
+    } catch (Exception e) {
+      onUnexpectedError(e)
+    } finally {
+      // closing socket will also close InputStream and OutputStream
+      IoUtils.closeQuietly(socket)
+      connections.remove(socket)
+    }
   }
 
   @Override
@@ -19,21 +72,15 @@ class HttpExchangeHandlerRunnable extends AbstractHttpExchangeHandler {
     return endpointsHandler.getDefinitionsForPath(path)
   }
 
-  @PackageScope
-  @Override
-  void onConnectionClosed(IOException e) {
+  private void onConnectionClosed(IOException e) {
     garcon.onConnectionClosed?.call(e)
   }
 
-  @PackageScope
-  @Override
-  void onConnectionError(IOException e) {
+  private void onConnectionError(IOException e) {
     garcon.onConnectionError?.call(e)
   }
 
-  @PackageScope
-  @Override
-  void onUnexpectedError(Exception e) {
+  private void onUnexpectedError(Exception e) {
     garcon.onConnectionUnexpectedError?.call(e)
   }
 }
