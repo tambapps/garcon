@@ -13,7 +13,7 @@ import java.net.InetAddress;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-abstract class Garcon {
+public abstract class Garcon {
 
   @Getter
   private InetAddress address;
