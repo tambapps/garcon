@@ -36,10 +36,13 @@ class SunGarcon extends Garcon {
     definitionsPerPath.each { String path, List<EndpointDefinition> definitions ->
       server.createContext(path, new SunHttpExchangeHandler(garcon: this, pathEndpointDefinitions: definitions))
     }
-    server.bind(new InetSocketAddress(address, port ?: 0), backlog ?: 0)
+    def address = this.address
+    def port = this.port ?: 0
+    server.bind(new InetSocketAddress(address, port), backlog ?: 0)
     // start in background thread
     server.start()
     serverReference.set(server)
+    this.onStarted?.call(address, port)
   }
 
   @Override

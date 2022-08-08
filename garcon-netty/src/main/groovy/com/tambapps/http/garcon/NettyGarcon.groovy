@@ -76,8 +76,11 @@ class NettyGarcon extends Garcon {
             p.addLast(new NettyHttpExchangeHandler(garcon: garcon, endpointsHandler: endpointsHandler))
           }
         })
-    Channel channel = b.bind(address, port ?: 0).sync().channel()
+    def address = this.address
+    def port = this.port ?: 0
+    Channel channel = b.bind(address, port).sync().channel()
     serverReference.set(new NettyServer(channel: channel, bossGroup: bossGroup, workerGroup: workerGroup))
+    this.onStarted?.call(address, port)
   }
 
   @Override
