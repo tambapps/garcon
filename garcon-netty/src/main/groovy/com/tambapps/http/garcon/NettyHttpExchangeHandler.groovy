@@ -83,6 +83,6 @@ class NettyHttpExchangeHandler extends SimpleChannelInboundHandler<HttpObject> i
 
   @Override
   void exceptionCaught(ChannelHandlerContext ctx, Throwable cause) throws Exception {
-    garcon.onConnectionUnexpectedError?.call(cause)
+    garcon.onConnectionError?.call(cause)
   }
 }

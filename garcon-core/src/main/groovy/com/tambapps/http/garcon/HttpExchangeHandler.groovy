@@ -55,7 +55,7 @@ trait HttpExchangeHandler {
     try {
       return definition.call(context)
     } catch (Exception e) {
-      garcon.onConnectionUnexpectedError?.call(e)
+      garcon.onConnectionError?.call(e)
       return default500Response()
     }
   }

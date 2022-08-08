@@ -3,7 +3,6 @@ package com.tambapps.http.garcon
 import groovy.transform.CompileStatic
 import io.netty.bootstrap.ServerBootstrap
 import io.netty.channel.Channel
-import io.netty.channel.ChannelFuture
 import io.netty.channel.ChannelInitializer
 import io.netty.channel.ChannelOption
 import io.netty.channel.ChannelPipeline
@@ -14,8 +13,6 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.http.HttpObjectAggregator
 import io.netty.handler.codec.http.HttpRequestDecoder
 import io.netty.handler.codec.http.HttpResponseEncoder
-import io.netty.handler.logging.LogLevel
-import io.netty.handler.logging.LoggingHandler
 
 import java.util.concurrent.atomic.AtomicReference
 
@@ -80,7 +77,7 @@ class NettyGarcon extends Garcon {
     def port = this.port ?: 0
     Channel channel = b.bind(address, port).sync().channel()
     serverReference.set(new NettyServer(channel: channel, bossGroup: bossGroup, workerGroup: workerGroup))
-    this.onStarted?.call(address, port)
+    this.onStart?.call(address, port)
   }
 
   @Override

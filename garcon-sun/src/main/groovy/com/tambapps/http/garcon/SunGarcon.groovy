@@ -42,7 +42,7 @@ class SunGarcon extends Garcon {
     // start in background thread
     server.start()
     serverReference.set(server)
-    this.onStarted?.call(address, port)
+    this.onStart?.call(address, port)
   }
 
   @Override

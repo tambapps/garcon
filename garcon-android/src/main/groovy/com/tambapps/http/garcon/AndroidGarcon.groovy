@@ -47,7 +47,7 @@ class AndroidGarcon extends Garcon {
       } catch (Exception e) {
         // shouldn't happen... but well...
         e.printStackTrace()
-        doStop()
+        stop()
       }
     }
   }
@@ -63,18 +63,9 @@ class AndroidGarcon extends Garcon {
     server.run()
   }
 
-  protected void onStarted(InetAddress address, int port) {
-    this.onStarted?.call(address, port)
-  }
-
-  @PackageScope
-  void onServerSocketClosed(SocketException e) {
-    onClosed?.call()
-  }
-
   @PackageScope
   void onServerException(IOException e) {
-    onError?.call(e)
+    onServerError?.call(e)
   }
 
 

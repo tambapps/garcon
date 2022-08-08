@@ -30,8 +30,7 @@ class SunGarconTest {
   @BeforeEach
   void init() {
     garcon = new SunGarcon(InetAddress.getByName("localhost"), 8081).tap {
-      onError = { Exception e -> e.printStackTrace() }
-      onConnectionUnexpectedError = { Exception e -> e.printStackTrace() }
+      onServerError = { Exception e -> e.printStackTrace() }
       onConnectionError = { Exception e -> e.printStackTrace() }
     }
     firstCall = true

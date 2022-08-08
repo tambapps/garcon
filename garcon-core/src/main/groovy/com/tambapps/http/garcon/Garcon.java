@@ -34,23 +34,16 @@ public abstract class Garcon {
 
   @Getter
   @Setter
-  Closure<?> onClosed;
+  Closure<?> onStart;
   @Getter
   @Setter
-  Closure<?> onError;
+  Closure<?> onStop;
   @Getter
   @Setter
-  Closure<?> onStarted;
-  @Getter
-  @Setter
-  Closure<?> onConnectionClosed;
+  Closure<?> onServerError;
   @Getter
   @Setter
   Closure<?> onConnectionError;
-  @Getter
-  @Setter
-  Closure<?> onConnectionUnexpectedError;
-
 
   public final ContentTypeMap<Closure<?>> composers = Composers.getMap();
   public final ContentTypeMap<Closure<?>> parsers = Parsers.getMap();
@@ -81,6 +74,9 @@ public abstract class Garcon {
   public void stop() {
     if (isRunning()) {
       doStop();
+      if (onStop != null) {
+        onStop.call();
+      }
     }
   }
 

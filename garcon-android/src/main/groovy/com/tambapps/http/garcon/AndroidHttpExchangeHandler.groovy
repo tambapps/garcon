@@ -61,13 +61,10 @@ class AndroidHttpExchangeHandler implements HttpExchangeHandler, Runnable {
       }
     } catch (EOFException | SocketException e) {
       // do nothing
-      onConnectionClosed(e)
     } catch (SocketTimeoutException e) {
       // client took too much time to write anything
-    } catch (IOException e) {
-      onConnectionError(e)
     } catch (Exception e) {
-      onUnexpectedError(e)
+      garcon.onConnectionError?.call(e)
     } finally {
       // closing socket will also close InputStream and OutputStream
       DefaultGroovyMethods.closeQuietly(socket)
@@ -78,17 +75,5 @@ class AndroidHttpExchangeHandler implements HttpExchangeHandler, Runnable {
   @Override
   List<EndpointDefinition> findPathEndpoints(String path) {
     return endpointsHandler.getDefinitionsForPath(path)
-  }
-
-  private void onConnectionClosed(IOException e) {
-    garcon.onConnectionClosed?.call(e)
-  }
-
-  private void onConnectionError(IOException e) {
-    garcon.onConnectionError?.call(e)
-  }
-
-  private void onUnexpectedError(Exception e) {
-    garcon.onConnectionUnexpectedError?.call(e)
   }
 }

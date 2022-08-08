@@ -39,7 +39,7 @@ class HttpServer {
     running.set(true)
     try (ServerSocket serverSocket = newServerSocket()) {
       connections.add(serverSocket)
-      garcon.onStarted(serverSocket.getInetAddress(), serverSocket.getLocalPort())
+      garcon.onStart?.call(serverSocket.getInetAddress(), serverSocket.getLocalPort())
       while (running.get()) {
         Socket socket = serverSocket.accept()
         socket.setSoTimeout(requestReadTimeoutMillis)
@@ -48,7 +48,6 @@ class HttpServer {
       }
     } catch (SocketException e) {
       // the socket was probably closed, do nothing
-      garcon.onServerSocketClosed(e)
     } catch (IOException e) {
       garcon.onServerException(e)
     }
