@@ -3,6 +3,7 @@ package com.tambapps.http.garcon
 import com.sun.net.httpserver.HttpServer
 import groovy.transform.CompileStatic
 
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicReference
 
 // this garcon doesn't handle path variables, because sun HttpServer only handle static paths
@@ -10,6 +11,7 @@ import java.util.concurrent.atomic.AtomicReference
 class SunGarcon extends Garcon {
 
   private final AtomicReference<HttpServer> serverReference = new AtomicReference<>()
+  private int maxThreads = 200
 
   SunGarcon() {}
 
@@ -36,6 +38,7 @@ class SunGarcon extends Garcon {
     definitionsPerPath.each { String path, List<EndpointDefinition> definitions ->
       server.createContext(path, new SunHttpExchangeHandler(garcon: this, pathEndpointDefinitions: definitions))
     }
+    server.setExecutor(Executors.newFixedThreadPool(this.@maxThreads))
     def address = this.address
     def port = this.port ?: 0
     server.bind(new InetSocketAddress(address, port), backlog ?: 0)
@@ -58,5 +61,14 @@ class SunGarcon extends Garcon {
     }
     server.stop(0)
     serverReference.set(null)
+  }
+
+  int getMaxThreads() {
+    return this.@maxThreads
+  }
+
+  void setMaxThreads(int nbThreads) {
+    checkRunning("Cannot modify maxThreads while running")
+    this.maxThreads = nbThreads;
   }
 }
