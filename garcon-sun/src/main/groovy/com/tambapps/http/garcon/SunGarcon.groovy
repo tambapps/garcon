@@ -38,7 +38,9 @@ class SunGarcon extends Garcon {
     definitionsPerPath.each { String path, List<EndpointDefinition> definitions ->
       server.createContext(path, new SunHttpExchangeHandler(garcon: this, pathEndpointDefinitions: definitions))
     }
-    server.setExecutor(Executors.newFixedThreadPool(this.@maxThreads))
+    if (this.@maxThreads > 1) {
+      server.setExecutor(Executors.newFixedThreadPool(this.@maxThreads))
+    }
     def address = this.address
     def port = this.port ?: 0
     server.bind(new InetSocketAddress(address, port), backlog ?: 0)
