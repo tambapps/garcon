@@ -36,10 +36,10 @@ class AndroidGarcon extends Garcon {
   void startAsync() {
     if (isRunning()) {
       // already running
-      return;
+      return
     }
     if (executorService == null) {
-      executorService = Executors.newSingleThreadExecutor();
+      executorService = Executors.newSingleThreadExecutor()
     }
     executorService.submit {
       try {
@@ -69,12 +69,12 @@ class AndroidGarcon extends Garcon {
   }
 
 
-  int getNbThreads() {
+  int getMaxThreads() {
     return this.@maxThreads
   }
 
-  void setNbThreads(int nbThreads) {
-    checkRunning("Cannot modify nbThreads while running");
+  void setMaxThreads(int nbThreads) {
+    checkRunning("Cannot modify nbThreads while running")
     this.maxThreads = nbThreads;
   }
 
