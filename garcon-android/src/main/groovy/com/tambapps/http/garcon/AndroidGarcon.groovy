@@ -10,7 +10,7 @@ import java.util.concurrent.atomic.AtomicReference
 @CompileStatic
 class AndroidGarcon extends Garcon {
 
-  private int nbThreads = 200
+  private int maxThreads = 200
   private final AtomicReference<HttpServer> serverReference = new AtomicReference()
   private ExecutorService executorService
 
@@ -58,7 +58,7 @@ class AndroidGarcon extends Garcon {
       // already running
       return
     }
-    HttpServer server = HttpServer.create(this, address, port ?: 0, backlog ?: 0, requestReadTimeoutMillis, nbThreads)
+    HttpServer server = HttpServer.create(this, address, port ?: 0, backlog ?: 0, requestReadTimeoutMillis, maxThreads)
     serverReference.set(server)
     server.run()
   }
@@ -70,12 +70,12 @@ class AndroidGarcon extends Garcon {
 
 
   int getNbThreads() {
-    return this.@nbThreads
+    return this.@maxThreads
   }
 
   void setNbThreads(int nbThreads) {
     checkRunning("Cannot modify nbThreads while running");
-    this.nbThreads = nbThreads;
+    this.maxThreads = nbThreads;
   }
 
 
