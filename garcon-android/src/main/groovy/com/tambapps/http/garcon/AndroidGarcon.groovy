@@ -74,7 +74,7 @@ class AndroidGarcon extends Garcon {
   }
 
   void setMaxThreads(int nbThreads) {
-    checkRunning("Cannot modify nbThreads while running")
+    checkRunning("Cannot modify maxThreads while running")
     this.maxThreads = nbThreads;
   }
 
