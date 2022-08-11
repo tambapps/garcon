@@ -1,9 +1,11 @@
 package com.tambapps.http.garcon.io
 
 import com.tambapps.http.garcon.ContentType
+import com.tambapps.http.garcon.RequestBody
 import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeMap
-import org.codehaus.groovy.runtime.MethodClosure
+import groovy.json.JsonSlurper
+import groovy.xml.XmlSlurper
 
 import static com.tambapps.http.garcon.util.ClassUtils.doIfClassExists
 
@@ -15,10 +17,10 @@ class Parsers {
     ContentTypeMap<Closure<?>> map = new ParsingMap()
 
     doIfClassExists('groovy.json.JsonSlurper') { Class c ->
-      map[ContentType.JSON] = new MethodClosure(c.getDeclaredConstructor().newInstance(), 'parse')
+      map[ContentType.JSON] = Parsers.&parseJson
     }
     doIfClassExists('groovy.xml.XmlSlurper') { Class c ->
-      map[ContentType.XML] = new MethodClosure(c.getDeclaredConstructor().newInstance(), 'parse')
+      map[ContentType.XML] = Parsers.&parseXml
     }
     map.setDefaultValue(Parsers.&parseStringResponseBody)
     map[ContentType.HTML] = map.getDefaultValue()
@@ -27,19 +29,16 @@ class Parsers {
     return map
   }
 
-  static String parseStringResponseBody(InputStream body) {
-    // we don't use InputStream.text because it closes the stream
-    Reader reader = new InputStreamReader(body)
-    StringBuilder answer = new StringBuilder();
-    // reading the content of the file within a char buffer
-    // allow to keep the correct line endings
-    char[] charBuffer = new char[8192];
-    int nbCharRead /* = 0*/;
-    while ((nbCharRead = reader.read(charBuffer)) != -1) {
-      // appends buffer
-      answer.append(charBuffer, 0, nbCharRead);
-    }
-    return answer.toString();
+  static Object parseJson(RequestBody body) {
+    return new JsonSlurper().parseText(body.getText())
+  }
+
+  static Object parseXml(RequestBody body) {
+    return new XmlSlurper().parseText(body.getText())
+  }
+
+  static String parseStringResponseBody(RequestBody body) {
+    return body.getText();
   }
 
   private static class ParsingMap extends ContentTypeMap<Closure<?>> {
