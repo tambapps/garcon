@@ -8,12 +8,9 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 import java.time.Duration
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
 
 class AsyncHttpServerTest {
 
-  ExecutorService executor
   AsyncHttpServer httpServer
   private final HttpPoet poet = new HttpPoet(url: 'http://localhost:8081').tap {
     errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(it)
@@ -33,26 +30,17 @@ class AsyncHttpServerTest {
   @BeforeEach
   void begin() {
     httpServer = new AsyncHttpServer()
-    executor = Executors.newSingleThreadExecutor()
-    executor.submit {
-      try {
-        httpServer.start()
-      } catch (Exception e) {
-        e.printStackTrace()
-      }
-    }
+    httpServer.start()
   }
 
   @AfterEach
   void stop() {
     httpServer.stop()
-    executor.shutdown()
   }
 
 
   @Test
   void test() {
     println(poet.get('/path?hello=world'))
-
   }
 }
