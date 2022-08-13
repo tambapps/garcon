@@ -13,7 +13,7 @@ import java.util.Map;
 
 public class HttpRequestParser {
 
-  private enum ParsingState {
+  enum ParsingState {
     COMMAND_LINE,
     HEADERS,
     BODY,
@@ -33,22 +33,26 @@ public class HttpRequestParser {
     if (state == ParsingState.COMPLETE) {
       return true;
     }
-    String line = reader.readLine(buffer);
 
     switch (state) {
       case COMMAND_LINE:
-        if (line == null) {
+        String commandLine = reader.readLine(buffer);
+        if (commandLine == null) {
           return false;
         }
-        parseCommand(line);
+        parseCommand(commandLine);
         state = ParsingState.HEADERS;
       case HEADERS:
-        while (state == ParsingState.HEADERS && (line = reader.readLine(buffer)) != null) {
-          if (line.isEmpty()) {
+        String headerLine = null;
+        while (state == ParsingState.HEADERS && (headerLine = reader.readLine(buffer)) != null) {
+          if (headerLine.isEmpty()) {
             state = ParsingState.BODY;
           } else {
-            parseHeader(headers, line);
+            parseHeader(headers, headerLine);
           }
+        }
+        if (headerLine == null && state == ParsingState.HEADERS) {
+          return false;
         }
         if ("get".equalsIgnoreCase(method) || "head".equalsIgnoreCase(method)) {
           // no request body to parse for GET or HEAD according to the RFC
