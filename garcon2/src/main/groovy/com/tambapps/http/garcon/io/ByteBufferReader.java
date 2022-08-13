@@ -1,20 +1,18 @@
 package com.tambapps.http.garcon.io;
 
-import com.tambapps.http.garcon.exception.EndOfBufferException;
-import lombok.AllArgsConstructor;
-
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
-@AllArgsConstructor
 public class ByteBufferReader {
 
   private static final byte CARRIAGE_RETURN = '\r';
   private static final byte LINE_BREAK = '\n';
 
+  byte[] lineStart = null;
   // line separator is CR followed by LF
   public String readLine(ByteBuffer buffer) {
     byte b;
-    boolean readCr = false;
+    boolean readCr = lineStart != null && lineStart.length > 0 && lineStart[0] == CARRIAGE_RETURN;
     int startIndex = buffer.position();
     int index = 0;
     while (buffer.hasRemaining()) {
@@ -23,24 +21,44 @@ public class ByteBufferReader {
       if (b == CARRIAGE_RETURN) {
         readCr = true;
       } else if (readCr && b == LINE_BREAK) {
-        return newString(buffer, startIndex, index - 2, true);
+        return newString(buffer, startIndex, index - 2);
       }
     }
-    if (buffer.position() == startIndex) {
-      // was empty to begin with? end of file
-      throw new EndOfBufferException();
+    // line is not full. Will wait for a next call with a different buffer to return the full line
+    if (buffer.position() > startIndex) {
+      // index is the length because at the end of
+      if (lineStart == null) {
+        lineStart = readBytes(buffer, startIndex, index);
+      } else {
+        byte[] newLineStart = Arrays.copyOf(lineStart, lineStart.length + index);
+        buffer.position(startIndex);
+        buffer.get(newLineStart, lineStart.length, newLineStart.length);
+        this.lineStart = newLineStart;
+      }
     }
-    return newString(buffer, startIndex, index, false);
+    return null;
   }
 
-  private String newString(ByteBuffer buffer, int bufferStartIndex, int length, boolean skipLineReturn) {
-    // + 1 because index, - 2 to remove CR and LB
+  private byte[] readBytes(ByteBuffer buffer, int bufferStartIndex, int length) {
     byte[] bytes = new byte[length];
     buffer.position(bufferStartIndex);
     buffer.get(bytes, 0, bytes.length);
-    if (skipLineReturn) {
-      buffer.position(buffer.position() + 2);
+    return bytes;
+  }
+
+  private String newString(ByteBuffer buffer, int bufferStartIndex, int length) {
+    // + 1 because index, - 2 to remove CR and LB
+    byte[] bytes;
+    if (lineStart != null) {
+      bytes = Arrays.copyOf(lineStart, lineStart.length + length);
+      buffer.position(bufferStartIndex);
+      buffer.get(bytes, lineStart.length, length);
+    } else {
+      bytes = readBytes(buffer, bufferStartIndex, length);
     }
+
+    // don't include line return in sting
+    buffer.position(buffer.position() + 2);
     return new String(bytes);
   }
 }

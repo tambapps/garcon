@@ -1,25 +1,25 @@
 package com.tambapps.http.garcon.io
 
-import com.tambapps.http.garcon.exception.EndOfBufferException
 import org.junit.Test
 
 import java.nio.ByteBuffer
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals
 import static org.junit.jupiter.api.Assertions.assertEquals
-import static org.junit.jupiter.api.Assertions.assertThrows
+import static org.junit.jupiter.api.Assertions.assertNull
 
 class ByteBufferReaderTest {
 
 
   @Test
   void testReadLines() {
-    def buffer = ByteBuffer.wrap("Hello World\r\nWorld".bytes)
+    def buffer = ByteBuffer.wrap('Hello World\r\nHello'.bytes)
     ByteBufferReader reader = new ByteBufferReader()
     assertEquals('Hello World', reader.readLine(buffer))
-    assertEquals('World', reader.readLine(buffer))
-    assertThrows(EndOfBufferException.class) {
-      reader.readLine(buffer)
-    }
+    // doesn't end with a line return, so the line is not full
+    assertNull(reader.readLine(buffer))
+    assertArrayEquals('Hello'.bytes, reader.lineStart)
+    assertEquals('Hello World', reader.readLine(ByteBuffer.wrap(' World\r\n'.bytes)))
   }
 
   @Test
@@ -28,8 +28,5 @@ class ByteBufferReaderTest {
     ByteBufferReader reader = new ByteBufferReader()
     assertEquals('', reader.readLine(buffer))
     assertEquals('Hello\nWorld', reader.readLine(buffer))
-    assertThrows(EndOfBufferException.class) {
-      reader.readLine(buffer)
-    }
   }
 }

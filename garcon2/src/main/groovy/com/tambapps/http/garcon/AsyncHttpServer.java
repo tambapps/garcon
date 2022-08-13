@@ -27,6 +27,7 @@ public class AsyncHttpServer {
   @Setter
   private Logger logger = new DefaultLogger();
 
+  // TODO configure request timeout
   public void stop() {
     if (!isRunning()) {
       return;
