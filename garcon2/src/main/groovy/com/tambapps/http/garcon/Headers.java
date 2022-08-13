@@ -19,6 +19,7 @@ public class Headers implements Map<String, String> {
   public static final String CONNECTION_HEADER = "Connection";
   public static final String CONTENT_TYPE_HEADER = "Content-Type";
   public static final String CONTENT_LENGTH_HEADER = "Content-Length";
+  public static final String TRANSFER_ENCODING_HEADER = "Transfer-Encoding";
 
   private final Set<AbstractMap.SimpleEntry<String, String>> entries = new HashSet<>();
 
