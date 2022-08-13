@@ -32,7 +32,7 @@ public class ByteBufferReader {
       } else {
         byte[] newLineStart = Arrays.copyOf(lineStart, lineStart.length + index);
         buffer.position(startIndex);
-        buffer.get(newLineStart, lineStart.length, newLineStart.length);
+        buffer.get(newLineStart, lineStart.length, index);
         this.lineStart = newLineStart;
       }
     }
@@ -53,6 +53,7 @@ public class ByteBufferReader {
       bytes = Arrays.copyOf(lineStart, lineStart.length + length);
       buffer.position(bufferStartIndex);
       buffer.get(bytes, lineStart.length, length);
+      lineStart = null;
     } else {
       bytes = readBytes(buffer, bufferStartIndex, length);
     }
