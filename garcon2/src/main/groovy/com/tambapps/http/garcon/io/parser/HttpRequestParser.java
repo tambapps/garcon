@@ -12,8 +12,8 @@ public class HttpRequestParser {
   HttpRequest.HttpRequestBuilder builder = HttpRequest.builder();
   // return true if the whole request has been parsed
   public boolean parse(ByteBuffer buffer) {
-    ByteBufferReader reader = new ByteBufferReader(buffer);
-    String line = reader.readLine();
+    ByteBufferReader reader = new ByteBufferReader();
+    String line = reader.readLine(buffer);
     int firstSpace = line.indexOf(' ');
     int secondSpace = line.indexOf(' ', firstSpace + 1);
     if (secondSpace < 0) {
