@@ -153,7 +153,6 @@ public class AsyncHttpServer {
       try {
         HttpRequest request = attachment.parseRequest(buffer);
         if (request != null) {
-          attachment.setPendingWrite(true);
           // we are done reading, now we need to handle the request
           executor.submit(new ExchangeRunnable(selectionKey, request));
           selectionKey.interestOps(SelectionKey.OP_WRITE);
