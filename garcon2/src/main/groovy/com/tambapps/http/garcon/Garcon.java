@@ -1,6 +1,5 @@
 package com.tambapps.http.garcon;
 
-import com.tambapps.http.garcon.exception.ComposingException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
@@ -15,17 +14,8 @@ import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.net.InetAddress;
-import java.util.List;
 import java.util.concurrent.Executors;
 
-/**
- * TODO sometime get ConcurrrentModificationException
- * Sun Aug 14 16:24:10 CEST 2022 [ERROR] garcon-loop - Unexpected Error while running server. Stopping it
- * java.util.ConcurrentModificationException
- * 	at java.base/java.util.HashMap$HashIterator.remove(HashMap.java:1611)
- * 	at com.tambapps.http.garcon.AsyncHttpServer.lambda$start$0(AsyncHttpServer.java:109)
- * 	at java.base/java.lang.Thread.run(Thread.java:833)
- */
 public class Garcon extends AbstractHttpExchangeHandler {
   @Getter
   private InetAddress address;

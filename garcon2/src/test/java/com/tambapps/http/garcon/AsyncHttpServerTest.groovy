@@ -1,7 +1,5 @@
 package com.tambapps.http.garcon
 
-import com.tambapps.http.garcon.AsyncHttpServer
-import com.tambapps.http.garcon.HttpResponse
 import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import org.junit.jupiter.api.AfterEach
@@ -36,7 +34,9 @@ class AsyncHttpServerTest {
     httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(4), {
       return new HttpResponse()
     })
-    httpServer.start(InetAddress.getByName('localhost'), 8081)
+    if (!httpServer.start(InetAddress.getByName('localhost'), 8081)) {
+      throw new RuntimeException("Couldn't start the server")
+    }
   }
 
   @AfterEach

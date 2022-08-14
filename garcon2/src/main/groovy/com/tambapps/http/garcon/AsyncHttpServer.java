@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AsyncHttpServer {
@@ -71,26 +72,29 @@ public class AsyncHttpServer {
       return false;
     }
     running.set(true);
-    final Selector selector;
-    final ServerSocketChannel serverSocket;
-    // TODO should be in created in serverThread to avoir concurrentModification
-    try {
-      selector = Selector.open();
-      serverSocket = ServerSocketChannel.open();
-      serverSocket.bind(new InetSocketAddress(address, port));
-      // Put the ServerSocketChannel into non-blocking mode
-      serverSocket.configureBlocking(false);
-      // Now register the channel with the Selector. The SelectionKey
-      // represents the registration of this channel with this Selector.
-      serverSocket.register(selector, SelectionKey.OP_ACCEPT);
-    } catch (IOException e) {
-      logger.error("Couldn't start server", e);
-      return false;
-    }
+    final LinkedBlockingQueue<Boolean> startResultQueue = new LinkedBlockingQueue<>();
 
-    this.serverSocket = serverSocket;
-    this.selector = selector;
     Runnable serverRunnable = () -> {
+      final Selector selector;
+      final ServerSocketChannel serverSocket;
+      try {
+        selector = Selector.open();
+        serverSocket = ServerSocketChannel.open();
+        serverSocket.bind(new InetSocketAddress(address, port));
+        // Put the ServerSocketChannel into non-blocking mode
+        serverSocket.configureBlocking(false);
+        // Now register the channel with the Selector. The SelectionKey
+        // represents the registration of this channel with this Selector.
+        serverSocket.register(selector, SelectionKey.OP_ACCEPT);
+      } catch (IOException e) {
+        logger.error("Couldn't start server", e);
+        startResultQueue.add(false);
+        return;
+      }
+      startResultQueue.add(true);
+
+      AsyncHttpServer.this.serverSocket = serverSocket;
+      AsyncHttpServer.this.selector = selector;
       try {
         while (running.get()) {
           selector.select();
@@ -122,7 +126,12 @@ public class AsyncHttpServer {
 
     serverThread = new Thread(serverRunnable, "garcon-loop");
     serverThread.start();
-    return true;
+    try {
+      return startResultQueue.take();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return false;
+    }
   }
 
   private void accept(Selector selector, ServerSocketChannel serverSocket) throws IOException {
