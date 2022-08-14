@@ -29,10 +29,10 @@ class HttpExchangeContext {
   }
 
   Headers getRequestHeaders() {
-    return request.headers
+    return request.getHeaders()
   }
   Headers getResponseHeaders() {
-    return response.headers
+    return response.getHeaders()
   }
 
   def getParsedRequestBody() {
@@ -40,19 +40,19 @@ class HttpExchangeContext {
   }
 
   def getParsedRequestBody(ContentType accept) {
-    if (request.body == null) {
+    if (request.getBody() == null) {
       return null
     }
     if (this.@parsedBody == null) {
       def b
       if (accept == null) {
-        b = request.body
+        b = request.getBody()
       } else {
         def parser = parsers[accept]
-        if (parser) {
-          b = parser.call(request.body)
+        if (parser != null) {
+          b = parser.call(request.getBody())
         } else {
-          b = request.body
+          b = request.getBody()
         }
       }
       this.@parsedBody = b
@@ -64,7 +64,7 @@ class HttpExchangeContext {
   def invokeMethod(String name, Object o) {
     Object[] args = o instanceof Object[] ? o : new Object[] { o }
     if (args.length == 1) {
-      def contentType = composers.keySet().find { it.subtype == name }
+      def contentType = composers.keySet().find { it.getSubtype() == name }
       if (contentType != null) {
         response.headers.putContentTypeHeader(contentType.headerValue)
         // set response body here so that the HttpExchangeHandler doesn't compose it again
