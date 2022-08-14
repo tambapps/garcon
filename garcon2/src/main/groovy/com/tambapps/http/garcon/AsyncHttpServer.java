@@ -1,12 +1,16 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.exception.BadProtocolException;
+import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.logger.DefaultLogger;
 import com.tambapps.http.garcon.logger.Logger;
 import lombok.Setter;
+import lombok.Value;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
+import java.net.ProtocolException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
@@ -16,6 +20,7 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 public class AsyncHttpServer {
@@ -26,6 +31,8 @@ public class AsyncHttpServer {
   private Selector selector;
   @Setter
   private Logger logger = new DefaultLogger();
+  // TODO will be used by executor
+  private final ConcurrentLinkedDeque<SelectionKeyResponse> pendingResponses = new ConcurrentLinkedDeque<>();
 
   // TODO configure request timeout
   public void stop() {
@@ -109,10 +116,16 @@ public class AsyncHttpServer {
     } else if (read > 0) {
       buffer.flip();
       HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
-      if (attachment.getRequestParser().parse(buffer)) {
-        // if parsing completed, write response
-        // TODO add a handler to handle response
-        write(selectionKey);
+      try {
+        if (attachment.parseRequest(buffer)) {
+          attachment.setPendingWrite(true);
+          // we are done reading, now we need to write the response
+          selectionKey.interestOps(SelectionKey.OP_WRITE);
+        }
+      } catch (BadProtocolException e) {
+        DefaultGroovyMethods.closeQuietly(selectionKey.channel());
+      } catch (BadRequestException e) {
+        // TODO write error response
       }
     }
   }
@@ -138,4 +151,9 @@ public class AsyncHttpServer {
     return running.get();
   }
 
+  @Value
+  private static class SelectionKeyResponse {
+    SelectionKey key;
+    HttpResponse response;
+  }
 }

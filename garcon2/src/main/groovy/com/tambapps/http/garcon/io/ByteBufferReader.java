@@ -62,4 +62,8 @@ public class ByteBufferReader {
     buffer.position(buffer.position() + 2);
     return new String(bytes);
   }
+
+  public void clear() {
+    lineStart = null;
+  }
 }

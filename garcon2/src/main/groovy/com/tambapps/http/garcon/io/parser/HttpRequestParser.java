@@ -164,4 +164,10 @@ public class HttpRequestParser {
       return bodyBuffer.array();
     }
   }
+
+
+  public void reset() {
+    state = ParsingState.COMMAND_LINE;
+    reader.clear();
+  }
 }
