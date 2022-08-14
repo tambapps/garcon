@@ -85,6 +85,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
     httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads), this);
     httpServer.start(address, port);
+    if (onStart != null) {
+      onStart.call(address, port);
+    }
   }
 
   public void waitStop() {
