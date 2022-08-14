@@ -8,10 +8,11 @@ import java.nio.file.Path
 class EndpointDefiner {
 
   private final Garcon garcon
-  private final List<EndpointDefinition> endpointDefinitions
+  // path -> method -> endpoint
+  private final Map<String, Map<String, EndpointDefinition>> endpointDefinitions
 
   @PackageScope
-  EndpointDefiner(Garcon garcon, List<EndpointDefinition> endpointDefinitions) {
+  EndpointDefiner(Garcon garcon, Map<String, Map<String, EndpointDefinition>> endpointDefinitions) {
     this.garcon = garcon
     this.endpointDefinitions = endpointDefinitions
   }
@@ -24,8 +25,7 @@ class EndpointDefiner {
       @NamedParam(value = 'accept', type = ContentType.class)
       @NamedParam(value = 'contentType', type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
-    endpointDefinitions.add(new EndpointDefinition(method: 'PUT', path: path, closure: closure,
-        accept: (ContentType) additionalParameters.accept, contentType: (ContentType) additionalParameters.contentType))
+    method(additionalParameters, 'PUT', path, closure)
   }
 
   void post(String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
@@ -36,8 +36,7 @@ class EndpointDefiner {
       @NamedParam(value = 'accept', type = ContentType.class)
       @NamedParam(value = 'contentType', type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
-    endpointDefinitions.add(new EndpointDefinition(method: 'POST', path: path, closure: closure,
-        accept: (ContentType) additionalParameters.accept, contentType: (ContentType) additionalParameters.contentType))
+    method(additionalParameters, 'POST', path, closure)
   }
 
   void patch(String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
@@ -48,8 +47,7 @@ class EndpointDefiner {
       @NamedParam(value = 'accept', type = ContentType.class)
       @NamedParam(value = 'contentType', type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
-    endpointDefinitions.add(new EndpointDefinition(method: 'PATCH', path: path, closure: closure,
-        accept: (ContentType) additionalParameters.accept, contentType: (ContentType) additionalParameters.contentType))
+    method(additionalParameters, 'PATCH', path, closure)
   }
 
   void get(String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
@@ -59,8 +57,7 @@ class EndpointDefiner {
   void get(
       @NamedParam(value = 'contentType', type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
-    endpointDefinitions.add(new EndpointDefinition(method: 'GET', path: path, closure: closure,
-        contentType: (ContentType) additionalParameters.contentType))
+    method(additionalParameters, 'GET', path, closure)
   }
 
   void delete(String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
@@ -70,8 +67,15 @@ class EndpointDefiner {
   void delete(
       @NamedParam(value = 'contentType', type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
-    endpointDefinitions.add(new EndpointDefinition(method: 'DELETE', path: path, closure: closure,
-        contentType: (ContentType) additionalParameters.contentType))
+    method(additionalParameters, 'DELETE', path, closure)
+  }
+
+
+  void method(@NamedParam(value = 'accept', type = ContentType.class)
+      @NamedParam(value = 'contentType', type = ContentType.class)
+          Map<?, ?> additionalParameters, String method, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
+    addEndpoint(path, method, new EndpointDefinition(closure: closure, contentType: (ContentType) additionalParameters.contentType,
+        accept: (ContentType) additionalParameters.accept))
   }
 
   void setContentType(ContentType contentType) {
@@ -113,5 +117,23 @@ class EndpointDefiner {
       HttpResponse response = (HttpResponse) getProperty('response')
       response.body = new FileInputStream(f)
     }
+  }
+
+  private void addEndpoint(String path, String method, EndpointDefinition endpointDefinition) {
+    if (path.endsWith('/')) {
+      path = path.substring(0, path.length() - 1)
+    }
+    if (!path.startsWith('/')) {
+      path = "/$path"
+    }
+    def methodMap = endpointDefinitions.get(path)
+    if (methodMap == null) {
+      methodMap = new HashMap<String, EndpointDefinition>()
+      endpointDefinitions.put(path, methodMap)
+    }
+    if (methodMap.containsKey(method)) {
+      throw new IllegalStateException("Endpoint$method $path is already defined")
+    }
+    methodMap.put(method.toUpperCase(), endpointDefinition)
   }
 }

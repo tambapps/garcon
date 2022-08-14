@@ -1,5 +1,7 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.exception.MethodNotAllowedException;
+import com.tambapps.http.garcon.exception.PathNotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.util.AddressUtils;
@@ -154,18 +156,15 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
   @Override
   public HttpResponse processExchange(HttpRequest request) {
-    // TODO enhance that with map and exception throwing for 404, 405
-    List<EndpointDefinition> pathDefinitions = endpointsHandler.getDefinitionsForPath(request.getPath());
-    if (pathDefinitions == null || pathDefinitions.isEmpty()) {
+    EndpointDefinition definition;
+    try {
+      definition = endpointsHandler.getEndpoint(request.getPath(), request.getMethod());
+    } catch (PathNotFoundException e) {
       return default404Response();
-    }
-
-    EndpointDefinition definition = pathDefinitions.stream().filter(d -> d.getMethod().equals(request.getMethod()))
-        .findFirst()
-        .orElse(null);
-    if (definition == null) {
+    } catch (MethodNotAllowedException e) {
       return default405Response(request.getMethod());
     }
+
     HttpExchangeContext context = new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
         definition.getContentType() != null ? definition.getContentType() : contentType,
         definition.getAccept() != null ? definition.getAccept() : accept);

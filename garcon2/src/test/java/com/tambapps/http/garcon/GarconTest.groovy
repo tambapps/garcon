@@ -52,6 +52,7 @@ class GarconTest {
 
     assertEquals('Hello World', poet.get('/hello'))
     assertEquals('Hello World', poet.get('/hello?p=1&a=2'))
+    assertEquals('Hello World', poet.get('/hello/?p=1&a=2'))
   }
 
   @Test

@@ -9,8 +9,6 @@ import java.nio.file.Paths
 @PackageScope
 class EndpointDefinition {
 
-  String method
-  String path
   private Closure closure
   ContentType accept
   ContentType contentType
@@ -39,7 +37,4 @@ class EndpointDefinition {
     }
   }
 
-  boolean matches(Path otherPath) {
-    return Paths.get(path.startsWith('/') ? path : ("/$path".toString())) == otherPath
-  }
 }
