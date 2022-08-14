@@ -13,6 +13,7 @@ import lombok.Setter;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedSelectorException;
@@ -37,6 +38,7 @@ public class AsyncHttpServer {
   private Logger logger = new DefaultLogger();
   // TODO will be used by executor
   private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
+  private Thread serverThread;
 
   private final ExecutorService executor;
   @Setter
@@ -56,10 +58,16 @@ public class AsyncHttpServer {
     DefaultGroovyMethods.closeQuietly(selector);
     DefaultGroovyMethods.closeQuietly(serverSocket);
     executor.shutdown();
+    try {
+      serverThread.join();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return;
+    }
   }
 
   // return true if server was actually started
-  public boolean start() {
+  public boolean start(InetAddress address, Integer port) {
     if (isRunning()) {
       return false;
     }
@@ -69,7 +77,7 @@ public class AsyncHttpServer {
     try {
       selector = Selector.open();
       serverSocket = ServerSocketChannel.open();
-      serverSocket.bind(new InetSocketAddress("localhost", 8081));
+      serverSocket.bind(new InetSocketAddress(address, port));
       // Put the ServerSocketChannel into non-blocking mode
       serverSocket.configureBlocking(false);
       // Now register the channel with the Selector. The SelectionKey
@@ -112,7 +120,8 @@ public class AsyncHttpServer {
       DefaultGroovyMethods.closeQuietly(serverSocket);
     };
 
-    new Thread(serverRunnable, "garcon-loop").start();
+    serverThread = new Thread(serverRunnable, "garcon-loop");
+    serverThread.start();
     return true;
   }
 
@@ -158,16 +167,27 @@ public class AsyncHttpServer {
     HttpResponseComposer.writeInto(channel, response);
     HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
     // TODO keep track of all open connections (selectionKey) to be able to close them all when stopping server
-    if (response.isKeepAlive()) {
+    if (response.isKeepAlive() && selectionKey.isValid()) {
       selectionKey.interestOps(SelectionKey.OP_READ);
       attachment.reset();
     } else {
-      channel.close();
+      DefaultGroovyMethods.closeQuietly(channel);
     }
   }
 
   public boolean isRunning() {
     return running.get();
+  }
+
+  public void waitStop() {
+    while (isRunning()) {
+      try {
+        Thread.sleep(500L);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        return;
+      }
+    }
   }
 
   @AllArgsConstructor

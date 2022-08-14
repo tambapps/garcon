@@ -1,4 +1,4 @@
-package com.tambapps.http.garcon.io
+package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.AsyncHttpServer
 import com.tambapps.http.garcon.HttpResponse
@@ -36,7 +36,7 @@ class AsyncHttpServerTest {
     httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(4), {
       return new HttpResponse()
     })
-    httpServer.start()
+    httpServer.start(InetAddress.getByName('localhost'), 8081)
   }
 
   @AfterEach
