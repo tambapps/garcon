@@ -19,15 +19,18 @@ public class HttpRequestParser {
     BODY,
     COMPLETE
   }
-  ParsingState state = ParsingState.COMMAND_LINE;
-  ByteBufferReader reader = new ByteBufferReader();
-  Headers headers = new Headers();
+  ParsingState state;
+  final ByteBufferReader reader = new ByteBufferReader();
+  final Headers headers = new Headers();
   String method;
   String path;
   String protocolVersion;
   Map<String, String> queryParams;
   BodyParser bodyParser;
 
+  public HttpRequestParser() {
+    reset();
+  }
   // return true if the whole request has been parsed
   public boolean parse(ByteBuffer buffer) {
     if (state == ParsingState.COMPLETE) {
@@ -144,30 +147,38 @@ public class HttpRequestParser {
   private static class ContentLengthBodyParser implements BodyParser {
 
     public ContentLengthBodyParser(int contentLength) {
-      this.bodyBuffer = ByteBuffer.allocate(contentLength);
+      this.body = new byte[contentLength];
+      readRemaining = contentLength;
     }
 
-    ByteBuffer bodyBuffer;
+    byte[] body;
+    int readRemaining;
+    int readCount = 0;
 
     @Override
     public boolean parse(ByteBuffer buffer) {
-      try {
-        bodyBuffer.put(buffer);
-      } catch (BufferOverflowException e) {
-        throw new BadRequestException("Didn't respect content length specified");
-      }
-      return bodyBuffer.position() == bodyBuffer.capacity();
+      int toRead = Math.min(buffer.remaining(), readRemaining);
+      buffer.get(body, readCount, toRead);
+      readRemaining -= toRead;
+      readCount += toRead;
+      return readCount >= body.length;
     }
 
     @Override
     public byte[] getBody() {
-      return bodyBuffer.array();
+      return body;
     }
   }
 
 
   public void reset() {
-    state = ParsingState.COMMAND_LINE;
     reader.clear();
+    state = ParsingState.COMMAND_LINE;
+    headers.clear();
+    method = null;
+    path = null;
+    protocolVersion = null;
+    queryParams = null;
+    bodyParser = null;
   }
 }
