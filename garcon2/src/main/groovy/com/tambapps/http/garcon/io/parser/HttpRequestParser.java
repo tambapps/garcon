@@ -22,11 +22,11 @@ public class HttpRequestParser {
   ParsingState state = ParsingState.COMMAND_LINE;
   ByteBufferReader reader = new ByteBufferReader();
   Headers headers = new Headers();
-  ByteBuffer bodyBuffer = null;
   String method;
   String path;
   String protocolVersion;
   Map<String, String> queryParams;
+  BodyParser bodyParser;
 
   // return true if the whole request has been parsed
   public boolean parse(ByteBuffer buffer) {
@@ -60,32 +60,26 @@ public class HttpRequestParser {
           return true;
         }
       case BODY:
-        Long contentLength = headers.getContentLength();
-        String transferEncoding = headers.get(Headers.TRANSFER_ENCODING_HEADER);
-        if (contentLength == null && transferEncoding == null) {
-          state = ParsingState.COMPLETE;
-          return true;
-        }
-        boolean isRequestBodyChunked = "chunked".equalsIgnoreCase(transferEncoding);
-        if (isRequestBodyChunked && contentLength != null) {
-          throw new BadRequestException("Cannot have both a content length and a chunked request encoding");
-        } else if (isRequestBodyChunked) {
-          // TODO
-        } else if (contentLength != null) {
-          if (bodyBuffer == null) {
-            bodyBuffer = ByteBuffer.allocate(contentLength.intValue());
-          }
-          try {
-            bodyBuffer.put(buffer);
-          } catch (BufferOverflowException e) {
-            throw new BadRequestException("Didn't respect content length specified");
-          }
-          if (bodyBuffer.position() == bodyBuffer.capacity() - 1) {
+        if (bodyParser == null) {
+          Long contentLength = headers.getContentLength();
+          String transferEncoding = headers.get(Headers.TRANSFER_ENCODING_HEADER);
+          if (contentLength == null && transferEncoding == null || Long.valueOf(0L).equals(contentLength)) {
             state = ParsingState.COMPLETE;
             return true;
-          } else {
-            return false;
           }
+          boolean isRequestBodyChunked = "chunked".equalsIgnoreCase(transferEncoding);
+          if (isRequestBodyChunked && contentLength != null) {
+            // TODO catch me
+            throw new BadRequestException("Cannot have both a content length and a chunked request encoding");
+          } else if (isRequestBodyChunked) {
+            bodyParser = new ChunkedBodyParser();
+          } else if (contentLength != null) {
+            bodyParser = new ContentLengthBodyParser(contentLength.intValue());
+          }
+        }
+        if (bodyParser.parse(buffer)) {
+          state = ParsingState.COMPLETE;
+          return true;
         }
     }
     return false;
@@ -123,7 +117,51 @@ public class HttpRequestParser {
 
   public HttpRequest getRequest() {
     return new HttpRequest(method, path, queryParams != null ? queryParams : Collections.emptyMap(), protocolVersion, headers.asImmutable(),
-        // TODO
-        bodyBuffer != null ? bodyBuffer.array() : null);
+        bodyParser != null ? bodyParser.getBody() : null);
+  }
+
+  private interface BodyParser {
+
+    // return true if finished parsing
+    boolean parse(ByteBuffer buffer);
+
+    byte[] getBody();
+  }
+
+  private static class ChunkedBodyParser implements BodyParser {
+
+    @Override
+    public boolean parse(ByteBuffer buffer) {
+      // TODO
+      return true;
+    }
+
+    @Override
+    public byte[] getBody() {
+      return null;
+    }
+  }
+  private static class ContentLengthBodyParser implements BodyParser {
+
+    public ContentLengthBodyParser(int contentLength) {
+      this.bodyBuffer = ByteBuffer.allocate(contentLength);
+    }
+
+    ByteBuffer bodyBuffer;
+
+    @Override
+    public boolean parse(ByteBuffer buffer) {
+      try {
+        bodyBuffer.put(buffer);
+      } catch (BufferOverflowException e) {
+        throw new BadRequestException("Didn't respect content length specified");
+      }
+      return bodyBuffer.position() == bodyBuffer.capacity() - 1;
+    }
+
+    @Override
+    public byte[] getBody() {
+      return bodyBuffer.array();
+    }
   }
 }

@@ -37,7 +37,8 @@ class HttpRequestParserTest {
     assertFalse(parser.parse(toBuffer('GET /path?hello=world HTTP/1.1\r\n' +
         'Host: localhost:8081\r\n')))
     assertEquals(HttpRequestParser.ParsingState.HEADERS, parser.state)
-    assertFalse(parser.parse(toBuffer('Connection: Ke')))
+    assertFalse(parser.parse(toBuffer('Connec')))
+    assertFalse(parser.parse(toBuffer('tion: Ke')))
     assertEquals(HttpRequestParser.ParsingState.HEADERS, parser.state)
     assertFalse(parser.parse(toBuffer('ep-Alive\r\n' +
         'Accept-Encodi')))
