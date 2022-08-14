@@ -1,13 +1,15 @@
 package com.tambapps.http.garcon;
 
+import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
+import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
+
 import com.tambapps.http.garcon.exception.BadProtocolException;
 import com.tambapps.http.garcon.exception.BadRequestException;
+import com.tambapps.http.garcon.io.composer.HttpResponseComposer;
 import com.tambapps.http.garcon.logger.DefaultLogger;
 import com.tambapps.http.garcon.logger.Logger;
 import lombok.AllArgsConstructor;
-import lombok.RequiredArgsConstructor;
 import lombok.Setter;
-import lombok.Value;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
@@ -18,7 +20,6 @@ import java.nio.channels.SelectionKey;
 import java.nio.channels.Selector;
 import java.nio.channels.ServerSocketChannel;
 import java.nio.channels.SocketChannel;
-import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
@@ -26,7 +27,6 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-@RequiredArgsConstructor
 public class AsyncHttpServer {
 
   private final AtomicBoolean running = new AtomicBoolean(false);
@@ -39,7 +39,14 @@ public class AsyncHttpServer {
   private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
 
   private final ExecutorService executor;
-  private final HttpExchangeHandler exchangeHandler;
+  @Setter
+  private HttpExchangeHandler exchangeHandler;
+
+  public AsyncHttpServer(ExecutorService executor, HttpExchangeHandler exchangeHandler) {
+    this.executor = executor;
+    this.exchangeHandler = exchangeHandler;
+  }
+
   // TODO configure request timeout
   public void stop() {
     if (!isRunning()) {
@@ -48,6 +55,7 @@ public class AsyncHttpServer {
     running.set(false);
     DefaultGroovyMethods.closeQuietly(selector);
     DefaultGroovyMethods.closeQuietly(serverSocket);
+    executor.shutdown();
   }
 
   // return true if server was actually started
@@ -96,6 +104,8 @@ public class AsyncHttpServer {
       } catch (ClosedSelectorException ignored) {
       } catch (IOException e) {
         logger.error("Error while running server. Stopping it", e);
+      } catch (Exception e) {
+        logger.error("Unexpected Error while running server. Stopping it", e);
       }
       running.set(false);
       DefaultGroovyMethods.closeQuietly(selector);
@@ -145,18 +155,7 @@ public class AsyncHttpServer {
       return;
     }
     SocketChannel channel = (SocketChannel) selectionKey.channel();
-    channel.write(    ByteBuffer.wrap((    "HTTP/1.0 200 OK\r\n" +
-        "Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n" +
-        "Server: Apache/0.8.4\r\n" +
-        "Content-Type: text/html\r\n" +
-        "Content-Length: 59\r\n" +
-        "Expires: Sat, 01 Jan 2000 00:59:59 GMT\r\n" +
-        "Last-modified: Fri, 09 Aug 1996 14:21:40 GMT\r\n" +
-        "\r\n" +
-        "<TITLE>Exemple</TITLE>\r\n" +
-        "<P>Ceci est une page d'exemple.</P>"
-    ).getBytes(StandardCharsets.UTF_8))
-    );
+    HttpResponseComposer.writeInto(channel, response);
     HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
     // TODO keep track of all open connections (selectionKey) to be able to close them all when stopping server
     if (response.isKeepAlive()) {
@@ -179,8 +178,37 @@ public class AsyncHttpServer {
 
     @Override
     public void run() {
-      HttpResponse response = exchangeHandler.processExchange(request);
+      HttpResponse response;
+      try {
+        response = exchangeHandler.processExchange(request);
+      } catch (Exception e) {
+        logger.error("Error while processing exchange for request " + request, e);
+        response = new HttpResponse();
+        response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
+        response.setBody("An internal server error occurred");
+        response.getHeaders().put(Headers.CONTENT_TYPE_HEADER, ContentType.TEXT.getHeaderValue());
+      }
+      addDefaultHeaders(request, response);
       pendingResponses.put(key, response);
+    }
+
+    private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
+      Headers responseHeaders = response.getHeaders();
+      responseHeaders.put("Server", "Garcon (Tambapps)");
+      Integer contentLength = response.getContentLength();
+      if (contentLength != null) {
+        responseHeaders.put("Content-Length", contentLength.toString());
+      }
+
+      String connectionHeader = responseHeaders.getConnectionHeader();
+      if (connectionHeader == null) {
+        // keep connection alive if request body and response body are with definite length AND client want so
+        responseHeaders.putConnectionHeader(response.is2xxSuccessful()
+            && contentLength != null
+            && request != null
+            && CONNECTION_KEEP_ALIVE.equalsIgnoreCase(request.getHeaders().getConnectionHeader())
+            ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
+      }
     }
   }
 }

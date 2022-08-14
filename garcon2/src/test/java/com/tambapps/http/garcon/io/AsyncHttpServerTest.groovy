@@ -11,6 +11,8 @@ import org.junit.jupiter.api.Test
 import java.time.Duration
 import java.util.concurrent.Executors
 
+import static org.junit.jupiter.api.Assertions.assertEquals
+
 class AsyncHttpServerTest {
 
   AsyncHttpServer httpServer
@@ -32,7 +34,6 @@ class AsyncHttpServerTest {
   @BeforeEach
   void begin() {
     httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(4), {
-      Thread.sleep(2000)
       return new HttpResponse()
     })
     httpServer.start()
@@ -46,6 +47,12 @@ class AsyncHttpServerTest {
 
   @Test
   void test() {
-    println(poet.get('/path?hello=world'))
+    httpServer.setExchangeHandler {
+      def response = new HttpResponse()
+      response.body = "${it.method} ${it.path} " + it.queryParams['hello']
+      return response
+    }
+
+    assertEquals('GET /path world', poet.get('/path?hello=world'))
   }
 }

@@ -1,11 +1,12 @@
 package com.tambapps.http.garcon;
 
+import groovy.lang.GString;
 import lombok.Data;
+import lombok.SneakyThrows;
 import org.codehaus.groovy.runtime.IOGroovyMethods;
 
-import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
+import java.nio.ByteBuffer;
 
 @Data
 public class HttpResponse {
@@ -18,52 +19,36 @@ public class HttpResponse {
   /**
    * Body of the response. Can be a byte array, a String, or an InputStream (or null for no body)
    */
-  Object body;
+  ByteBuffer body;
 
   public boolean is2xxSuccessful() {
     return statusCode.getValue() >= 200 && statusCode.getValue() < 300;
   }
+
+  @SneakyThrows
   public void setBody(Object body) {
     if (body == null) {
+      this.body = null;
       return;
     }
-    if (!(body instanceof byte[]) && !(body instanceof String) && !(body instanceof InputStream)) {
-      throw new IllegalStateException(String.format("Cannot handle body of type %s", body.getClass()));
+    if (body instanceof ByteBuffer) {
+      this.body = (ByteBuffer) body;
+    } else if (body instanceof byte[]) {
+      this.body = ByteBuffer.wrap(((byte[]) body));
+    } else if (body instanceof String || body instanceof GString) {
+      this.body = ByteBuffer.wrap(body.toString().getBytes());
+    } else if (body instanceof InputStream) {
+      this.body = ByteBuffer.wrap(IOGroovyMethods.getBytes(((InputStream) body)));
+    } else {
+      throw new IllegalArgumentException("Cannot handle body of type " + body.getClass().getSimpleName());
     }
-    this.body = body;
   }
   public boolean isIndefiniteLength() {
     return getContentLength() == null;
   }
 
-  public Long getContentLength() {
-    if (body == null) {
-      return 0L;
-    } else if (body instanceof byte[]) {
-      return (long) ((byte[]) body).length;
-    } else if (body instanceof String) {
-      return (long) ((String) body).getBytes().length;
-    } else if (body instanceof InputStream) {
-      return null;
-    } else {
-      throw new IllegalStateException("Cannot handle body of type " + body.getClass());
-    }
-  }
-
-  public void writeBody(OutputStream os) throws IOException {
-    if (body == null) {
-      return;
-    }
-    if (body instanceof byte[]) {
-      os.write((byte[]) body);
-    } else if (body instanceof String) {
-      os.write(((String) body).getBytes());
-    } else if (body instanceof InputStream) {
-      IOGroovyMethods.leftShift(os, (InputStream) body);
-    } else {
-      throw new IllegalStateException("Cannot handle body of type " + body.getClass());
-    }
-    os.flush();
+  public Integer getContentLength() {
+    return body != null ? body.capacity() : null;
   }
 
   public boolean isKeepAlive() {
