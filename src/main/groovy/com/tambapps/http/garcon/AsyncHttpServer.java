@@ -164,6 +164,7 @@ public class AsyncHttpServer {
         HttpResponse response = new HttpResponse();
         response.setStatusCode(HttpStatus.BAD_REQUEST);
         response.getHeaders().setContentType(ContentType.TEXT);
+        response.setBody(e.getMessage());
         addDefaultHeaders(null, response);
         pendingResponses.put(selectionKey, response);
 

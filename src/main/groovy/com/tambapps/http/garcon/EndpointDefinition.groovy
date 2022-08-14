@@ -33,7 +33,7 @@ class EndpointDefinition {
       }
       return response
     } catch (ParsingException e) {
-      return new HttpResponse(statusCode: HttpStatus.BAD_REQUEST)
+      return new HttpResponse(statusCode: HttpStatus.BAD_REQUEST, body: e.message)
     }
   }
 
