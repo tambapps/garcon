@@ -8,6 +8,10 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
   @Override
   public abstract HttpResponse processExchange(HttpRequest request);
 
+  HttpResponse default400Response(String message) {
+    return newErrorResponse(HttpStatus.BAD_REQUEST, message);
+  }
+
   HttpResponse default404Response() {
     return newErrorResponse(HttpStatus.NOT_FOUND, "No resource were found at the provided path");
   }

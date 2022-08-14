@@ -1,6 +1,8 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.exception.ComposingException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
+import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
@@ -171,6 +173,8 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
     try {
       return definition.call(context);
+    } catch (ParsingException e) {
+      return default400Response("Request body is malformed");
     } catch (Exception e) {
       if (onExchangeError != null) {
         onExchangeError.call(e);
