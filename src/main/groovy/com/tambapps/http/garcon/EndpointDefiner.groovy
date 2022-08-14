@@ -74,8 +74,8 @@ class EndpointDefiner {
   void method(@NamedParam(value = 'accept', type = ContentType.class)
       @NamedParam(value = 'contentType', type = ContentType.class)
           Map<?, ?> additionalParameters, String method, String path, @DelegatesTo(HttpExchangeContext) Closure closure) {
-    addEndpoint(path, method, new EndpointDefinition(closure: closure, contentType: (ContentType) additionalParameters.contentType,
-        accept: (ContentType) additionalParameters.accept))
+    addEndpoint(path, method, new EndpointDefinition(closure, (ContentType) additionalParameters.accept,
+        (ContentType) additionalParameters.contentType))
   }
 
   void setContentType(ContentType contentType) {
