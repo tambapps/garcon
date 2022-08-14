@@ -13,8 +13,8 @@ public class HttpAttachment {
   @Setter
   private boolean pendingWrite;
 
-  public boolean parseRequest(ByteBuffer buffer) {
-    return requestParser.parse(buffer);
+  public HttpRequest parseRequest(ByteBuffer buffer) {
+    return requestParser.parse(buffer) ? requestParser.getRequest() : null;
   }
 
   public void reset() {

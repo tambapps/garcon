@@ -66,4 +66,7 @@ public class HttpResponse {
     os.flush();
   }
 
+  public boolean isKeepAlive() {
+    return Headers.CONNECTION_KEEP_ALIVE.equalsIgnoreCase(headers.get(Headers.CONNECTION_HEADER));
+  }
 }

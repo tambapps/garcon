@@ -4,13 +4,14 @@ import com.tambapps.http.garcon.exception.BadProtocolException;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.logger.DefaultLogger;
 import com.tambapps.http.garcon.logger.Logger;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.Value;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
 import java.net.InetSocketAddress;
-import java.net.ProtocolException;
 import java.nio.ByteBuffer;
 import java.nio.channels.ClosedSelectorException;
 import java.nio.channels.SelectionKey;
@@ -20,9 +21,12 @@ import java.nio.channels.SocketChannel;
 import java.nio.charset.StandardCharsets;
 import java.util.Iterator;
 import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedDeque;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+@RequiredArgsConstructor
 public class AsyncHttpServer {
 
   private final AtomicBoolean running = new AtomicBoolean(false);
@@ -32,8 +36,10 @@ public class AsyncHttpServer {
   @Setter
   private Logger logger = new DefaultLogger();
   // TODO will be used by executor
-  private final ConcurrentLinkedDeque<SelectionKeyResponse> pendingResponses = new ConcurrentLinkedDeque<>();
+  private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
 
+  private final ExecutorService executor;
+  private final HttpExchangeHandler exchangeHandler;
   // TODO configure request timeout
   public void stop() {
     if (!isRunning()) {
@@ -117,9 +123,11 @@ public class AsyncHttpServer {
       buffer.flip();
       HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
       try {
-        if (attachment.parseRequest(buffer)) {
+        HttpRequest request = attachment.parseRequest(buffer);
+        if (request != null) {
           attachment.setPendingWrite(true);
-          // we are done reading, now we need to write the response
+          // we are done reading, now we need to handle the request
+          executor.submit(new ExchangeRunnable(selectionKey, request));
           selectionKey.interestOps(SelectionKey.OP_WRITE);
         }
       } catch (BadProtocolException e) {
@@ -131,6 +139,11 @@ public class AsyncHttpServer {
   }
 
   private void write(SelectionKey selectionKey) throws IOException {
+    HttpResponse response = pendingResponses.remove(selectionKey);
+    if (response == null) {
+      // handler did not finish yet. Waiting
+      return;
+    }
     SocketChannel channel = (SocketChannel) selectionKey.channel();
     channel.write(    ByteBuffer.wrap((    "HTTP/1.0 200 OK\r\n" +
         "Date: Fri, 31 Dec 1999 23:59:59 GMT\r\n" +
@@ -144,16 +157,30 @@ public class AsyncHttpServer {
         "<P>Ceci est une page d'exemple.</P>"
     ).getBytes(StandardCharsets.UTF_8))
     );
-    channel.close();
+    HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
+    // TODO keep track of all open connections (selectionKey) to be able to close them all when stopping server
+    if (response.isKeepAlive()) {
+      selectionKey.interestOps(SelectionKey.OP_READ);
+      attachment.reset();
+    } else {
+      channel.close();
+    }
   }
 
   public boolean isRunning() {
     return running.get();
   }
 
-  @Value
-  private static class SelectionKeyResponse {
-    SelectionKey key;
-    HttpResponse response;
+  @AllArgsConstructor
+  private class ExchangeRunnable implements Runnable {
+
+    private final SelectionKey key;
+    private final HttpRequest request;
+
+    @Override
+    public void run() {
+      HttpResponse response = exchangeHandler.processExchange(request);
+      pendingResponses.put(key, response);
+    }
   }
 }

@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon.io
 
 import com.tambapps.http.garcon.AsyncHttpServer
+import com.tambapps.http.garcon.HttpResponse
 import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import org.junit.jupiter.api.AfterEach
@@ -8,6 +9,7 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 import java.time.Duration
+import java.util.concurrent.Executors
 
 class AsyncHttpServerTest {
 
@@ -29,7 +31,10 @@ class AsyncHttpServerTest {
 
   @BeforeEach
   void begin() {
-    httpServer = new AsyncHttpServer()
+    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(4), {
+      Thread.sleep(2000)
+      return new HttpResponse()
+    })
     httpServer.start()
   }
 
