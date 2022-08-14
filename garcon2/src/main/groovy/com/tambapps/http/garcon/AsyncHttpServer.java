@@ -36,7 +36,6 @@ public class AsyncHttpServer {
   private Selector selector;
   @Setter
   private Logger logger = new DefaultLogger();
-  // TODO will be used by executor
   private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
   private Thread serverThread;
 
@@ -74,6 +73,7 @@ public class AsyncHttpServer {
     running.set(true);
     final Selector selector;
     final ServerSocketChannel serverSocket;
+    // TODO should be in created in serverThread to avoir concurrentModification
     try {
       selector = Selector.open();
       serverSocket = ServerSocketChannel.open();
@@ -152,7 +152,14 @@ public class AsyncHttpServer {
       } catch (BadProtocolException e) {
         DefaultGroovyMethods.closeQuietly(selectionKey.channel());
       } catch (BadRequestException e) {
-        // TODO write error response
+        HttpResponse response = new HttpResponse();
+        response.setStatusCode(HttpStatus.BAD_REQUEST);
+        response.getHeaders().setContentType(ContentType.TEXT);
+        addDefaultHeaders(null, response);
+        pendingResponses.put(selectionKey, response);
+
+        selectionKey.interestOps(SelectionKey.OP_WRITE);
+
       }
     }
   }
@@ -206,29 +213,29 @@ public class AsyncHttpServer {
         response = new HttpResponse();
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         response.setBody("An internal server error occurred");
-        response.getHeaders().put(Headers.CONTENT_TYPE_HEADER, ContentType.TEXT.getHeaderValue());
+        response.getHeaders().setContentType(ContentType.TEXT);
       }
       addDefaultHeaders(request, response);
       pendingResponses.put(key, response);
     }
+  }
 
-    private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
-      Headers responseHeaders = response.getHeaders();
-      responseHeaders.put("Server", "Garcon (Tambapps)");
-      Integer contentLength = response.getContentLength();
-      if (contentLength != null) {
-        responseHeaders.put("Content-Length", contentLength.toString());
-      }
+  private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
+    Headers responseHeaders = response.getHeaders();
+    responseHeaders.put("Server", "Garcon (Tambapps)");
+    Integer contentLength = response.getContentLength();
+    if (contentLength != null) {
+      responseHeaders.put("Content-Length", contentLength.toString());
+    }
 
-      String connectionHeader = responseHeaders.getConnectionHeader();
-      if (connectionHeader == null) {
-        // keep connection alive if request body and response body are with definite length AND client want so
-        responseHeaders.putConnectionHeader(response.is2xxSuccessful()
-            && contentLength != null
-            && request != null
-            && CONNECTION_KEEP_ALIVE.equalsIgnoreCase(request.getHeaders().getConnectionHeader())
-            ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
-      }
+    String connectionHeader = responseHeaders.getConnectionHeader();
+    if (connectionHeader == null) {
+      // keep connection alive if request body and response body are with definite length AND client want so
+      responseHeaders.putConnectionHeader(response.is2xxSuccessful()
+          && contentLength != null
+          && request != null
+          && CONNECTION_KEEP_ALIVE.equalsIgnoreCase(request.getHeaders().getConnectionHeader())
+          ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
     }
   }
 }

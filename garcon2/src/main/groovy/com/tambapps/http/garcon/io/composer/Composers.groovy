@@ -30,7 +30,6 @@ final class Composers {
     map.put(ContentType.TEXT, Composers.&composeStringBody)
     map.put(ContentType.HTML, Composers.&composeStringBody)
     map.put(ContentType.BINARY, Composers.&composeBytesBody)
-    // TODO map.put(ContentType.URL_ENCODED, new MethodClosure(queryParamComposer, "composeToString"))
     // default composer (when no content type was found)
     map.setDefaultValue(Composers.&composeStringBody)
     return map

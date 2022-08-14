@@ -29,7 +29,7 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
     HttpResponse response = new HttpResponse();
     response.setStatusCode(status);
     response.setBody(message);
-    response.getHeaders().put(Headers.CONTENT_TYPE_HEADER, ContentType.TEXT.getHeaderValue());
+    response.getHeaders().setContentType(ContentType.TEXT);
     return response;
   }
 

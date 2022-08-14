@@ -197,4 +197,8 @@ public class Headers implements Map<String, String> {
     return entrySet().stream().map(e -> String.format("%s=%s", e.getKey(), e.getValue()))
         .collect(Collectors.joining(", ", "{", "}"));
   }
+
+  public void setContentType(ContentType contentType) {
+    put(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
+  }
 }
