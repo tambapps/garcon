@@ -156,7 +156,7 @@ public class HttpRequestParser {
       } catch (BufferOverflowException e) {
         throw new BadRequestException("Didn't respect content length specified");
       }
-      return bodyBuffer.position() == bodyBuffer.capacity() - 1;
+      return bodyBuffer.position() == bodyBuffer.capacity();
     }
 
     @Override

@@ -56,6 +56,38 @@ class HttpRequestParserTest {
         parser.getRequest())
   }
 
+  @Test
+  void parseRequest_withBody() {
+    def parser = new HttpRequestParser()
+    String body = 'hello world'
+    int bodyLength = body.bytes.length
+    assertTrue(parser.parse(ByteBuffer.wrap(
+        ('POST /path?hello=world HTTP/1.1\r\n' +
+            'Content-Length: ' + bodyLength + '\r\n' +
+            '\r\n' + body).bytes
+    )))
+    assertEquals(new HttpRequest('POST', '/path', [hello: 'world'], 'HTTP/1.1',
+        new Headers([('Content-Length'): bodyLength]), body.bytes),
+        parser.getRequest())
+  }
+
+  @Test
+  void parseRequest_withBodyTwoParts() {
+    def parser = new HttpRequestParser()
+    String bodyPart1 = 'hello '
+    String bodyPart2 = 'world'
+    int bodyLength = bodyPart1.bytes.length + bodyPart2.bytes.length
+    assertFalse(parser.parse(toBuffer(
+        'PUT /path?hello=world HTTP/1.1\r\n' +
+            'Content-Length: ' + bodyLength + '\r\n' +
+            '\r\n' + bodyPart1
+    )))
+    assertTrue(parser.parse(toBuffer(bodyPart2)))
+    assertEquals(new HttpRequest('PUT', '/path', [hello: 'world'], 'HTTP/1.1',
+        new Headers([('Content-Length'): bodyLength]), (bodyPart1 + bodyPart2).bytes),
+        parser.getRequest())
+  }
+
   private static ByteBuffer toBuffer(String s) {
     return ByteBuffer.wrap(s.bytes)
   }
