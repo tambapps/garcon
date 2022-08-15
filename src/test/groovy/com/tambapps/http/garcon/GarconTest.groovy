@@ -1,15 +1,22 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.hyperpoet.ErrorResponseException
 import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import com.tambapps.http.hyperpoet.io.parser.Parsers
+import groovy.json.JsonOutput
 import groovy.transform.CompileDynamic
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
+import org.junit.jupiter.api.Disabled
 import org.junit.jupiter.api.Test
 
 import java.time.Duration
+import java.util.concurrent.ConcurrentLinkedQueue
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.Future
 
 import static org.junit.jupiter.api.Assertions.assertEquals
 
@@ -181,5 +188,44 @@ class GarconTest {
       }
     }
     assertEquals($/{"hello":"world"}/$, poet.get('/path', parser: Parsers.&parseStringResponseBody))
+  }
+
+  @Disabled
+  @Test
+  void testBenchmark() {
+    garcon.serve {
+      post '/path', accept: ContentType.JSON, contentType: ContentType.JSON, {
+        response.setBody(JsonOutput.toJson(parsedRequestBody))
+      }
+    }
+    Thread.sleep(1000L)
+    int totalRequests = 50_000
+    int nbThreads = 50
+    ExecutorService executorService = Executors.newFixedThreadPool(nbThreads)
+
+    println("Starting threads")
+    final int requestsPerThreads = totalRequests / nbThreads
+    List<Future> futures = []
+    poet.disableHistory()
+    poet.errorResponseHandler = ErrorResponseHandlers.throwResponseHandler()
+    Collection collection = new ConcurrentLinkedQueue()
+    for (_ in 0..<nbThreads) {
+      def f = executorService.submit {
+        for (i in 0..<requestsPerThreads) {
+          try {
+            collection << poet.post('/path', contentType: com.tambapps.http.hyperpoet.ContentType.JSON, body: [id: 1, data: 'lol'])
+          } catch (ErrorResponseException e) {
+            e.printStackTrace()
+            println(e.getBody().string())
+          } catch (Exception e) {
+            e.printStackTrace()
+          }
+        }
+      }
+      futures << f
+    }
+    futures*.get()
+    println(collection.groupBy { it }.collectEntries {[(it.key): it.value.size()]})
+    executorService.shutdown()
   }
 }
