@@ -231,7 +231,7 @@ public class AsyncHttpServer {
 
   private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
     Headers responseHeaders = response.getHeaders();
-    responseHeaders.put("Server", "Garçon (Tambapps)");
+    responseHeaders.put("Server", "Garcon (Tambapps)");
     ByteBuffer body = response.getBody();
     responseHeaders.put(Headers.CONTENT_LENGTH_HEADER, body != null ? String.valueOf(body.capacity()) : "0");
 
