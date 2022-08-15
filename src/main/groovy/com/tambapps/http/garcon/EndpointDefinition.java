@@ -28,13 +28,16 @@ class EndpointDefinition {
     if (response.getBody() == null && returnValue != null) {
       ContentType contentType = context.getContentType();
       if (contentType != null) {
-        response.headers.putContentTypeHeader(contentType.getHeaderValue());
         Closure<?> composer = context.getComposers().getAt(contentType);
         if (composer != null) {
           returnValue = composer.call(returnValue);
         }
       }
       response.setBody(returnValue);
+    }
+    if (context.getContentType() != null) {
+      // using context's contentType because the definition CT might be null, and the garcon's might not be null
+      response.headers.putContentTypeHeader(context.getContentType().getHeaderValue());
     }
     return response;
   }
