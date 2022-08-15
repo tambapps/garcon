@@ -2,10 +2,8 @@ package com.tambapps.http.garcon.io.composer
 
 import com.tambapps.http.garcon.ContentType
 import com.tambapps.http.garcon.exception.ComposingException
-import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeMap
 import groovy.json.JsonOutput
-import org.codehaus.groovy.runtime.MethodClosure
 
 import static com.tambapps.http.garcon.util.ClassUtils.doIfClassExists
 
