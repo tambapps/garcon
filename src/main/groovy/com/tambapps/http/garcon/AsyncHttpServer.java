@@ -231,17 +231,15 @@ public class AsyncHttpServer {
 
   private void addDefaultHeaders(HttpRequest request, HttpResponse response) {
     Headers responseHeaders = response.getHeaders();
-    responseHeaders.put("Server", "Garcon (Tambapps)");
-    Integer contentLength = response.getContentLength();
-    if (contentLength != null) {
-      responseHeaders.put("Content-Length", contentLength.toString());
-    }
+    responseHeaders.put("Server", "Garçon (Tambapps)");
+    ByteBuffer body = response.getBody();
+    responseHeaders.put(Headers.CONTENT_LENGTH_HEADER, body != null ? String.valueOf(body.capacity()) : "0");
+
 
     String connectionHeader = responseHeaders.getConnectionHeader();
     if (connectionHeader == null) {
-      // keep connection alive if request body and response body are with definite length AND client want so
+      // keep connection alive if response is successful and client want so
       responseHeaders.putConnectionHeader(response.is2xxSuccessful()
-          && contentLength != null
           && request != null
           && CONNECTION_KEEP_ALIVE.equalsIgnoreCase(request.getHeaders().getConnectionHeader())
           ? CONNECTION_KEEP_ALIVE : CONNECTION_CLOSE);
