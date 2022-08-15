@@ -1,16 +1,17 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.util.ConcurrentHashSet;
+
 import java.util.AbstractMap;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Class handling case insensitive headers
+ * Class handling case-insensitive headers
  */
 public class Headers implements Map<String, String> {
 
@@ -21,7 +22,7 @@ public class Headers implements Map<String, String> {
   public static final String CONTENT_LENGTH_HEADER = "Content-Length";
   public static final String TRANSFER_ENCODING_HEADER = "Transfer-Encoding";
 
-  private final Set<AbstractMap.SimpleEntry<String, String>> entries = new HashSet<>();
+  private final Set<AbstractMap.SimpleEntry<String, String>> entries = new ConcurrentHashSet<>();
 
   public Headers() {
   }
