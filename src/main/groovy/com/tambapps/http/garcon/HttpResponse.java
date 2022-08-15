@@ -17,9 +17,11 @@ public class HttpResponse {
 
   // body can be a byte array, a string, or an input stream
   /**
-   * Body of the response. Can be a byte array, a String, or an InputStream (or null for no body)
+   * Body of the response. Can be a byte array, a String, or an InputStream (or null for no body).
+   * Volatile because the thread setting it is different from the thread getting it to write it into
+   * the response.
    */
-  ByteBuffer body;
+  volatile ByteBuffer body;
 
   public boolean is2xxSuccessful() {
     return statusCode.getValue() >= 200 && statusCode.getValue() < 300;
