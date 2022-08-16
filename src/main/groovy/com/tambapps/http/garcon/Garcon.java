@@ -6,6 +6,7 @@ import com.tambapps.http.garcon.exception.PathNotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.util.AddressUtils;
+import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import com.tambapps.http.garcon.util.ContentTypeMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
@@ -54,7 +55,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
   Closure<?> onExchangeError;
 
   public final ContentTypeMap<Closure<?>> composers = Composers.getMap();
-  public final ContentTypeMap<Closure<?>> parsers = Parsers.getMap();
+  public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
   final EndpointsHandler endpointsHandler = new EndpointsHandler();
 
   private AsyncHttpServer httpServer;

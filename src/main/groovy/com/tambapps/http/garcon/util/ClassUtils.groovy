@@ -1,5 +1,7 @@
 package com.tambapps.http.garcon.util
 
+import java.util.function.Consumer
+
 class ClassUtils {
 
   static Class<?> getClassOrNull(String name) {
@@ -10,10 +12,10 @@ class ClassUtils {
     }
   }
 
-  static void doIfClassExists(String name, Closure closure) {
+  static void doIfClassExists(String name, Consumer<Class<?>> consumer) {
     Class<?> clazz = getClassOrNull(name)
     if (clazz != null) {
-      closure.call(clazz)
+      consumer.accept(clazz)
     }
   }
 

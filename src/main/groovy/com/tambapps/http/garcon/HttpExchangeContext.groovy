@@ -1,5 +1,7 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.exception.ParsingException
+import com.tambapps.http.garcon.util.ContentTypeFunctionMap
 import com.tambapps.http.garcon.util.ContentTypeMap
 
 /**
@@ -13,13 +15,13 @@ class HttpExchangeContext {
   @Delegate
   final HttpRequest request
   final ContentTypeMap<Closure<?>> composers
-  final ContentTypeMap<Closure<?>> parsers
+  final ContentTypeFunctionMap<byte[], Object> parsers
   final ContentType contentType
   final ContentType accept
   private Object parsedBody
 
   HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers,
-                      ContentTypeMap<Closure<?>> parsers, ContentType contentType, ContentType accept) {
+                      ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept) {
     this.request = request
     this.response = response
     this.composers = composers
@@ -50,7 +52,11 @@ class HttpExchangeContext {
       } else {
         def parser = parsers[accept]
         if (parser != null) {
-          b = parser.call(request.getBody())
+          try {
+            b = parser.apply(request.getBody())
+          } catch (Exception e) {
+            throw new ParsingException(e)
+          }
         } else {
           b = request.getBody()
         }

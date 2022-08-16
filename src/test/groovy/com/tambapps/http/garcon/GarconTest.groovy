@@ -5,6 +5,7 @@ import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import com.tambapps.http.hyperpoet.io.parser.Parsers
 import groovy.json.JsonOutput
+import groovy.json.JsonSlurper
 import groovy.transform.CompileDynamic
 import okhttp3.OkHttpClient
 import org.junit.jupiter.api.AfterEach
@@ -17,8 +18,11 @@ import java.util.concurrent.ConcurrentLinkedQueue
 import java.util.concurrent.ExecutorService
 import java.util.concurrent.Executors
 import java.util.concurrent.Future
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.atomic.AtomicReference
 
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertTrue
 
 // needed because project is compiled statically by default
 @CompileDynamic
@@ -148,6 +152,24 @@ class GarconTest {
     assertEquals($/{"hello":"world"}/$, poet.get('/path', parser: Parsers.&parseStringResponseBody))
     assertEquals(ContentType.JSON.headerValue, poet.history.last().responseHeaders[Headers.CONTENT_TYPE_HEADER].first())
     assertEquals($/{"hello":"world"}/$, poet.get('/path2', parser: Parsers.&parseStringResponseBody))
+  }
+
+  @Test
+  void testOverrideParser() {
+    AtomicBoolean wasHere = new AtomicBoolean(false)
+    garcon.parsers[ContentType.JSON] = { byte[] bytes ->
+      wasHere.set(true)
+      new JsonSlurper().parse(bytes)
+    }
+    garcon.serve {
+      post '/path', accept: ContentType.JSON, contentType: ContentType.JSON, {
+        return parsedRequestBody
+      }
+    }
+
+    assertEquals($/{"hello":"world"}/$, poet.post('/path', body: [hello: 'world'], contentType: com.tambapps.http.hyperpoet.ContentType.JSON,
+        parser: Parsers.&parseStringResponseBody))
+    assertTrue(wasHere.get())
   }
 
   @Test
