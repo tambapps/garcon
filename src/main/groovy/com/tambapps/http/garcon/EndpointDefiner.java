@@ -23,98 +23,98 @@ public class EndpointDefiner {
     this.endpointDefinitions = endpointDefinitions;
   }
 
-  void put(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
+  public void put(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     put(Collections.emptyMap(), path, closure);
   }
 
-  void put(
+  public void put(
       @NamedParam(value = "accept", type = ContentType.class)
       @NamedParam(value = "contentType", type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     method(additionalParameters, "PUT", path, closure);
   }
 
-  void post(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
+  public void post(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     post(Collections.emptyMap(), path, closure);
   }
 
-  void post(
+  public void post(
       @NamedParam(value = "accept", type = ContentType.class)
       @NamedParam(value = "contentType", type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     method(additionalParameters, "POST", path, closure);
   }
 
-  void patch(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
+  public void patch(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     patch(Collections.emptyMap(), path, closure);
   }
 
-  void patch(
+  public void patch(
       @NamedParam(value = "accept", type = ContentType.class)
       @NamedParam(value = "contentType", type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     method(additionalParameters, "PATCH", path, closure);
   }
 
-  void get(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
+  public void get(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     get(Collections.emptyMap(), path, closure);
   }
 
-  void get(
+  public void get(
       @NamedParam(value = "contentType", type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     method(additionalParameters, "GET", path, closure);
   }
 
-  void delete(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
+  public void delete(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     delete(Collections.emptyMap(), path, closure);
   }
 
-  void delete(
+  public void delete(
       @NamedParam(value = "contentType", type = ContentType.class)
       Map<?, ?> additionalParameters, String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     method(additionalParameters, "DELETE", path, closure);
   }
 
 
-  void method(@NamedParam(value = "accept", type = ContentType.class)
+  public void method(@NamedParam(value = "accept", type = ContentType.class)
       @NamedParam(value = "contentType", type = ContentType.class)
           Map<?, ?> additionalParameters, String method, String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     addEndpoint(path, method, new EndpointDefinition(closure, (ContentType) additionalParameters.get("accept"),
         (ContentType) additionalParameters.get("contentType")));
   }
 
-  void setContentType(ContentType contentType) {
+  public void setContentType(ContentType contentType) {
     garcon.setContentType(contentType);
   }
 
-  void setAccept(ContentType contentType) {
+  public void setAccept(ContentType contentType) {
     garcon.setAccept(contentType);
   }
 
-  void file(String path) {
+  public void file(String path) {
     file(Collections.emptyMap(), path);
   }
 
-  void file(Path path) {
+  public void file(Path path) {
     file(Collections.emptyMap(), path);
   }
 
-  void file(@NamedParam(value = "contentType", type = ContentType.class)
+  public void file(@NamedParam(value = "contentType", type = ContentType.class)
                    Map<?, ?> additionalParameters, String path) {
     file(additionalParameters, new File(path));
   }
 
-  void file(@NamedParam(value = "contentType", type = ContentType.class)
+  public void file(@NamedParam(value = "contentType", type = ContentType.class)
                    Map<?, ?> additionalParameters, Path path) {
     file(additionalParameters, path.toFile());
   }
 
-  void file(File f) {
+  public void file(File f) {
     file(Collections.emptyMap(), f);
   }
 
-  void file(
+  public void file(
       @NamedParam(value = "contentType", type = ContentType.class)
           Map<?, ?> additionalParameters,
       File f) {
