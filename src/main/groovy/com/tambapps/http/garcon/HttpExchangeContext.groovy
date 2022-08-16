@@ -2,7 +2,6 @@ package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.exception.ParsingException
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap
-import com.tambapps.http.garcon.util.ContentTypeMap
 
 /**
  * Context used for endpoint definition closures, as delegate
@@ -14,13 +13,13 @@ class HttpExchangeContext {
   final HttpResponse response
   @Delegate
   final HttpRequest request
-  final ContentTypeMap<Closure<?>> composers
+  final ContentTypeFunctionMap<Object, byte[]> composers
   final ContentTypeFunctionMap<byte[], Object> parsers
   final ContentType contentType
   final ContentType accept
   private Object parsedBody
 
-  HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Closure<?>> composers,
+  HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers,
                       ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept) {
     this.request = request
     this.response = response
@@ -74,8 +73,8 @@ class HttpExchangeContext {
       if (contentType != null) {
         response.headers.putContentTypeHeader(contentType.headerValue)
         // set response body here so that the HttpExchangeHandler doesn't compose it again
-        response.body = composers[contentType].call(args[0])
-        return response.body
+        response.setBody(composers[contentType].apply(args[0]))
+        return response.getBody()
       }
     }
     throw new MissingMethodException(name, getClass(), args)

@@ -30,6 +30,10 @@ public class ContentTypeFunctionMap<T1, T2> extends ContentTypeMap<Function<T1, 
     return new MethodFunction(doCall, closure);
   }
 
+  public void setDefaultValue(Closure<T2> value) {
+    setDefaultValue(toFunction(value));
+  }
+
   @AllArgsConstructor
   private class MethodFunction implements Function<T1, T2> {
     private final Method method;

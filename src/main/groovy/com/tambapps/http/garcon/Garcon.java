@@ -54,7 +54,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
   @Setter
   Closure<?> onExchangeError;
 
-  public final ContentTypeMap<Closure<?>> composers = Composers.getMap();
+  public final ContentTypeFunctionMap<Object, byte[]> composers = Composers.getMap();
   public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
   final EndpointsHandler endpointsHandler = new EndpointsHandler();
 

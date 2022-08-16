@@ -3,6 +3,8 @@ package com.tambapps.http.garcon;
 import groovy.lang.Closure;
 import lombok.Value;
 
+import java.util.function.Function;
+
 @Value
 class EndpointDefinition {
 
@@ -28,9 +30,9 @@ class EndpointDefinition {
     if (response.getBody() == null && returnValue != null) {
       ContentType contentType = context.getContentType();
       if (contentType != null) {
-        Closure<?> composer = context.getComposers().getAt(contentType);
+        Function<Object, byte[]> composer = context.getComposers().getAt(contentType);
         if (composer != null) {
-          returnValue = composer.call(returnValue);
+          returnValue = composer.apply(returnValue);
         }
       }
       response.setBody(returnValue);
