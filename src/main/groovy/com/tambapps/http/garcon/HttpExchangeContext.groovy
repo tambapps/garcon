@@ -65,19 +65,5 @@ class HttpExchangeContext {
     return this.@parsedBody
   }
 
-  // called when method is not found
-  def invokeMethod(String name, Object o) {
-    Object[] args = o instanceof Object[] ? o : new Object[] { o }
-    if (args.length == 1) {
-      def contentType = composers.keySet().find { it.getSubtype() == name }
-      if (contentType != null) {
-        response.headers.putContentTypeHeader(contentType.headerValue)
-        // set response body here so that the HttpExchangeHandler doesn't compose it again
-        response.setBody(composers[contentType].apply(args[0]))
-        return response.getBody()
-      }
-    }
-    throw new MissingMethodException(name, getClass(), args)
-  }
 }
 

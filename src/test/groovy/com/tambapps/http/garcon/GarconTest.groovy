@@ -144,14 +144,10 @@ class GarconTest {
       get '/path', contentType: ContentType.JSON, {
         return [hello: 'world']
       }
-      get '/path2', {
-      return json(hello: 'world')
-      }
     }
 
     assertEquals($/{"hello":"world"}/$, poet.get('/path', parser: Parsers.&parseStringResponseBody))
     assertEquals(ContentType.JSON.headerValue, poet.history.last().responseHeaders[Headers.CONTENT_TYPE_HEADER].first())
-    assertEquals($/{"hello":"world"}/$, poet.get('/path2', parser: Parsers.&parseStringResponseBody))
   }
 
   @Test
