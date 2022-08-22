@@ -26,9 +26,11 @@ public class Parsers {
   // using class because they might be faster than lambda functions
   public static class ParseJsonFunction implements Function<byte[], Object> {
 
+    private final JsonSlurper jsonSlurper = new JsonSlurper();
+
     @Override
     public Object apply(byte[] bytes) {
-      return new JsonSlurper().parse(bytes);
+      return jsonSlurper.parse(bytes);
     }
   }
 

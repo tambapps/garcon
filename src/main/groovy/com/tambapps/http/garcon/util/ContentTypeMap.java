@@ -42,11 +42,9 @@ public class ContentTypeMap<T> extends TreeMap<ContentType, T> {
   }
 
   public T getAt(ContentType contentType) {
-    if (contentType == null) {
-      return super.get(null);
-    }
-    if (containsKey(contentType)) {
-      return super.get(contentType);
+    T t = super.get(contentType);
+    if (t != null) {
+      return t;
     }
     for (ContentType candidateKey : keySet()) {
       if (candidateKey.includes(contentType)) {
