@@ -31,6 +31,7 @@ public class Headers implements Map<String, String> {
     map.forEach((name, value) -> putAt(String.valueOf(name), String.valueOf(value)));
   }
 
+  // TODO optimize that. Use a real map and format entries when getting/putting(?)
   public void putAt(String name, Object value) {
     AbstractMap.SimpleEntry<String, String> entry = findEntryWithName(name);
     if (entry != null) {
