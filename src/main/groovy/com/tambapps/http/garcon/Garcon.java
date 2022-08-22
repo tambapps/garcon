@@ -16,6 +16,8 @@ import lombok.SneakyThrows;
 
 import java.net.InetAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class Garcon extends AbstractHttpExchangeHandler {
   @Getter
@@ -84,7 +86,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     if (address == null || port == null) {
       throw new IllegalStateException("Cannot start server without address and port");
     }
-    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads), this);
+    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), this);
     httpServer.start(address, port);
     if (onStart != null) {
       onStart.call(address, port);
@@ -174,6 +176,29 @@ public class Garcon extends AbstractHttpExchangeHandler {
         onExchangeError.call(e);
       }
       return default500Response();
+    }
+  }
+
+  private static class GarconThreadPool implements ThreadFactory {
+    private final AtomicInteger threadNumber = new AtomicInteger(1);
+    private final ThreadGroup group;
+
+    GarconThreadPool() {
+      SecurityManager s = System.getSecurityManager();
+      group = (s != null) ? s.getThreadGroup() :
+          Thread.currentThread().getThreadGroup();
+    }
+
+    @Override
+    public Thread newThread(Runnable r) {
+      Thread t = new Thread(group, r,
+          String.format("garcon-worker-thread-%d", threadNumber.getAndIncrement()),
+          0);
+      if (t.isDaemon())
+        t.setDaemon(false);
+      if (t.getPriority() != Thread.NORM_PRIORITY)
+        t.setPriority(Thread.NORM_PRIORITY);
+      return t;
     }
   }
 }
