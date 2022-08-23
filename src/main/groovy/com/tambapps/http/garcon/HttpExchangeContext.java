@@ -150,6 +150,14 @@ public class HttpExchangeContext {
     if (q != null) {
       return q;
     }
+    String reqH = getRequestHeaders().get(propertyName);
+    if (reqH != null) {
+      return reqH;
+    }
+    String resH = getResponseHeaders().get(propertyName);
+    if (resH != null) {
+      return resH;
+    }
     throw new MissingPropertyException(propertyName, getClass());
   }
 
