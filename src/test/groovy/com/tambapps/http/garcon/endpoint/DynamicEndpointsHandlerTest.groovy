@@ -2,6 +2,7 @@ package com.tambapps.http.garcon.endpoint
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException
 import com.tambapps.http.garcon.exception.PathNotFoundException
+import groovy.transform.CompileDynamic
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.assertEquals
@@ -9,6 +10,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse
 import static org.junit.jupiter.api.Assertions.assertThrows
 import static org.junit.jupiter.api.Assertions.assertTrue
 
+@CompileDynamic
 class DynamicEndpointsHandlerTest {
 
   private static final EndpointDefinition DEFINITION_1 = new DynamicEndpointDefinition(null, null, null, null, null)

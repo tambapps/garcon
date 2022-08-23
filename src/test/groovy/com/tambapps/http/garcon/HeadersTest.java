@@ -18,7 +18,7 @@ public class HeadersTest {
 
     h.put("cOnNeCtion", "Close");
     assertEquals(1, h.size());
-    assertEquals("Close", h.getAt("connection"));
+    assertEquals("Close", h.getAt("Connection"));
   }
 
   @Test

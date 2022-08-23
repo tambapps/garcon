@@ -47,7 +47,7 @@ class HttpRequestParserTest {
         'Accept-Encodi')))
     assertEquals(HttpRequestParser.ParsingState.HEADERS, parser.state)
     assertTrue(parser.parse(toBuffer(
-        'g: gzip\r\n' +
+        'ng: gzip\r\n' +
         'User-Agent: okhttp/4.9.3\r\n' +
             '\r\n'
     )))
