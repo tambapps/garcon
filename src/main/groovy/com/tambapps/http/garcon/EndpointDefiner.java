@@ -118,7 +118,6 @@ public class EndpointDefiner {
       @NamedParam(value = "contentType", type = ContentType.class)
           Map<?, ?> additionalParameters,
       File f) {
-    // TODO make http path configurable
     get(additionalParameters, f.getName(), new FileClosure(f));
   }
 
