@@ -70,7 +70,28 @@ class GarconTest {
   }
 
   @Test
-  void testMethodContext() {
+  void testDynamic() {
+    garcon.serve {
+      get 'hello/{someone}', {
+        return pathVariables.someone
+      }
+
+      get 'hello2/{someone}', {
+        return someone
+      }
+    }
+
+    assertEquals('me', poet.get('/hello/me'))
+    assertEquals('you', poet.get('/hello/you'))
+    assertEquals('yall', poet.get('/hello/yall/'))
+
+    assertEquals('me', poet.get('/hello2/me'))
+    assertEquals('you', poet.get('/hello2/you'))
+    assertEquals('yall', poet.get('/hello2/yall/'))
+  }
+
+  @Test
+  void testQueryParams() {
     garcon.serve {
       get '/path', {
         return queryParams['hello']
@@ -79,10 +100,15 @@ class GarconTest {
       get '/path2', {
         body = queryParams['hello'].bytes
       }
+
+      get '/path3', {
+        body = hello
+      }
     }
 
     assertEquals('world', poet.get('/path?hello=world'))
-    assertEquals('world', poet.get('/path?hello=world'))
+    assertEquals('world', poet.get('/path2?hello=world'))
+    assertEquals('world', poet.get('/path3?hello=world'))
   }
 
   @Test

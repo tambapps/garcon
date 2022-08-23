@@ -30,10 +30,11 @@ public class DynamicEndpointDefinition extends EndpointDefinition {
   public HttpResponse call(HttpExchangeContext context) {
     Map<String, String> pathVariables = new HashMap<>();
     Matcher matcher = pathVariablePattern.matcher(context.getPath());
-    while (matcher.find());
-    // TODO test me
+    // if we got here, this means the path matched the dynamic endpoint regex
+    matcher.matches();
     for (int i = 0; i < pathVariableNames.size(); i++) {
-      pathVariables.put(pathVariableNames.get(i), matcher.group(i));
+      // i + 1 because group 0 is whole match
+      pathVariables.put(pathVariableNames.get(i), matcher.group(i + 1));
     }
     context.setPathVariables(pathVariables);
     return super.call(context);

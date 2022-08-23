@@ -83,6 +83,8 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
       m.appendReplacement(sb, "(\\\\w+)");
     }
     m.appendTail(sb);
+    // in case of trailing slash
+    sb.append("/?");
     Pattern pattern = Pattern.compile(sb.toString());
     Optional<DynamicEndpointsDefinition> optDefinition = dynamicPaths.stream()
             .filter(d -> d.getPattern().pattern().equals(pattern.pattern()))

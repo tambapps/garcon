@@ -3,6 +3,7 @@ package com.tambapps.http.garcon;
 import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import groovy.lang.Delegate;
+import groovy.lang.MissingPropertyException;
 import groovy.transform.Generated;
 import lombok.Data;
 
@@ -137,6 +138,20 @@ public class HttpExchangeContext {
     return this.request.getQueryParams();
   }
 
+  // useful for meta programming
+  public Object propertyMissing(String propertyName) {
+    if (pathVariables != null) {
+      String s = pathVariables.get(propertyName);
+      if (s != null) {
+        return s;
+      }
+    }
+    String q = getQueryParams().get(propertyName);
+    if (q != null) {
+      return q;
+    }
+    throw new MissingPropertyException(propertyName, getClass());
+  }
 
 }
 
