@@ -5,6 +5,7 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 
 import com.tambapps.http.garcon.exception.BadProtocolException;
 import com.tambapps.http.garcon.exception.BadRequestException;
+import com.tambapps.http.garcon.exception.RequestTimeoutException;
 import com.tambapps.http.garcon.io.composer.HttpResponseComposer;
 import com.tambapps.http.garcon.logger.DefaultLogger;
 import com.tambapps.http.garcon.logger.Logger;
@@ -41,15 +42,16 @@ public class AsyncHttpServer {
   private Thread serverThread;
 
   private final ExecutorService executor;
+  private final long requestReadTimeoutMillis;
   @Setter
   private HttpExchangeHandler exchangeHandler;
 
-  public AsyncHttpServer(ExecutorService executor, HttpExchangeHandler exchangeHandler) {
+  public AsyncHttpServer(ExecutorService executor, long requestReadTimeoutMillis, HttpExchangeHandler exchangeHandler) {
     this.executor = executor;
+    this.requestReadTimeoutMillis = requestReadTimeoutMillis;
     this.exchangeHandler = exchangeHandler;
   }
 
-  // TODO configure request timeout
   public void stop() {
     if (!isRunning()) {
       return;
@@ -137,7 +139,7 @@ public class AsyncHttpServer {
   private void accept(Selector selector, ServerSocketChannel serverSocket) throws IOException {
     SocketChannel client = serverSocket.accept();
     client.configureBlocking(false);
-    client.register(selector, SelectionKey.OP_READ, new HttpAttachment());
+    client.register(selector, SelectionKey.OP_READ, new HttpAttachment(requestReadTimeoutMillis));
   }
 
   private void read(SelectionKey selectionKey) throws IOException {
@@ -157,7 +159,7 @@ public class AsyncHttpServer {
           executor.submit(new ExchangeRunnable(selectionKey, request));
           selectionKey.interestOps(SelectionKey.OP_WRITE);
         }
-      } catch (BadProtocolException e) {
+      } catch (BadProtocolException | RequestTimeoutException e) {
         DefaultGroovyMethods.closeQuietly(selectionKey.channel());
       } catch (BadRequestException e) {
         HttpResponse response = new HttpResponse();

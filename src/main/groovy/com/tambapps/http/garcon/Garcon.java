@@ -27,14 +27,13 @@ public class Garcon extends AbstractHttpExchangeHandler {
   // TODO handle me
   @Getter
   private int requestReadTimeoutMillis = 4000;
-  // TODO handle me
+
   @Getter
   @Setter
   private Long maxRequestBytes = null;
 
   @Getter
   private int maxThreads = 200;
-
 
   @Getter
   @Setter
@@ -86,7 +85,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     if (address == null || port == null) {
       throw new IllegalStateException("Cannot start server without address and port");
     }
-    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), this);
+    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), requestReadTimeoutMillis, this);
     httpServer.start(address, port);
     if (onStart != null) {
       onStart.call(address, port);

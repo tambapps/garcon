@@ -35,7 +35,7 @@ class AsyncHttpServerTest {
 
   @BeforeEach
   void begin() {
-    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(4), {
+    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(4), 10_000, {
       return new HttpResponse()
     })
     if (!httpServer.start(InetAddress.getByName('localhost'), 8081)) {
