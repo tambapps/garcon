@@ -2,11 +2,12 @@ package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
 import java.util.Map;
 
-@AllArgsConstructor
+@AllArgsConstructor(access = AccessLevel.PACKAGE)
 public class StaticEndpointsHandler implements EndpointsHandler {
 
   // TODO handle dynamic paths
