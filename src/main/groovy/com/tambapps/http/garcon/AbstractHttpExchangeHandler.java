@@ -1,8 +1,5 @@
 package com.tambapps.http.garcon;
 
-import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
-import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
-
 public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler {
 
   @Override
@@ -29,7 +26,7 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
     HttpResponse response = new HttpResponse();
     response.setStatusCode(status);
     response.setBody(message);
-    response.getHeaders().setContentType(ContentType.TEXT);
+    response.getHeaders().putContentType(ContentType.TEXT);
     return response;
   }
 

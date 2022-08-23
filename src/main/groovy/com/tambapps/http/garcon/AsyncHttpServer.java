@@ -164,7 +164,7 @@ public class AsyncHttpServer {
       } catch (BadRequestException e) {
         HttpResponse response = new HttpResponse();
         response.setStatusCode(HttpStatus.BAD_REQUEST);
-        response.getHeaders().setContentType(ContentType.TEXT);
+        response.getHeaders().putContentType(ContentType.TEXT);
         response.setBody(e.getMessage());
         addDefaultHeaders(null, response);
         pendingResponses.put(selectionKey, response);
@@ -224,7 +224,7 @@ public class AsyncHttpServer {
         response = new HttpResponse();
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         response.setBody("An internal server error occurred");
-        response.getHeaders().setContentType(ContentType.TEXT);
+        response.getHeaders().putContentType(ContentType.TEXT);
       }
       addDefaultHeaders(request, response);
       pendingResponses.put(key, response);

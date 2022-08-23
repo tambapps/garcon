@@ -1,19 +1,14 @@
 package com.tambapps.http.garcon;
 
-import com.tambapps.http.garcon.util.ConcurrentHashSet;
-
-import java.util.AbstractMap;
-import java.util.Collection;
-import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 
 /**
  * Class handling case-insensitive headers
  */
-public class Headers implements Map<String, String> {
+public class Headers extends HashMap<String, String> {
 
   public static final String CONNECTION_KEEP_ALIVE = "Keep-Alive";
   public static final String CONNECTION_CLOSE = "Close";
@@ -22,38 +17,22 @@ public class Headers implements Map<String, String> {
   public static final String CONTENT_LENGTH_HEADER = "Content-Length";
   public static final String TRANSFER_ENCODING_HEADER = "Transfer-Encoding";
 
-  private final Set<AbstractMap.SimpleEntry<String, String>> entries = new ConcurrentHashSet<>();
-
-  public Headers() {
-  }
+  public Headers() {}
 
   public Headers(Map<?, ?> map) {
     map.forEach((name, value) -> putAt(String.valueOf(name), String.valueOf(value)));
   }
 
-  // TODO optimize that. Use a real map and format entries when getting/putting(?)
-  public void putAt(String name, Object value) {
-    AbstractMap.SimpleEntry<String, String> entry = findEntryWithName(name);
-    if (entry != null) {
-      entries.remove(entry);
-    }
-    entries.add(new AbstractMap.SimpleEntry<>(name, String.valueOf(value)));
+  public String putAt(String name, Object value) {
+    return put(name, String.valueOf(value));
   }
 
   public String getAt(String name) {
-    AbstractMap.SimpleEntry<String, String> entry = findEntryWithName(name);
-    return entry != null ? entry.getValue() : null;
-  }
-
-  private AbstractMap.SimpleEntry<String, String> findEntryWithName(String name) {
-    return entries.stream()
-        .filter(e -> e.getKey().equalsIgnoreCase(name))
-        .findFirst()
-        .orElse(null);
+    return get(name);
   }
 
   public void putConnectionHeader(String value) {
-    putAt(CONNECTION_HEADER, value);
+    putUnsafe(CONNECTION_HEADER, value);
   }
 
   public String getConnectionHeader() {
@@ -61,7 +40,11 @@ public class Headers implements Map<String, String> {
   }
 
   public void putContentTypeHeader(ContentType contentType) {
-    putAt(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
+    putUnsafe(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
+  }
+
+  public void putContentType(ContentType contentType) {
+    putUnsafe(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
   }
 
   public String getContentTypeHeader() {
@@ -73,11 +56,11 @@ public class Headers implements Map<String, String> {
   }
 
   public void putContentLength(Number value) {
-    putAt(CONTENT_LENGTH_HEADER, value);
+    putUnsafe(CONTENT_LENGTH_HEADER, String.valueOf(value));
   }
 
   public Long getContentLength() {
-    String header = getAt(CONTENT_LENGTH_HEADER);
+    String header = get(CONTENT_LENGTH_HEADER);
     if (header == null) {
       return null;
     }
@@ -89,118 +72,72 @@ public class Headers implements Map<String, String> {
   }
 
   @Override
-  public int size() {
-    return entries.size();
-  }
-
-  @Override
-  public boolean isEmpty() {
-    return entries.isEmpty();
-  }
-
-  @Override
-  public boolean containsKey(Object key) {
-    return key instanceof CharSequence && findEntryWithName(key.toString()) != null;
-  }
-
-  @Override
-  public boolean containsValue(Object value) {
-    return entries.stream()
-        .anyMatch(it -> Objects.equals(it.getValue(), value));
-  }
-
-  @Override
   public String get(Object key) {
-    return key instanceof CharSequence ? getAt(key.toString()) : null;
+    return super.get(key != null ? formattedKey(key.toString()) : null);
+  }
+
+  // put without formatting key, supposing it is already well formatted
+  private String putUnsafe(String key, String value) {
+    return super.put(key, value);
+  }
+  public String put(String key, String value) {
+    return super.put(formattedKey(key), value);
   }
 
   @Override
-  public String put(String key, String value) {
-    putAt(key, value);
-    return null;
+  public String putIfAbsent(String key, String value) {
+    return super.putIfAbsent(formattedKey(key), value);
+  }
+
+  @Override
+  public String compute(String key,
+      BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
+    return super.compute(formattedKey(key), remappingFunction);
+  }
+
+  @Override
+  public String computeIfAbsent(String key,
+      Function<? super String, ? extends String> mappingFunction) {
+    return super.computeIfAbsent(formattedKey(key), mappingFunction);
+  }
+
+  @Override
+  public String computeIfPresent(String key,
+      BiFunction<? super String, ? super String, ? extends String> remappingFunction) {
+    return super.computeIfPresent(formattedKey(key), remappingFunction);
   }
 
   @Override
   public String remove(Object key) {
-    if (key instanceof CharSequence) {
-      AbstractMap.SimpleEntry<String, String> entry = findEntryWithName(key.toString());
-      if (entry != null) {
-        entries.remove(entry);
-      }
-      return entry != null ? entry.getValue() : null;
-    } else {
-      return null;
+    return super.remove(key != null ? formattedKey(key.toString()) : null);
+  }
+
+  @Override
+  public boolean remove(Object key, Object value) {
+    return super.remove(key != null ? formattedKey(key.toString()) : null, value);
+  }
+
+  private String formattedKey(String s) {
+    char[] chars = new char[s.length()];
+    for (int i = 0; i < chars.length; i++) {
+      char c = chars[i];
+      chars[i] = i == 0 || s.charAt(i - 1) == '-' ? Character.toUpperCase(c) : c;
     }
+    return new String(chars);
+  }
+
+  @Override
+  public boolean containsKey(Object key) {
+    return super.containsKey(key != null ? formattedKey(key.toString()) : null);
   }
 
   @Override
   public void putAll(Map<? extends String, ? extends String> m) {
-    m.forEach(this::putAt);
-  }
-
-  @Override
-  public void clear() {
-    entries.clear();
-  }
-
-  @Override
-  public Set<String> keySet() {
-    return entries.stream()
-        .map(AbstractMap.SimpleEntry::getKey)
-        .collect(Collectors.toSet());
-  }
-
-  @Override
-  public Collection<String> values() {
-    return entries.stream()
-        .map(AbstractMap.SimpleEntry::getValue)
-        .collect(Collectors.toSet());
-  }
-
-  @Override
-  public Set<Entry<String, String>> entrySet() {
-    return Collections.unmodifiableSet(entries);
+    m.forEach(this::put);
   }
 
   public ImmutableHeaders asImmutable() {
     return new ImmutableHeaders(this);
   }
 
-  @Override
-  public boolean equals(Object obj) {
-    if (!(obj instanceof Headers)) {
-      return false;
-    }
-    Headers h = (Headers) obj;
-    if (h.size() != size()) {
-      return false;
-    }
-    for (String key : keySet()) {
-      String value = get(key);
-      String otherValue = get(key);
-      if (value == null && otherValue != null || otherValue == null && value != null) {
-        return false;
-      }
-      if (value != null && !value.equalsIgnoreCase(otherValue)) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  @Override
-  public int hashCode() {
-    return entrySet().stream().map(e -> String.format("%s=%s", e.getKey(), e.getValue()).toLowerCase())
-        .collect(Collectors.joining(",")).hashCode();
-  }
-
-  @Override
-  public String toString() {
-    return entrySet().stream().map(e -> String.format("%s=%s", e.getKey(), e.getValue()))
-        .collect(Collectors.joining(", ", "{", "}"));
-  }
-
-  public void setContentType(ContentType contentType) {
-    put(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
-  }
 }
