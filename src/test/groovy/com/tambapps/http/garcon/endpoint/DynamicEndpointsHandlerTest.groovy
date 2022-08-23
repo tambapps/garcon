@@ -11,13 +11,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 
 class DynamicEndpointsHandlerTest {
 
-  private static final EndpointDefinition DEFINITION_1 = new EndpointDefinition(null, null, null)
-  private static final EndpointDefinition DEFINITION_2 = new EndpointDefinition(null, null, null)
-  private static final EndpointDefinition DEFINITION_3 = new EndpointDefinition(null, null, null)
+  private static final EndpointDefinition DEFINITION_1 = new DynamicEndpointDefinition(null, null, null, null, null)
+  private static final EndpointDefinition DEFINITION_2 = new DynamicEndpointDefinition(null, null, null, null, null)
+  private static final EndpointDefinition DEFINITION_3 = new DynamicEndpointDefinition(null, null, null, null, null)
 
   @Test
   void testDynamic() {
-    // TODO fix me
     DynamicEndpointsHandler endpointsHandler = new DynamicEndpointsHandler()
     assertTrue(endpointsHandler.isEmpty())
 

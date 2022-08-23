@@ -39,4 +39,9 @@ public class DynamicEndpointDefinition extends EndpointDefinition {
     context.setPathVariables(pathVariables);
     return super.call(context);
   }
+
+  @Override
+  public DynamicEndpointDefinition toDynamic(List<String> pathVariableNames, Pattern pattern) {
+    return this;
+  }
 }
