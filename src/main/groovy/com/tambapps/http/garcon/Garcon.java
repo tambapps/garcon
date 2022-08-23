@@ -1,5 +1,9 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.endpoint.EndpointDefiner;
+import com.tambapps.http.garcon.endpoint.EndpointDefinition;
+import com.tambapps.http.garcon.endpoint.EndpointsHandler;
+import com.tambapps.http.garcon.endpoint.StaticEndpointsHandler;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
@@ -52,7 +56,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
   public final ContentTypeFunctionMap<Object, byte[]> composers = Composers.getMap();
   public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
-  final EndpointsHandler endpointsHandler = new EndpointsHandler();
+  private EndpointsHandler endpointsHandler;
 
   private AsyncHttpServer httpServer;
 
@@ -76,6 +80,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
   public void start() {
     if (isRunning()) {
       return;
+    }
+    if (endpointsHandler == null) {
+      throw new IllegalStateException("You must define endpoints before starting garcon");
     }
     if (address == null || port == null) {
       throw new IllegalStateException("Cannot start server without address and port");
@@ -105,7 +112,11 @@ public class Garcon extends AbstractHttpExchangeHandler {
   }
 
   public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
-    endpointsHandler.define(this, closure);
+    EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
+    closure.setDelegate(definer);
+    closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+    closure.call();
+    endpointsHandler = definer.build();
     return this;
   }
 

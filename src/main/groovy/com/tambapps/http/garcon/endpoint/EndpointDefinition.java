@@ -1,5 +1,8 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.endpoint;
 
+import com.tambapps.http.garcon.ContentType;
+import com.tambapps.http.garcon.HttpExchangeContext;
+import com.tambapps.http.garcon.HttpResponse;
 import groovy.lang.Closure;
 import lombok.SneakyThrows;
 import lombok.Value;
@@ -9,7 +12,7 @@ import java.lang.reflect.Method;
 import java.util.function.Function;
 
 @Value
-class EndpointDefinition {
+public class EndpointDefinition {
 
   // needed because we modify the delegate before calling the closure
   ThreadLocal<OptimizedClosure> threadLocalClosure;
@@ -22,7 +25,7 @@ class EndpointDefinition {
     this.contentType = contentType;
   }
 
-  HttpResponse call(HttpExchangeContext context) {
+  public HttpResponse call(HttpExchangeContext context) {
     // rehydrating
     OptimizedClosure closure = threadLocalClosure.get();
     HttpResponse response = context.getResponse();
@@ -40,7 +43,7 @@ class EndpointDefinition {
     }
     if (context.getContentType() != null) {
       // using context's contentType because the definition CT might be null, and the garcon's might not be null
-      response.headers.putContentTypeHeader(context.getContentType());
+      response.getHeaders().putContentTypeHeader(context.getContentType());
     }
     return response;
   }

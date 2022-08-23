@@ -1,25 +1,18 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
-import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
+import lombok.AllArgsConstructor;
 
-import java.util.HashMap;
 import java.util.Map;
 
-public class EndpointsHandler {
+@AllArgsConstructor
+public class StaticEndpointsHandler implements EndpointsHandler {
 
   // TODO handle dynamic paths
-  private final Map<String, Map<String, EndpointDefinition>> endpointDefinitions = new HashMap<>();
+  final Map<String, Map<String, EndpointDefinition>> endpointDefinitions;
 
-  public void define(Garcon garcon, @DelegatesTo(EndpointDefiner.class) Closure<?> closure)  {
-    // using setter to avoid having callsite on compiled code
-    closure.setDelegate(new EndpointDefiner(garcon, endpointDefinitions));
-    closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-    closure.call();
-  }
-
+  @Override
   public EndpointDefinition getEndpoint(String path, String method) throws PathNotFoundException, MethodNotAllowedException {
     if (path.endsWith("/")) {
       path = path.substring(0, path.length() - 1);

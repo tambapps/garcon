@@ -1,8 +1,14 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.endpoint;
 
+import com.tambapps.http.garcon.ContentType;
+import com.tambapps.http.garcon.Garcon;
+import com.tambapps.http.garcon.HttpExchangeContext;
+import com.tambapps.http.garcon.HttpResponse;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.transform.NamedParam;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,15 +18,20 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EndpointDefiner {
 
   private final Garcon garcon;
+  private final Map<String, Map<String, EndpointDefinition>> staticEndpoints;
   // path -> method -> endpoint
-  private final Map<String, Map<String, EndpointDefinition>> endpointDefinitions;
 
-  EndpointDefiner(Garcon garcon, Map<String, Map<String, EndpointDefinition>> endpointDefinitions) {
-    this.garcon = garcon;
-    this.endpointDefinitions = endpointDefinitions;
+  // handler is nullable
+  public static EndpointDefiner newInstance(Garcon garcon, EndpointsHandler handler) {
+    Map<String, Map<String, EndpointDefinition>> staticEndpoints = new HashMap<>();
+    if (handler != null) {
+      staticEndpoints.putAll(((StaticEndpointsHandler) handler).endpointDefinitions);
+    }
+    return new EndpointDefiner(garcon, staticEndpoints);
   }
 
   public void put(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
@@ -121,6 +132,10 @@ public class EndpointDefiner {
     get(additionalParameters, f.getName(), new FileClosure(f));
   }
 
+  public EndpointsHandler build() {
+    return new StaticEndpointsHandler(staticEndpoints);
+  }
+
   private static class FileClosure extends Closure<Object> {
 
     private final File f;
@@ -141,8 +156,7 @@ public class EndpointDefiner {
     if (!path.startsWith("/")) {
       path = "/" + path;
     }
-    Map<String, EndpointDefinition> methodMap =
-        endpointDefinitions.computeIfAbsent(path, k -> new HashMap<>());
+    Map<String, EndpointDefinition> methodMap = staticEndpoints.computeIfAbsent(path, k -> new HashMap<>());
     if (methodMap.containsKey(method)) {
       throw new IllegalStateException(String.format("Endpoint %s %s is already defined", method, path));
     }
