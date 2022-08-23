@@ -72,7 +72,6 @@ public class HttpRequestParser {
           }
           boolean isRequestBodyChunked = "chunked".equalsIgnoreCase(transferEncoding);
           if (isRequestBodyChunked && contentLength != null) {
-            // TODO catch me
             throw new BadRequestException("Cannot have both a content length and a chunked request encoding");
           } else if (isRequestBodyChunked) {
             bodyParser = new ChunkedBodyParser();
@@ -91,7 +90,6 @@ public class HttpRequestParser {
   private void parseHeader(Headers headers, String line) {
     int separatorIndex = line.indexOf(": ");
     if (separatorIndex < 0) {
-      // TODO catch me
       throw new BadProtocolException("Malformed header");
     }
     // + 2 because the string we searched has a length of 2
