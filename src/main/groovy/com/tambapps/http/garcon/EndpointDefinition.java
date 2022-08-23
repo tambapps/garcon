@@ -49,8 +49,8 @@ class EndpointDefinition {
    * Class used to by-pass Groovy metaclass calls in order to make Closure executions faster
    */
   private static class OptimizedClosure {
-    Closure<?> closure;
-    Method method;
+    private final Closure<?> closure;
+    private final Method method;
 
     @SneakyThrows
     public OptimizedClosure(Closure<?> closure) {
