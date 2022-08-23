@@ -39,7 +39,7 @@ class EndpointDefinition {
     }
     if (context.getContentType() != null) {
       // using context's contentType because the definition CT might be null, and the garcon's might not be null
-      response.headers.putContentTypeHeader(context.getContentType().getHeaderValue());
+      response.headers.putContentTypeHeader(context.getContentType());
     }
     return response;
   }

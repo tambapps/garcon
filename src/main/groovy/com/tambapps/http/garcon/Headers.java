@@ -60,8 +60,8 @@ public class Headers implements Map<String, String> {
     return getAt(CONNECTION_HEADER);
   }
 
-  public void putContentTypeHeader(String value) {
-    putAt(CONTENT_TYPE_HEADER, value);
+  public void putContentTypeHeader(ContentType contentType) {
+    putAt(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
   }
 
   public String getContentTypeHeader() {
