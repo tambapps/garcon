@@ -4,6 +4,7 @@ import groovy.lang.Closure;
 import lombok.SneakyThrows;
 import lombok.Value;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.function.Function;
 
@@ -61,7 +62,11 @@ class EndpointDefinition {
     @SneakyThrows
     Object callWithDelegate(Object o) {
       closure.setDelegate(o);
-      return method.invoke(closure);
+      try {
+        return method.invoke(closure);
+      } catch (InvocationTargetException e) {
+        throw e.getTargetException();
+      }
     }
   }
 }
