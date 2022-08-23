@@ -7,7 +7,6 @@ import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.util.AddressUtils;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
-import com.tambapps.http.garcon.util.ContentTypeMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import lombok.Getter;
@@ -24,17 +23,13 @@ public class Garcon extends AbstractHttpExchangeHandler {
   private InetAddress address;
   @Getter
   private Integer port;
-  // TODO handle me
   @Getter
   private int requestReadTimeoutMillis = 4000;
-
   @Getter
   @Setter
   private Long maxRequestBytes = null;
-
   @Getter
   private int maxThreads = 200;
-
   @Getter
   @Setter
   private ContentType accept;
