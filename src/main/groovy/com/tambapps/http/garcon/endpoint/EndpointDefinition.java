@@ -4,23 +4,29 @@ import com.tambapps.http.garcon.ContentType;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpResponse;
 import groovy.lang.Closure;
+import lombok.Getter;
 import lombok.SneakyThrows;
-import lombok.Value;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.function.Function;
+import java.util.regex.Pattern;
 
-@Value
+@Getter
 public class EndpointDefinition {
 
   // needed because we modify the delegate before calling the closure
-  ThreadLocal<OptimizedClosure> threadLocalClosure;
-  ContentType accept;
-  ContentType contentType;
+  private final ThreadLocal<OptimizedClosure> threadLocalClosure;
+  private final ContentType accept;
+  private final ContentType contentType;
 
   public EndpointDefinition(Closure<?> closure, ContentType accept, ContentType contentType) {
-    this.threadLocalClosure = ThreadLocal.withInitial(() -> new OptimizedClosure((Closure<?>) closure.clone()));
+    this(ThreadLocal.withInitial(() -> new OptimizedClosure((Closure<?>) closure.clone())), accept, contentType);
+  }
+
+  protected EndpointDefinition(ThreadLocal<OptimizedClosure> threadLocalClosure, ContentType accept, ContentType contentType) {
+    this.threadLocalClosure = threadLocalClosure;
     this.accept = accept;
     this.contentType = contentType;
   }
@@ -48,10 +54,14 @@ public class EndpointDefinition {
     return response;
   }
 
+  public DynamicEndpointDefinition toDynamic(List<String> pathVariableNames, Pattern pattern) {
+    return new DynamicEndpointDefinition(threadLocalClosure, accept, contentType, pathVariableNames, pattern);
+  }
+
   /**
    * Class used to by-pass Groovy metaclass calls in order to make Closure executions faster
    */
-  private static class OptimizedClosure {
+  protected static class OptimizedClosure {
     private final Closure<?> closure;
     private final Method method;
 

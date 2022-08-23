@@ -81,7 +81,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     if (isRunning()) {
       return;
     }
-    if (endpointsHandler == null) {
+    if (endpointsHandler == null || endpointsHandler.isEmpty()) {
       throw new IllegalStateException("You must define endpoints before starting garcon");
     }
     if (address == null || port == null) {

@@ -15,9 +15,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Pattern;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EndpointDefiner {
@@ -25,23 +23,15 @@ public class EndpointDefiner {
   private final Garcon garcon;
 
   // path -> method -> endpoint
-  private final Map<String, Map<String, EndpointDefinition>> staticEndpoints;
-  private final Map<Pattern, Map<String, EndpointDefinition>> dynamicEndpoints;
+  private final DynamicEndpointsHandler endpointsHandler;
 
   // handler is nullable
   public static EndpointDefiner newInstance(Garcon garcon, EndpointsHandler handler) {
-    Map<String, Map<String, EndpointDefinition>> staticEndpoints = new HashMap<>();
-    Map<Pattern, Map<String, EndpointDefinition>> dynamicEndpoints = new HashMap<>();
-
-    if (handler instanceof DynamicEndpointsHandler) {
-      staticEndpoints.putAll(((DynamicEndpointsHandler) handler).endpointDefinitions);
-      dynamicEndpoints.putAll(((DynamicEndpointsHandler) handler).dynamicEndpoints);
-    } else if (handler instanceof StaticEndpointsHandler) {
-      staticEndpoints.putAll(((StaticEndpointsHandler) handler).endpointDefinitions);
-    } else if (handler != null) {
-      throw new IllegalArgumentException(String.format("Unknown subclass %s of EndpointsHandler", handler.getClass()));
+    DynamicEndpointsHandler endpointsHandler = new DynamicEndpointsHandler();
+    if (handler != null) {
+      endpointsHandler.mergeWith(handler);
     }
-    return new EndpointDefiner(garcon, staticEndpoints, dynamicEndpoints);
+    return new EndpointDefiner(garcon, endpointsHandler);
   }
 
   public void put(String path, @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
@@ -143,11 +133,7 @@ public class EndpointDefiner {
   }
 
   public EndpointsHandler build() {
-    if (dynamicEndpoints.isEmpty()) {
-      return new StaticEndpointsHandler(staticEndpoints);
-    } else {
-      return new DynamicEndpointsHandler(staticEndpoints, dynamicEndpoints);
-    }
+    return endpointsHandler.isStatic() ? endpointsHandler.asStatic() : endpointsHandler;
   }
 
   private static class FileClosure extends Closure<Object> {
@@ -170,23 +156,7 @@ public class EndpointDefiner {
     if (!path.startsWith("/")) {
       path = "/" + path;
     }
-    if (path.contains("{")) {
-      defineDynamicEndpoint(path, method, endpointDefinition);
-    } else {
-      defineStaticEndpoint(path, method, endpointDefinition);
-    }
+    endpointsHandler.defineEndpoint(path, method, endpointDefinition);
   }
 
-  private void defineDynamicEndpoint(String path, String method, EndpointDefinition endpointDefinition) {
-    // TODO
-  }
-
-  private void defineStaticEndpoint(String path, String method, EndpointDefinition endpointDefinition) {
-
-    Map<String, EndpointDefinition> methodMap = staticEndpoints.computeIfAbsent(path, k -> new HashMap<>());
-    if (methodMap.containsKey(method)) {
-      throw new IllegalStateException(String.format("Endpoint %s %s is already defined", method, path));
-    }
-    methodMap.put(method.toUpperCase(), endpointDefinition);
-  }
 }

@@ -27,6 +27,8 @@ public class HttpExchangeContext {
   final ContentType accept;
   private Object parsedBody;
 
+  private Map<String, String> pathVariables;
+
   HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers,
                       ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept) {
     this.request = request;

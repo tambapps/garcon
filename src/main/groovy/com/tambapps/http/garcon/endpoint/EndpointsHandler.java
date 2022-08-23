@@ -8,4 +8,6 @@ public interface EndpointsHandler {
   EndpointDefinition getEndpoint(String path, String method) throws PathNotFoundException,
       MethodNotAllowedException;
 
+  boolean isEmpty();
+
 }
