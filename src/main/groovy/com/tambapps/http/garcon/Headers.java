@@ -6,7 +6,9 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Class handling case-insensitive headers
+ * Class representing. Note that for performance purpose, when accessing a header you should always
+ * use the dash-separated, with upper-case character for each world syntax when accessing a header,
+ * (e.g. 'Connection', 'Content-Type') otherwise you won't find it
  */
 public class Headers extends HashMap<String, String> {
 
@@ -71,11 +73,6 @@ public class Headers extends HashMap<String, String> {
     }
   }
 
-  @Override
-  public String get(Object key) {
-    return super.get(key != null ? formattedKey(key.toString()) : null);
-  }
-
   // put without formatting key, supposing it is already well formatted
   private String putUnsafe(String key, String value) {
     return super.put(key, value);
@@ -120,8 +117,8 @@ public class Headers extends HashMap<String, String> {
   private String formattedKey(String s) {
     char[] chars = new char[s.length()];
     for (int i = 0; i < chars.length; i++) {
-      char c = chars[i];
-      chars[i] = i == 0 || s.charAt(i - 1) == '-' ? Character.toUpperCase(c) : c;
+      char c = s.charAt(i);
+      chars[i] = i == 0 || s.charAt(i - 1) == '-' ? Character.toUpperCase(c) : Character.toLowerCase(c);
     }
     return new String(chars);
   }
