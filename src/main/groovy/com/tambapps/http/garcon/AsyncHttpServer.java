@@ -57,15 +57,17 @@ public class AsyncHttpServer {
       return;
     }
     running.set(false);
-    DefaultGroovyMethods.closeQuietly(selector);
-    DefaultGroovyMethods.closeQuietly(serverSocket);
-    executor.shutdown();
+    // just in case
+    selector.wakeup();
     try {
       serverThread.join();
     } catch (InterruptedException e) {
       Thread.currentThread().interrupt();
       return;
     }
+    DefaultGroovyMethods.closeQuietly(selector);
+    DefaultGroovyMethods.closeQuietly(serverSocket);
+    executor.shutdown();
   }
 
   // return true if server was actually started
@@ -184,7 +186,7 @@ public class AsyncHttpServer {
     SocketChannel channel = (SocketChannel) selectionKey.channel();
     HttpResponseComposer.writeInto(channel, response);
     HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
-    // TODO keep track of all open connections (selectionKey) to be able to close them all when stopping server
+
     if (response.isKeepAlive() && selectionKey.isValid()) {
       selectionKey.interestOps(SelectionKey.OP_READ);
       attachment.reset();
