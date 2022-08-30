@@ -3,7 +3,6 @@ package com.tambapps.http.garcon;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
-import com.tambapps.http.garcon.endpoint.StaticEndpointsHandler;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
@@ -94,9 +93,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
   }
 
-  public void waitStop() {
+  public void join() {
     if (httpServer != null) {
-      httpServer.waitStop();
+      httpServer.join();
     }
   }
 

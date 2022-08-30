@@ -199,13 +199,12 @@ public class AsyncHttpServer {
     return running.get();
   }
 
-  public void waitStop() {
-    while (isRunning()) {
+  public void join() {
+    if (serverThread != null) {
       try {
-        Thread.sleep(500L);
+        serverThread.join();
       } catch (InterruptedException e) {
         Thread.currentThread().interrupt();
-        return;
       }
     }
   }
