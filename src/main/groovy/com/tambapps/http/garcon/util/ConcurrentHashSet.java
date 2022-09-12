@@ -6,8 +6,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * Concurrent hash set, backed by a conccurrent hash map. Doesn't support null elements
- * @param <T>
+ * Concurrent hash set, backed by a concurrent hash map. Doesn't support null elements
+ * @param <T> the type of objects to hold
  */
 public class ConcurrentHashSet<T> implements Set<T> {
   

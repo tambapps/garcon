@@ -10,10 +10,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * util methods for IP addresses. Will soon be removed
+ */
+@Deprecated
 public class AddressUtils {
 
   /**
-   * from https://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device-from-code
+   * from <a href="https://stackoverflow.com/questions/6064510/how-to-get-ip-address-of-the-device-from-code">this link</a>
    *
    * @return return the ip address of the device
    * @throws IOException in case of I/O errors

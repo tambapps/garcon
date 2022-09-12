@@ -3,6 +3,9 @@ package com.tambapps.http.garcon.io;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
+/**
+ * Reads line from byte buffers
+ */
 public class ByteBufferReader {
 
   private static final byte CARRIAGE_RETURN = '\r';
@@ -10,6 +13,12 @@ public class ByteBufferReader {
 
   byte[] lineStart = null;
   // line separator is CR followed by LF
+
+  /**
+   * Reads a line and return it. May return null if line is incomplete in the current byte buffer
+   * @param buffer the buffer
+   * @return a line or null
+   */
   public String readLine(ByteBuffer buffer) {
     byte b;
     boolean readCr = lineStart != null && lineStart.length > 0 && lineStart[0] == CARRIAGE_RETURN;

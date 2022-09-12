@@ -2,6 +2,9 @@ package com.tambapps.http.garcon.logger;
 
 import java.util.Date;
 
+/**
+ * A default implementation of a {@link Logger}
+ */
 public class DefaultLogger implements Logger {
 
   private static final String ERROR = "ERROR";

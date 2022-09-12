@@ -35,6 +35,12 @@ public class ContentType implements Comparable<ContentType> {
   String subtype;
   Map<String, String> parameters;
 
+  /**
+   * Constructs a content type
+   *
+   * @param type    the type
+   * @param subtype the subtype
+   */
   public ContentType(String type, String subtype) {
     this(type, subtype, Collections.emptyMap());
   }
@@ -45,6 +51,11 @@ public class ContentType implements Comparable<ContentType> {
     this.parameters = Collections.unmodifiableMap(parameters);
   }
 
+  /**
+   * Parse a contentType from a mime type
+   * @param mimeType the mime type
+   * @return the associated content type
+   */
   public static ContentType valueOf(String mimeType) {
     int index = mimeType.indexOf(';');
     String fullType = (index >= 0 ? mimeType.substring(0, index) : mimeType).trim();
@@ -84,10 +95,20 @@ public class ContentType implements Comparable<ContentType> {
     );
   }
 
+  /**
+   * Returns a new contentType with the provided charset
+   * @param charset the charset
+   * @return a new contentType with the provided charset
+   */
   public ContentType withCharset(Charset charset) {
     return withCharset(charset.name());
   }
 
+  /**
+   * Returns a new contentType with the provided charset
+   * @param charset the charset
+   * @return a new contentType with the provided charset
+   */
   public ContentType withCharset(String name) {
     Map<String, String> parameters = new HashMap<>(this.parameters);
     parameters.put(PARAM_CHARSET, name);

@@ -10,13 +10,32 @@ import java.util.Arrays;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
-// using this because java lambda may be faster than groovy CLosure (?)
+/**
+ * Content type function map
+ *
+ * @param <T1> the type of the function arg
+ * @param <T2> the returning type of the function
+ */
 public class ContentTypeFunctionMap<T1, T2> extends ContentTypeMap<Function<T1, T2>> {
 
+  /**
+   * Put a function for the provided content type
+   *
+   * @param key   the content type
+   * @param value the value
+   * @return the previous value for this content type, or null
+   */
   public Function<T1, T2> put(ContentType key, Closure<T2> value) {
     return put(key, toFunction(value));
   }
 
+  /**
+   * Put a function for the provided content type
+   *
+   * @param contentType the content type
+   * @param value       the value
+   * @return the previous value for this content type, or null
+   */
   public Function<T1, T2> putAt(ContentType contentType, Closure<T2> value) {
     return putAt(contentType, toFunction(value));
   }
@@ -30,6 +49,11 @@ public class ContentTypeFunctionMap<T1, T2> extends ContentTypeMap<Function<T1, 
     return new MethodFunction(doCall, closure);
   }
 
+  /**
+   * Sets the default value to use
+   *
+   * @param value the new default value
+   */
   public void setDefaultValue(Closure<T2> value) {
     setDefaultValue(toFunction(value));
   }
@@ -39,6 +63,7 @@ public class ContentTypeFunctionMap<T1, T2> extends ContentTypeMap<Function<T1, 
     private final Method method;
     private final Object obj;
 
+    @SuppressWarnings("unchecked")
     @SneakyThrows
     @Override
     public T2 apply(T1 t1) {

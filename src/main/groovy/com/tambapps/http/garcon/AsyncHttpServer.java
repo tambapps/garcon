@@ -30,6 +30,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+/**
+ * Async Non-blocking HTTP Server
+ */
 public class AsyncHttpServer {
 
   private final AtomicBoolean running = new AtomicBoolean(false);
@@ -46,6 +49,13 @@ public class AsyncHttpServer {
   @Setter
   private HttpExchangeHandler exchangeHandler;
 
+  /**
+   * Constructs an async HTTP server
+   *
+   * @param executor                 the executor used to process requests
+   * @param requestReadTimeoutMillis the read timeout in millis
+   * @param exchangeHandler          the HTTP exchange handler
+   */
   public AsyncHttpServer(ExecutorService executor, long requestReadTimeoutMillis, HttpExchangeHandler exchangeHandler) {
     this.executor = executor;
     this.requestReadTimeoutMillis = requestReadTimeoutMillis;

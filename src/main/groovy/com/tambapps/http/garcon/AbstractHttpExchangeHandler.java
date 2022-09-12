@@ -1,5 +1,8 @@
 package com.tambapps.http.garcon;
 
+/**
+ * Abstract base class for an {@link HttpExchangeHandler}
+ */
 public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler {
 
   @Override

@@ -18,12 +18,23 @@ public class ContentTypeMap<T> extends TreeMap<ContentType, T> {
   @Setter
   private T defaultValue;
 
+  /**
+   * Constructs a ContentTypeMap based on the provided map
+   * @param map the map
+   */
   public ContentTypeMap(Map<ContentType, T> map) {
     super(map);
   }
 
   public ContentTypeMap() {}
 
+  /**
+   * Put a value for the provided content type
+   *
+   * @param contentType the content type
+   * @param value       the value
+   * @return the previous value for this content type, or null
+   */
   public T putAt(ContentType contentType, T value) {
     return put(contentType, value);
   }
@@ -41,6 +52,11 @@ public class ContentTypeMap<T> extends TreeMap<ContentType, T> {
     }
   }
 
+  /**
+   * Returns the value associated with the provided key, or null
+   * @param contentType the key
+   * @return the value associated with the provided key, or null
+   */
   public T getAt(ContentType contentType) {
     T t = super.get(contentType);
     if (t != null) {

@@ -8,7 +8,6 @@ import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
-import com.tambapps.http.garcon.util.AddressUtils;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
@@ -21,6 +20,9 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Garcon, the grooviest HTTP Server
+ */
 public class Garcon extends AbstractHttpExchangeHandler {
   @Getter
   private InetAddress address;
@@ -53,17 +55,28 @@ public class Garcon extends AbstractHttpExchangeHandler {
   @Setter
   Closure<?> onExchangeError;
 
+  /**
+   * Response composers per content type
+   */
   public final ContentTypeFunctionMap<Object, byte[]> composers = Composers.getMap();
+
+  /**
+   * Request parsers per content type
+   */
   public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
   private EndpointsHandler endpointsHandler;
 
   private AsyncHttpServer httpServer;
 
+  /**
+   * Empty constructor for garcon. Note that you'll need to set the address and the port before
+   * starting it
+   */
   public Garcon() {}
 
   @SneakyThrows
   public Garcon(String address, int port) {
-    this(AddressUtils.getAddress(address), port);
+    this(InetAddress.getByName(address), port);
   }
 
   public Garcon(InetAddress address, int port) {
@@ -110,7 +123,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
   }
 
-  public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+  public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
     EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
     closure.setDelegate(definer);
     closure.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -119,7 +132,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     return this;
   }
 
-  public Garcon serve(@DelegatesTo(EndpointDefiner.class) Closure closure) {
+  public Garcon serve(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
     define(closure);
     start();
     return this;

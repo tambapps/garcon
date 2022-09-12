@@ -21,6 +21,10 @@ public final class Composers {
 
   private Composers() {}
 
+  /**
+   * Returns the map of all default content type composers
+   * @return a map of all default content type composers
+   */
   public static ContentTypeFunctionMap<Object, byte[]> getMap() {
     ContentTypeFunctionMap<Object, byte[]> map = new ContentTypeFunctionMap<>();
     doIfClassExists("groovy.json.JsonOutput", (c) -> map.putAt(ContentType.JSON, new ComposeJsonFunction()));

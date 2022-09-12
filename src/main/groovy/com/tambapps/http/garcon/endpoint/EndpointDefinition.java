@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
 
+/**
+ * The definition of an endpoint
+ */
 @Getter
 public class EndpointDefinition {
 
@@ -21,10 +24,23 @@ public class EndpointDefinition {
   private final ContentType accept;
   private final ContentType contentType;
 
+  /**
+   * Constructs an endpoint definition
+   *
+   * @param accept             the accept content type (request)
+   * @param contentType        the response content type
+   */
   public EndpointDefinition(Closure<?> closure, ContentType accept, ContentType contentType) {
     this(ThreadLocal.withInitial(() -> new OptimizedClosure((Closure<?>) closure.clone())), accept, contentType);
   }
 
+  /**
+   * Constructs an endpoint definition
+   *
+   * @param threadLocalClosure the thread-local closure
+   * @param accept             the accept content type (request)
+   * @param contentType        the response content type
+   */
   protected EndpointDefinition(ThreadLocal<OptimizedClosure> threadLocalClosure, ContentType accept, ContentType contentType) {
     this.threadLocalClosure = threadLocalClosure;
     this.accept = accept;
@@ -65,6 +81,10 @@ public class EndpointDefinition {
     private final Closure<?> closure;
     private final Method method;
 
+    /**
+     * Constructs an optimized closure based on a closure
+     * @param closure the closure
+     */
     @SneakyThrows
     public OptimizedClosure(Closure<?> closure) {
       this.closure = closure;
