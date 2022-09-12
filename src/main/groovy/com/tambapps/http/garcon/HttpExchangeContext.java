@@ -40,13 +40,26 @@ public class HttpExchangeContext {
     this.accept = accept;
   }
 
+  /**
+   * Returns the request headers
+   * @return the request headers
+   */
   Headers getRequestHeaders() {
     return request.getHeaders();
   }
+
+  /**
+   * Returns the response headers
+   * @return the response headers
+   */
   Headers getResponseHeaders() {
     return response.getHeaders();
   }
 
+  /**
+   * Returns the parsed request body, based on the content type
+   * @return the parsed request body
+   */
   public Object getParsedRequestBody() {
     return getParsedRequestBody(accept);
   }
@@ -77,62 +90,113 @@ public class HttpExchangeContext {
   }
 
 
+  /**
+   * Returns whether the response is 2XX successful
+   * @return whether the response is 2XX successful
+   */
   @Generated
   public boolean is2xxSuccessful() {
     return this.response.is2xxSuccessful();
   }
 
+  /**
+   * Sets the response body
+   * @param body the body to set
+   */
   @Generated
-  public void setBody(Object param0) {
-    this.response.setBody(param0);
-    Object var10000 = null;
+  public void setBody(Object body) {
+    this.response.setBody(body);
   }
 
+  /**
+   * Returns whether the response is indefinite length
+   * @return whether the response is indefinite length
+   */
   @Generated
   public boolean isIndefiniteLength() {
     return this.response.isIndefiniteLength();
   }
 
+  /**
+   * Returns the response's content length
+   * @return the response's content length
+   */
   @Generated
   public Integer getContentLength() {
     return this.response.getContentLength();
   }
 
+  /**
+   * Returns the whether the response is keep alive
+   * @return the whether the response is keep alive
+   */
   @Generated
   public boolean isKeepAlive() {
     return this.response.isKeepAlive();
   }
 
+  /**
+   * Returns the response's HTTP version
+   * @return the response's HTTP version
+   */
   @Generated
   public String getHttpVersion() {
     return this.response.getHttpVersion();
   }
 
+  /**
+   * Returns the response's status code
+   * @return the response's status code
+   */
   @Generated
   public HttpStatusCode getStatusCode() {
     return this.response.getStatusCode();
   }
 
+  /**
+   * Returns the response's body
+   * @return the response's body
+   */
   @Generated
   public ByteBuffer getBody() {
     return this.response.getBody();
   }
 
+  /**
+   * Returns the response's status code
+   *
+   * @param statusCode the response's status code
+   */
   @Generated
-  public void setStatusCode(HttpStatusCode param0) {
-    this.response.setStatusCode(param0);
+  public void setStatusCode(HttpStatusCode statusCode) {
+    this.response.setStatusCode(statusCode);
   }
 
+  /**
+   * Returns the request's method
+   *
+   * @return the request's method
+   */
   @Generated
   public String getMethod() {
     return this.request.getMethod();
   }
 
+  /**
+   * Returns the request's path
+   *
+   * @return the request's path
+   */
   @Generated
   public String getPath() {
     return this.request.getPath();
   }
 
+  /**
+   * Returns request's query params
+   *
+   * @return request's query params
+   */
   @Generated
   public Map<String, String> getQueryParams() {
     return this.request.getQueryParams();

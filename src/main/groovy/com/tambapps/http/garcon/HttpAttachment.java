@@ -13,6 +13,11 @@ public class HttpAttachment {
   private final long attachedAtMillis = System.currentTimeMillis();
   private final long timeoutMillis;
 
+  /**
+   * Parse the request from the buffer
+   * @param buffer the buffer
+   * @return the request if fully parsed, or null
+   */
   public HttpRequest parseRequest(ByteBuffer buffer) {
     if (System.currentTimeMillis() - attachedAtMillis > timeoutMillis) {
       throw new RequestTimeoutException();
@@ -20,6 +25,9 @@ public class HttpAttachment {
     return requestParser.parse(buffer) ? requestParser.getRequest() : null;
   }
 
+  /**
+   * reset the attachment
+   */
   public void reset() {
     requestParser.reset();
   }

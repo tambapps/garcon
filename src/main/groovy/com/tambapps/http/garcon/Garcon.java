@@ -76,7 +76,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
   @SneakyThrows
   public Garcon(String address, int port) {
-    this(InetAddress.getByName(address), port);
+    this((InetAddress) null, port);
+    // setting it later for SneakyThrows to work
+    this.address = InetAddress.getByName(address);
   }
 
   public Garcon(InetAddress address, int port) {
