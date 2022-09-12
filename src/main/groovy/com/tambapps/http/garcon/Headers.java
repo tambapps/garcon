@@ -37,14 +37,18 @@ public class Headers extends HashMap<String, String> {
     putUnsafe(CONNECTION_HEADER, value);
   }
 
+  /**
+   * Returns the connection header
+   * @return the connection header
+   */
   public String getConnectionHeader() {
     return getAt(CONNECTION_HEADER);
   }
 
-  public void putContentTypeHeader(ContentType contentType) {
-    putUnsafe(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
-  }
-
+  /**
+   * Put the content type header based on the provided {@link ContentType}
+   * @param contentType the content type
+   */
   public void putContentType(ContentType contentType) {
     putUnsafe(CONTENT_TYPE_HEADER, contentType.getHeaderValue());
   }

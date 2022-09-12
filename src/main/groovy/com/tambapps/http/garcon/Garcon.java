@@ -91,6 +91,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
   }
 
 
+  /**
+   * Starts the server
+   */
   public void start() {
     if (isRunning()) {
       return;
@@ -115,7 +118,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
   }
 
 
-
+  /**
+   * Stops the server
+   */
   public void stop() {
     if (isRunning()) {
       httpServer.stop();
@@ -134,22 +139,39 @@ public class Garcon extends AbstractHttpExchangeHandler {
     return this;
   }
 
+  /**
+   * Define endpoints and starts the server
+   * @param closure the definition of the garcon
+   * @return this
+   */
   public Garcon serve(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
     define(closure);
     start();
     return this;
   }
 
+  /**
+   * Sets the address to use when starting the server
+   * @param address the address
+   */
   @SneakyThrows
   public void setAddress(String address) {
     setAddress(InetAddress.getByName(address));
   }
 
+  /**
+   * Sets the address to use when starting the server
+   * @param address the address
+   */
   public void setAddress(InetAddress address) {
     checkRunning("Cannot modify address while running");
     this.address = address;
   }
 
+  /**
+   * Sets the port to use when starting the server
+   * @param port the port
+   */
   public void setPort(Integer port) {
     checkRunning("Cannot modify port while running");
     this.port = port;

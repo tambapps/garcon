@@ -4,6 +4,9 @@ import lombok.AllArgsConstructor;
 
 import java.util.Arrays;
 
+/**
+ * Enum for Http Status codes
+ */
 @AllArgsConstructor
 public enum HttpStatus implements HttpStatusCode {
   CONTINUE(100, "Continue"),
