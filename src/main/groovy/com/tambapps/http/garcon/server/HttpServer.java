@@ -21,6 +21,7 @@ public interface HttpServer {
 
   /**
    * Return true if the server is running
+   *
    * @return true if the server is running
    */
   boolean isRunning();

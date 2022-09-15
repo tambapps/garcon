@@ -68,6 +68,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
   public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
   private EndpointsHandler endpointsHandler;
 
+  // can provide own HttpServer implementation
+  @Getter
+  @Setter
   private HttpServer httpServer;
 
   /**
@@ -98,7 +101,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
    */
   public void start() {
     if (isRunning()) {
-      return;
+      throw new IllegalStateException("Server already stared");
     }
     if (endpointsHandler == null || endpointsHandler.isEmpty()) {
       throw new IllegalStateException("You must define endpoints before starting garcon");
@@ -106,7 +109,10 @@ public class Garcon extends AbstractHttpExchangeHandler {
     if (address == null || port == null) {
       throw new IllegalStateException("Cannot start server without address and port");
     }
-    httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), requestReadTimeoutMillis, this);
+    if (httpServer == null) {
+      // use our default implementation
+      httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), requestReadTimeoutMillis, this);
+    }
     httpServer.start(address, port);
     if (onStart != null) {
       onStart.call(address, port);
