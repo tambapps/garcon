@@ -174,8 +174,8 @@ public class EndpointDefiner {
   Map<?, ?> additionalParameters, String method, String path,
       @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     addEndpoint(path, method,
-        new EndpointDefinition(closure, (ContentType) additionalParameters.get("accept"),
-            (ContentType) additionalParameters.get("contentType")));
+        new EndpointDefinition(closure, getOptionalContentType(additionalParameters, "accept"),
+            getOptionalContentType(additionalParameters, "contentType")));
   }
 
   /**
@@ -258,4 +258,16 @@ public class EndpointDefiner {
     endpointsHandler.defineEndpoint(path, method, endpointDefinition);
   }
 
+  private static ContentType getOptionalContentType(Map<?, ?> additionalParameters, String name) {
+    Object o = additionalParameters.get(name);
+    if (o instanceof ContentType) {
+      return (ContentType) o;
+    } else if (o instanceof com.tambapps.http.hyperpoet.ContentType) {
+      return ContentType.fromHyperPoetContentType((com.tambapps.http.hyperpoet.ContentType) o);
+    } else if (o != null) {
+      throw new ClassCastException(String.format("Could not cast class %s as ContentType", o.getClass()));
+    } else {
+      return null;
+    }
+  }
 }

@@ -169,9 +169,15 @@ class GarconTest {
       get '/path', contentType: ContentType.JSON, {
         return [hello: 'world']
       }
+      // should also work with hyperpoet content type
+      get '/path2', contentType: com.tambapps.http.hyperpoet.ContentType.JSON, {
+        return [hello: 'world']
+      }
     }
 
     assertEquals($/{"hello":"world"}/$, poet.get('/path', parser: Parsers.&parseStringResponseBody))
+    assertEquals(ContentType.JSON.headerValue, poet.history.last().responseHeaders[Headers.CONTENT_TYPE_HEADER].first())
+    assertEquals($/{"hello":"world"}/$, poet.get('/path2', parser: Parsers.&parseStringResponseBody))
     assertEquals(ContentType.JSON.headerValue, poet.history.last().responseHeaders[Headers.CONTENT_TYPE_HEADER].first())
   }
 

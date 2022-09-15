@@ -52,6 +52,16 @@ public class ContentType implements Comparable<ContentType> {
     }
 
     /**
+     * Convert hyper poet content type to garcon content type
+     *
+     * @param contentType the hyper poet content type
+     * @return the garcon content type
+     */
+    public static ContentType fromHyperPoetContentType(com.tambapps.http.hyperpoet.ContentType contentType) {
+        return new ContentType(contentType.getType(), contentType.getSubtype());
+    }
+
+    /**
      * Parse a contentType from a mime type
      *
      * @param mimeType the mime type
