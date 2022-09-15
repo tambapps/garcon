@@ -45,14 +45,15 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
     return new StaticEndpointsHandler(endpointDefinitions);
   }
 
-  public void mergeWith(EndpointsHandler handler) {
+  void mergeWith(EndpointsHandler handler) {
     if (handler instanceof DynamicEndpointsHandler) {
       endpointDefinitions.putAll(((DynamicEndpointsHandler) handler).endpointDefinitions);
       dynamicPaths.addAll(((DynamicEndpointsHandler) handler).dynamicPaths);
     } else if (handler instanceof StaticEndpointsHandler) {
       endpointDefinitions.putAll(((StaticEndpointsHandler) handler).endpointDefinitions);
     } else {
-      throw new IllegalArgumentException(String.format("Unknown subclass %s of EndpointsHandler", handler.getClass()));
+      throw new IllegalArgumentException(
+          String.format("Unknown subclass %s of EndpointsHandler", handler.getClass()));
     }
   }
 
@@ -75,7 +76,8 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
     }
   }
 
-  public void defineDynamicEndpoint(String path, String method, List<String> pathVariableNames, EndpointDefinition endpointDefinition) {
+  public void defineDynamicEndpoint(String path, String method, List<String> pathVariableNames,
+      EndpointDefinition endpointDefinition) {
     Matcher m = PATH_VARIABLE_PATTERN.matcher(path);
     StringBuffer sb = new StringBuffer();
     while (m.find()) {
@@ -87,8 +89,8 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
     sb.append("/?");
     Pattern pattern = Pattern.compile(sb.toString());
     Optional<DynamicEndpointsDefinition> optDefinition = dynamicPaths.stream()
-            .filter(d -> d.getPattern().pattern().equals(pattern.pattern()))
-                .findFirst();
+        .filter(d -> d.getPattern().pattern().equals(pattern.pattern()))
+        .findFirst();
 
     DynamicEndpointsDefinition definition;
     if (optDefinition.isPresent()) {
@@ -99,12 +101,14 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
     }
 
     if (definition.getMethodEndpointMap().containsKey(method)) {
-      throw new IllegalStateException(String.format("Endpoint %s %s is already defined", method, path));
+      throw new IllegalStateException(
+          String.format("Endpoint %s %s is already defined", method, path));
     }
-    definition.getMethodEndpointMap().put(method, endpointDefinition.toDynamic(pathVariableNames, pattern));
+    definition.getMethodEndpointMap()
+        .put(method, endpointDefinition.toDynamic(pathVariableNames, pattern));
   }
 
-    @Value
+  @Value
   private static class DynamicEndpointsDefinition {
     Pattern pattern;
 

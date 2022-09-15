@@ -107,7 +107,7 @@ public class AddressUtils {
   }
 
   @SneakyThrows
-  public static InetAddress getAddress(String address) {
+  private static InetAddress getAddress(String address) {
     return InetAddress.getByName(address);
   }
 }

@@ -17,6 +17,9 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Delegate of {@link Garcon#define(Closure)} closure, allowing to define endpoints in a Groovy way
+ */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EndpointDefiner {
 
@@ -222,6 +225,10 @@ public class EndpointDefiner {
     get(additionalParameters, f.getName(), new FileClosure(f));
   }
 
+  /**
+   * Build an endpoint handler
+   * @return the built endpoint handler
+   */
   public EndpointsHandler build() {
     return endpointsHandler.isStatic() ? endpointsHandler.asStatic() : endpointsHandler;
   }
