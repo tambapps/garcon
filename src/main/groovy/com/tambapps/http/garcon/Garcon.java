@@ -113,6 +113,10 @@ public class Garcon extends AbstractHttpExchangeHandler {
       // use our default implementation
       httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), requestReadTimeoutMillis, this);
     }
+    Thread shutdownHook = httpServer.getShutdownHook();
+    if (shutdownHook != null) {
+      Runtime.getRuntime().addShutdownHook(shutdownHook);
+    }
     httpServer.start(address, port);
     if (onStart != null) {
       onStart.call(address, port);
@@ -134,6 +138,10 @@ public class Garcon extends AbstractHttpExchangeHandler {
       httpServer.stop();
       if (onStop != null) {
         onStop.call();
+      }
+      Thread shutdownHook = httpServer.getShutdownHook();
+      if (shutdownHook != null) {
+        Runtime.getRuntime().removeShutdownHook(shutdownHook);
       }
     }
   }

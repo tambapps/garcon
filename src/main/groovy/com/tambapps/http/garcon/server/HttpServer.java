@@ -30,4 +30,8 @@ public interface HttpServer {
    * Wait for the server to stop
    */
   void join();
+
+  default Thread getShutdownHook() {
+    return null;
+  }
 }

@@ -50,6 +50,7 @@ public class AsyncHttpServer implements HttpServer {
   private Logger logger = new DefaultLogger();
   private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
   private Thread serverThread;
+  private final Thread shutDownHook = new Thread(this::stop);
 
   private final ExecutorService executor;
   private final long requestReadTimeoutMillis;
@@ -227,6 +228,11 @@ public class AsyncHttpServer implements HttpServer {
         Thread.currentThread().interrupt();
       }
     }
+  }
+
+  @Override
+  public Thread getShutdownHook() {
+    return shutDownHook;
   }
 
   @AllArgsConstructor
