@@ -1,8 +1,15 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.server;
 
 import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 
+import com.tambapps.http.garcon.ContentType;
+import com.tambapps.http.garcon.Headers;
+import com.tambapps.http.garcon.HttpAttachment;
+import com.tambapps.http.garcon.HttpExchangeHandler;
+import com.tambapps.http.garcon.HttpRequest;
+import com.tambapps.http.garcon.HttpResponse;
+import com.tambapps.http.garcon.HttpStatus;
 import com.tambapps.http.garcon.exception.BadProtocolException;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.exception.RequestTimeoutException;
@@ -33,7 +40,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 /**
  * Async Non-blocking HTTP Server
  */
-public class AsyncHttpServer {
+public class AsyncHttpServer implements HttpServer {
 
   private final AtomicBoolean running = new AtomicBoolean(false);
   private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 64 - 1);
@@ -62,6 +69,7 @@ public class AsyncHttpServer {
     this.exchangeHandler = exchangeHandler;
   }
 
+  @Override
   public void stop() {
     if (!isRunning()) {
       return;
@@ -80,7 +88,7 @@ public class AsyncHttpServer {
     executor.shutdown();
   }
 
-  // return true if server was actually started
+  @Override
   public boolean start(InetAddress address, Integer port) {
     if (isRunning()) {
       return false;
@@ -205,10 +213,12 @@ public class AsyncHttpServer {
     }
   }
 
+  @Override
   public boolean isRunning() {
     return running.get();
   }
 
+  @Override
   public void join() {
     if (serverThread != null) {
       try {

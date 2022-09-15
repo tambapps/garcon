@@ -1,5 +1,6 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.server.AsyncHttpServer
 import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import groovy.transform.CompileDynamic

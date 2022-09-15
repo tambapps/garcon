@@ -8,6 +8,8 @@ import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
+import com.tambapps.http.garcon.server.AsyncHttpServer;
+import com.tambapps.http.garcon.server.HttpServer;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
@@ -66,7 +68,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
   public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
   private EndpointsHandler endpointsHandler;
 
-  private AsyncHttpServer httpServer;
+  private HttpServer httpServer;
 
   /**
    * Empty constructor for garcon. Note that you'll need to set the address and the port before
