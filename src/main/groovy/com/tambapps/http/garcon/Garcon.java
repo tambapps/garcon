@@ -1,5 +1,7 @@
 package com.tambapps.http.garcon;
 
+import static com.tambapps.http.garcon.util.ParametersUtils.getOrDefault;
+
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
@@ -13,11 +15,13 @@ import com.tambapps.http.garcon.server.HttpServer;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
+import groovy.transform.NamedParam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
 import java.net.InetAddress;
+import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -95,6 +99,22 @@ public class Garcon extends AbstractHttpExchangeHandler {
     return httpServer != null && httpServer.isRunning();
   }
 
+  public void start(
+      @NamedParam(value = "port", type = Integer.class)
+      @NamedParam(value = "address", type = InetAddress.class)
+      Map<?,?> args) {
+    if (args != null) {
+      InetAddress inetAddress = getOrDefault(args, "address", InetAddress.class, null);
+      if (inetAddress != null) {
+        setAddress(inetAddress);
+      }
+      Integer port = getOrDefault(args, "port", Integer.class, null);
+      if (port != null) {
+        setPort(port);
+      }
+    }
+    start();
+  }
 
   /**
    * Starts the server
