@@ -20,6 +20,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.Map;
 import java.util.concurrent.Executors;
@@ -277,5 +278,37 @@ public class Garcon extends AbstractHttpExchangeHandler {
         t.setPriority(Thread.NORM_PRIORITY);
       return t;
     }
+  }
+
+  private void define(String accept, String contentType, String path, Class<?> clazz, Object instance, Method method) {
+    // TODO
+  }
+
+  public static Garcon fromInstance(Object instance) {
+    Class<?> clazz = instance.getClass();
+    Garcon garcon = new Garcon();
+    for (Method method : clazz.getMethods()) {
+      Get get = method.getAnnotation(Get.class);
+      if (get != null) {
+        garcon.define(null, get.contentType(), get.path(), clazz, instance, method);
+      }
+      Delete delete = method.getAnnotation(Delete.class);
+      if (delete != null) {
+        garcon.define(null, delete.contentType(), delete.path(), clazz, instance, method);
+      }
+      Patch patch = method.getAnnotation(Patch.class);
+      if (patch != null) {
+        garcon.define(patch.accept(), patch.contentType(), patch.path(), clazz, instance, method);
+      }
+      Put put = method.getAnnotation(Put.class);
+      if (put != null) {
+        garcon.define(put.accept(), put.contentType(), put.path(), clazz, instance, method);
+      }
+      Post post = method.getAnnotation(Post.class);
+      if (post != null) {
+        garcon.define(post.accept(), post.contentType(), post.path(), clazz, instance, method);
+      }
+    }
+    return garcon;
   }
 }
