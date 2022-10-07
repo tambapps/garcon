@@ -3,10 +3,13 @@ package com.tambapps.http.garcon.util;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.HttpResponse;
+import com.tambapps.http.garcon.annotation.ParsedRequestBody;
+import com.tambapps.http.garcon.exception.BadRequestException;
 import groovy.lang.Closure;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Parameter;
 
 public class ReflectMethodClosure extends Closure<Object> {
 
@@ -24,16 +27,28 @@ public class ReflectMethodClosure extends Closure<Object> {
   }
 
   private static ArgFunction[] validateAndCreateArgFunctions(Method method) {
-    Class<?>[] parameterTypes = method.getParameterTypes();
-    ArgFunction[] argSuppliers = new ArgFunction[parameterTypes.length];
+    Parameter[] parameters = method.getParameters();
+    ArgFunction[] argSuppliers = new ArgFunction[parameters.length];
     for (int i = 0; i < method.getParameterCount(); i++) {
-      Class<?> type = parameterTypes[i];
+      Parameter parameter = parameters[i];
+      Class<?> type = parameter.getType();
       if (type == HttpExchangeContext.class) {
         argSuppliers[i] = (context -> context);
       } else if (type == HttpRequest.class) {
         argSuppliers[i] = HttpExchangeContext::getRequest;
       } else if (type == HttpResponse.class) {
         argSuppliers[i] = HttpExchangeContext::getResponse;
+      } else  if (parameter.getAnnotation(ParsedRequestBody.class) != null) {
+        final Class<?> requestBodyClazz = type;
+        argSuppliers[i] = (context) -> {
+          Object parsedRequestBody = context.getParsedRequestBody();
+          if (parsedRequestBody == null && !requestBodyClazz.isPrimitive()) {
+            return null;
+          } else if (requestBodyClazz.isInstance(parsedRequestBody)) {
+            return parsedRequestBody;
+          }
+          throw new BadRequestException("Request body is of unexpected type");
+        };
       } else {
         throw new IllegalArgumentException(String.format("Cannot handle type %s for method %s", type.getSimpleName(), method.getName()));
       }

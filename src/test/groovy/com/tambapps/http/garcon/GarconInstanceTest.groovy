@@ -1,6 +1,8 @@
 package com.tambapps.http.garcon
 
+import static com.tambapps.http.garcon.ContentType.CONTENT_TYPE_JSON
 import com.tambapps.http.garcon.annotation.Get
+import com.tambapps.http.garcon.annotation.ParsedRequestBody
 import com.tambapps.http.garcon.annotation.Post
 import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
@@ -63,6 +65,8 @@ class GarconInstanceTest {
   void testMirror() {
     assertEquals('magic', poet.post('/mirror', body: 'magic'))
     assertEquals('magic', poet.post('/mirror2', body: 'magic'))
+
+    assertEquals('magic', poet.post('/mirror3', body: [who: 'magic'], contentType: com.tambapps.http.hyperpoet.ContentType.JSON))
   }
 
 
@@ -84,5 +88,10 @@ class GarconInstanceTest {
   @Post("/mirror2")
   void postMirror2(HttpRequest request, HttpResponse response) {
     response.body = request.body
+  }
+
+  @Post(path = "/mirror3", accept = CONTENT_TYPE_JSON)
+  void postMirror2(@ParsedRequestBody Map<?, ?> requestBody, HttpResponse response) {
+    response.body = requestBody.who
   }
 }
