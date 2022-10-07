@@ -1,4 +1,4 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,5 +10,8 @@ import java.lang.annotation.Target;
 public @interface Delete {
   String contentType() default "";
 
-  String path();
+  String path() default "";
+
+  String value() default "";
+
 }

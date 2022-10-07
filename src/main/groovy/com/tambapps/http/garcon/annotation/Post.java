@@ -1,4 +1,4 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.annotation;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -7,8 +7,13 @@ import java.lang.annotation.Target;
 
 @Target({ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
-public @interface Get {
+public @interface Post {
+  String accept() default "";
+
   String contentType() default "";
 
-  String path();
+  String path() default "";
+
+  String value() default "";
+
 }

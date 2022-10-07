@@ -9,6 +9,7 @@ import lombok.SneakyThrows;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -89,14 +90,25 @@ public class EndpointDefinition {
     public OptimizedClosure(Closure<?> closure) {
       this.closure = closure;
       closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-      this.method = closure.getClass().getMethod("doCall");
+      this.method = retrieveMethod(closure);
+    }
+
+    private Method retrieveMethod(Closure<?> closure) {
+      return Arrays.stream(closure.getClass().getMethods())
+          .filter(m -> m.getName().equals("doCall"))
+          .findFirst()
+          .get();
+    }
+
+    protected Object invoke(Method method, Closure<?> closure, Object o) throws InvocationTargetException, IllegalAccessException {
+      return method.invoke(closure, o);
     }
 
     @SneakyThrows
     Object callWithDelegate(Object o) {
       closure.setDelegate(o);
       try {
-        return method.invoke(closure);
+        return invoke(method, closure, o);
       } catch (InvocationTargetException e) {
         throw e.getTargetException();
       }

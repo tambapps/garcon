@@ -2,6 +2,11 @@ package com.tambapps.http.garcon;
 
 import static com.tambapps.http.garcon.util.ParametersUtils.getOrDefault;
 
+import com.tambapps.http.garcon.annotation.Delete;
+import com.tambapps.http.garcon.annotation.Get;
+import com.tambapps.http.garcon.annotation.Patch;
+import com.tambapps.http.garcon.annotation.Post;
+import com.tambapps.http.garcon.annotation.Put;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
@@ -13,6 +18,7 @@ import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.server.AsyncHttpServer;
 import com.tambapps.http.garcon.server.HttpServer;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
+import com.tambapps.http.garcon.util.ReflectMethodClosure;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
 import groovy.transform.NamedParam;
@@ -22,6 +28,7 @@ import lombok.SneakyThrows;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -280,33 +287,52 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
   }
 
-  private void define(String accept, String contentType, String path, Class<?> clazz, Object instance, Method method) {
-    // TODO
+  private void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
+      Object instance, Method method) {
+    EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
+    Closure<?> closure = new ReflectMethodClosure(instance, method);
+
+    Map<String, Object> params = new HashMap<>();
+    if (acceptStr != null && !acceptStr.isEmpty()) {
+      params.put("accept", ContentType.valueOf(acceptStr));
+    }
+    if (contentTypeStr != null && !contentTypeStr.isEmpty()) {
+      params.put("contentType", ContentType.valueOf(contentTypeStr));
+    }
+    definer.method(params, httpMethod, path, closure);
+    endpointsHandler = definer.build();
   }
 
+  /**
+   * Construct a garcon from the provided instance. All method annotated to an garcon endpoint annotation
+   * will become an endpoint of the returned garcon
+   *
+   * @param instance the instance from which to construct the garcon
+   * @return the garcon
+   */
   public static Garcon fromInstance(Object instance) {
     Class<?> clazz = instance.getClass();
     Garcon garcon = new Garcon();
     for (Method method : clazz.getMethods()) {
       Get get = method.getAnnotation(Get.class);
       if (get != null) {
-        garcon.define(null, get.contentType(), get.path(), clazz, instance, method);
+        garcon.define("GET", null, get.contentType(), get.value().isEmpty() ? get.path() : get.value(), instance, method);
       }
       Delete delete = method.getAnnotation(Delete.class);
       if (delete != null) {
-        garcon.define(null, delete.contentType(), delete.path(), clazz, instance, method);
+        garcon.define("DELETE", null, delete.contentType(), delete.value().isEmpty() ? delete.path() : delete.value(), instance, method);
       }
       Patch patch = method.getAnnotation(Patch.class);
       if (patch != null) {
-        garcon.define(patch.accept(), patch.contentType(), patch.path(), clazz, instance, method);
+        garcon.define("PATCH", patch.accept(), patch.contentType(), patch.value().isEmpty() ? patch.path() : patch.value(), instance, method);
       }
       Put put = method.getAnnotation(Put.class);
       if (put != null) {
-        garcon.define(put.accept(), put.contentType(), put.path(), clazz, instance, method);
+        garcon.define("PUT", put.accept(), put.contentType(), put.value().isEmpty() ? put.path() : put.value(), instance, method);
       }
       Post post = method.getAnnotation(Post.class);
       if (post != null) {
-        garcon.define(post.accept(), post.contentType(), post.path(), clazz, instance, method);
+        garcon.define("POST", post.accept(), post.contentType(), post.value().isEmpty() ? post.path() : post.value(), instance, method);
       }
     }
     return garcon;
