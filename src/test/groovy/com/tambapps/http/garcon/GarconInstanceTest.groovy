@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.annotation.Get
+import com.tambapps.http.garcon.annotation.Post
 import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import groovy.transform.CompileDynamic
@@ -53,12 +54,15 @@ class GarconInstanceTest {
     assertEquals('Hello World', poet.get('/hello'))
     assertEquals('Hello World', poet.get('/hello?p=1&a=2'))
     assertEquals('Hello World', poet.get('/hello/?p=1&a=2'))
+
+    assertEquals('me', poet.get('/hello2?who=me'))
+    assertEquals('nobody', poet.get('/hello2?who=nobody'))
   }
 
   @Test
-  void testHello2() {
-    assertEquals('me', poet.get('/hello2?who=me'))
-    assertEquals('nobody', poet.get('/hello2?who=nobody'))
+  void testMirror() {
+    assertEquals('magic', poet.post('/mirror', body: 'magic'))
+    assertEquals('magic', poet.post('/mirror2', body: 'magic'))
   }
 
 
@@ -70,5 +74,15 @@ class GarconInstanceTest {
   @Get("/hello2")
   def getHelloWho(HttpExchangeContext context) {
     return context.queryParams['who']
+  }
+
+  @Post("/mirror")
+  def postMirror(HttpRequest request) {
+    return new String(request.body)
+  }
+
+  @Post("/mirror2")
+  void postMirror2(HttpRequest request, HttpResponse response) {
+    response.body = request.body
   }
 }
