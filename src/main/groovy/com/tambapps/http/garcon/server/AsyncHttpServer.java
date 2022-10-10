@@ -4,6 +4,7 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 
 import com.tambapps.http.garcon.ContentType;
+import com.tambapps.http.garcon.Garcon;
 import com.tambapps.http.garcon.Headers;
 import com.tambapps.http.garcon.HttpAttachment;
 import com.tambapps.http.garcon.HttpExchangeHandler;
@@ -14,8 +15,6 @@ import com.tambapps.http.garcon.exception.BadProtocolException;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.exception.RequestTimeoutException;
 import com.tambapps.http.garcon.io.composer.HttpResponseComposer;
-import com.tambapps.http.garcon.logger.DefaultLogger;
-import com.tambapps.http.garcon.logger.Logger;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
@@ -46,8 +45,6 @@ public class AsyncHttpServer implements HttpServer {
   private final ByteBuffer buffer = ByteBuffer.allocateDirect(1024 * 64 - 1);
   private ServerSocketChannel serverSocket;
   private Selector selector;
-  @Setter
-  private Logger logger = new DefaultLogger();
   private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
   private Thread serverThread;
   private final Thread shutDownHook = new Thread(this::stop);
@@ -75,7 +72,6 @@ public class AsyncHttpServer implements HttpServer {
     if (!isRunning()) {
       return;
     }
-    Runtime.getRuntime().removeShutdownHook(shutDownHook);
     running.set(false);
     // just in case
     selector.wakeup();
@@ -88,6 +84,7 @@ public class AsyncHttpServer implements HttpServer {
     DefaultGroovyMethods.closeQuietly(selector);
     DefaultGroovyMethods.closeQuietly(serverSocket);
     executor.shutdown();
+    Runtime.getRuntime().removeShutdownHook(shutDownHook);
   }
 
   @Override
@@ -113,7 +110,7 @@ public class AsyncHttpServer implements HttpServer {
         // represents the registration of this channel with this Selector.
         serverSocket.register(selector, SelectionKey.OP_ACCEPT);
       } catch (IOException e) {
-        logger.error("Couldn't start server", e);
+        Garcon.getLogger().error("Couldn't start server", e);
         startResultQueue.add(false);
         return;
       }
@@ -141,9 +138,9 @@ public class AsyncHttpServer implements HttpServer {
         }
       } catch (ClosedSelectorException ignored) {
       } catch (IOException e) {
-        logger.error("Error while running server. Stopping it", e);
+        Garcon.getLogger().error("Error while running server. Stopping it", e);
       } catch (Exception e) {
-        logger.error("Unexpected Error while running server. Stopping it", e);
+        Garcon.getLogger().error("Unexpected Error while running server. Stopping it", e);
       }
       running.set(false);
       DefaultGroovyMethods.closeQuietly(selector);
@@ -245,7 +242,7 @@ public class AsyncHttpServer implements HttpServer {
       try {
         response = exchangeHandler.processExchange(request);
       } catch (Exception e) {
-        logger.error("Error while processing exchange for request " + request, e);
+        Garcon.getLogger().error("Error while processing exchange for request " + request, e);
         response = new HttpResponse();
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         response.setBody("An internal server error occurred");

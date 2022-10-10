@@ -1,5 +1,6 @@
 package com.tambapps.http.garcon;
 
+import lombok.SneakyThrows;
 import lombok.Value;
 
 import java.nio.charset.Charset;
@@ -57,11 +58,14 @@ public class ContentType implements Comparable<ContentType> {
     /**
      * Convert hyper poet content type to garcon content type
      *
-     * @param contentType the hyper poet content type
+     * @param o the hyper poet content type
      * @return the garcon content type
      */
-    public static ContentType fromHyperPoetContentType(com.tambapps.http.hyperpoet.ContentType contentType) {
-        return new ContentType(contentType.getType(), contentType.getSubtype());
+    @SneakyThrows
+    public static ContentType fromHyperPoetContentType(Object o) {
+        Class<?> aClass = o.getClass();
+        return new ContentType((String) aClass.getMethod("getType").invoke(o),
+            (String) aClass.getMethod("getSubtype").invoke(o));
     }
 
     /**

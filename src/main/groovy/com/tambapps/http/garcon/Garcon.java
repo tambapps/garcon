@@ -15,6 +15,8 @@ import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
+import com.tambapps.http.garcon.logger.DefaultLogger;
+import com.tambapps.http.garcon.logger.Logger;
 import com.tambapps.http.garcon.server.AsyncHttpServer;
 import com.tambapps.http.garcon.server.HttpServer;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
@@ -41,6 +43,18 @@ import java.util.concurrent.atomic.AtomicInteger;
  * Garcon, the grooviest HTTP Server
  */
 public class Garcon extends AbstractHttpExchangeHandler {
+
+  private static Logger LOGGER;
+
+  public static Logger getLogger() {
+    if (LOGGER == null) {
+      LOGGER = new DefaultLogger();
+    }
+    return LOGGER;
+  }
+  public static void setLogger(Logger logger) {
+    LOGGER = logger;
+  }
   @Getter
   private InetAddress address;
   @Getter
@@ -263,6 +277,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     } catch (ParsingException e) {
       return default400Response("Request body is malformed");
     } catch (Exception e) {
+      Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {
         onExchangeError.call(e);
       }

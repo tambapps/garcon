@@ -260,14 +260,14 @@ public class EndpointDefiner {
 
   private static ContentType getOptionalContentType(Map<?, ?> additionalParameters, String name) {
     Object o = additionalParameters.get(name);
-    if (o instanceof ContentType) {
-      return (ContentType) o;
-    } else if (o instanceof com.tambapps.http.hyperpoet.ContentType) {
-      return ContentType.fromHyperPoetContentType((com.tambapps.http.hyperpoet.ContentType) o);
-    } else if (o != null) {
-      throw new ClassCastException(String.format("Could not cast class %s as ContentType", o.getClass()));
-    } else {
+    if (o == null) {
       return null;
+    } else if (o instanceof ContentType) {
+      return (ContentType) o;
+    } else if (o.getClass().getName().equals("com.tambapps.http.hyperpoet.ContentType")) {
+      return ContentType.fromHyperPoetContentType(o);
+    } else {
+      throw new ClassCastException(String.format("Could not cast class %s as ContentType", o.getClass()));
     }
   }
 }
