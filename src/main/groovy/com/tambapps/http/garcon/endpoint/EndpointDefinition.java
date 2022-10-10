@@ -5,11 +5,7 @@ import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpResponse;
 import groovy.lang.Closure;
 import lombok.Getter;
-import lombok.SneakyThrows;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 import java.util.regex.Pattern;
@@ -21,7 +17,7 @@ import java.util.regex.Pattern;
 public class EndpointDefinition {
 
   // needed because we modify the delegate before calling the closure
-  private final ThreadLocal<OptimizedClosure> threadLocalClosure;
+  private final ThreadLocal<Closure<?>> threadLocalClosure;
   private final ContentType accept;
   private final ContentType contentType;
 
@@ -32,7 +28,7 @@ public class EndpointDefinition {
    * @param contentType        the response content type
    */
   public EndpointDefinition(Closure<?> closure, ContentType accept, ContentType contentType) {
-    this(ThreadLocal.withInitial(() -> new OptimizedClosure((Closure<?>) closure.clone())), accept, contentType);
+    this(ThreadLocal.withInitial(() -> (Closure<?>) closure.clone()), accept, contentType);
   }
 
   /**
@@ -42,7 +38,7 @@ public class EndpointDefinition {
    * @param accept             the accept content type (request)
    * @param contentType        the response content type
    */
-  protected EndpointDefinition(ThreadLocal<OptimizedClosure> threadLocalClosure, ContentType accept, ContentType contentType) {
+  protected EndpointDefinition(ThreadLocal<Closure<?>> threadLocalClosure, ContentType accept, ContentType contentType) {
     this.threadLocalClosure = threadLocalClosure;
     this.accept = accept;
     this.contentType = contentType;
@@ -50,10 +46,11 @@ public class EndpointDefinition {
 
   public HttpResponse call(HttpExchangeContext context) {
     // rehydrating
-    OptimizedClosure closure = threadLocalClosure.get();
+    Closure<?> closure = threadLocalClosure.get();
     HttpResponse response = context.getResponse();
 
-    Object returnValue = closure.callWithDelegate(context);
+    closure.setDelegate(context);
+    Object returnValue = closure.call(context);
     if (response.getBody() == null && returnValue != null) {
       ContentType contentType = context.getContentType();
       if (contentType != null) {
@@ -75,43 +72,4 @@ public class EndpointDefinition {
     return new DynamicEndpointDefinition(threadLocalClosure, accept, contentType, pathVariableNames, pattern);
   }
 
-  /**
-   * Class used to by-pass Groovy metaclass calls in order to make Closure executions faster
-   */
-  protected static class OptimizedClosure {
-    private final Closure<?> closure;
-    private final Method method;
-
-    /**
-     * Constructs an optimized closure based on a closure
-     * @param closure the closure
-     */
-    @SneakyThrows
-    public OptimizedClosure(Closure<?> closure) {
-      this.closure = closure;
-      closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-      this.method = retrieveMethod(closure);
-    }
-
-    private Method retrieveMethod(Closure<?> closure) {
-      return Arrays.stream(closure.getClass().getMethods())
-          .filter(m -> m.getName().equals("doCall"))
-          .findFirst()
-          .get();
-    }
-
-    protected Object invoke(Method method, Closure<?> closure, Object o) throws InvocationTargetException, IllegalAccessException {
-      return method.invoke(closure, o);
-    }
-
-    @SneakyThrows
-    Object callWithDelegate(Object o) {
-      closure.setDelegate(o);
-      try {
-        return invoke(method, closure, o);
-      } catch (InvocationTargetException e) {
-        throw e.getTargetException();
-      }
-    }
-  }
 }

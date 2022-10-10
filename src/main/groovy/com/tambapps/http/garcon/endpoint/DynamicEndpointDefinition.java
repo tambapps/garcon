@@ -18,7 +18,7 @@ public class DynamicEndpointDefinition extends EndpointDefinition {
   private final List<String> pathVariableNames;
   private final Pattern pathVariablePattern;
 
-  public DynamicEndpointDefinition(ThreadLocal<OptimizedClosure> threadLocalClosure,
+  public DynamicEndpointDefinition(ThreadLocal<Closure<?>> threadLocalClosure,
       ContentType accept, ContentType contentType, List<String> pathVariableNames,
       Pattern pathVariablePattern) {
     super(threadLocalClosure, accept, contentType);
