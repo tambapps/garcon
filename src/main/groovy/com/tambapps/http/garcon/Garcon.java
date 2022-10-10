@@ -82,7 +82,6 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
   // can provide own HttpServer implementation
   @Getter
-  @Setter
   private HttpServer httpServer;
 
   /**
@@ -141,10 +140,6 @@ public class Garcon extends AbstractHttpExchangeHandler {
       // use our default implementation
       httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), requestReadTimeoutMillis, this);
     }
-    Thread shutdownHook = httpServer.getShutdownHook();
-    if (shutdownHook != null) {
-      Runtime.getRuntime().addShutdownHook(shutdownHook);
-    }
     httpServer.start(address, port);
     if (onStart != null) {
       onStart.call(address, port);
@@ -166,10 +161,6 @@ public class Garcon extends AbstractHttpExchangeHandler {
       httpServer.stop();
       if (onStop != null) {
         onStop.call();
-      }
-      Thread shutdownHook = httpServer.getShutdownHook();
-      if (shutdownHook != null) {
-        Runtime.getRuntime().removeShutdownHook(shutdownHook);
       }
     }
   }
@@ -229,6 +220,11 @@ public class Garcon extends AbstractHttpExchangeHandler {
   public void setMaxThreads(int maxThreads) {
     checkRunning("Cannot modify maxThreads while running");
     this.maxThreads = maxThreads;
+  }
+
+  public void setHttpServer(HttpServer httpServer) {
+    checkRunning("Cannot modify httpServer while running");
+    this.httpServer = httpServer;
   }
 
   protected void checkRunning(String errorMessage) {

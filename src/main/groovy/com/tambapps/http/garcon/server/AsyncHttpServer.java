@@ -75,6 +75,7 @@ public class AsyncHttpServer implements HttpServer {
     if (!isRunning()) {
       return;
     }
+    Runtime.getRuntime().removeShutdownHook(shutDownHook);
     running.set(false);
     // just in case
     selector.wakeup();
@@ -95,6 +96,8 @@ public class AsyncHttpServer implements HttpServer {
       return false;
     }
     running.set(true);
+    Runtime.getRuntime().addShutdownHook(shutDownHook);
+
     final LinkedBlockingQueue<Boolean> startResultQueue = new LinkedBlockingQueue<>();
 
     Runnable serverRunnable = () -> {
@@ -228,11 +231,6 @@ public class AsyncHttpServer implements HttpServer {
         Thread.currentThread().interrupt();
       }
     }
-  }
-
-  @Override
-  public Thread getShutdownHook() {
-    return shutDownHook;
   }
 
   @AllArgsConstructor

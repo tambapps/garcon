@@ -31,7 +31,4 @@ public interface HttpServer {
    */
   void join();
 
-  default Thread getShutdownHook() {
-    return null;
-  }
 }
