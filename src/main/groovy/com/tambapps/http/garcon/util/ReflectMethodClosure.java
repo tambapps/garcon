@@ -6,6 +6,8 @@ import com.tambapps.http.garcon.HttpResponse;
 import com.tambapps.http.garcon.annotation.ParsedRequestBody;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import groovy.lang.Closure;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -46,6 +48,12 @@ public class ReflectMethodClosure extends Closure<Object> {
             return null;
           } else if (requestBodyClazz.isInstance(parsedRequestBody)) {
             return parsedRequestBody;
+          } else {
+            try {
+              return DefaultGroovyMethods.asType(parsedRequestBody, requestBodyClazz);
+            } catch (GroovyCastException ignored) {
+              // exception will be thrown later
+            }
           }
           throw new BadRequestException("Request body is of unexpected type");
         };
