@@ -47,7 +47,7 @@ public class AsyncHttpServer implements HttpServer {
   private Selector selector;
   private final ConcurrentMap<SelectionKey, HttpResponse> pendingResponses = new ConcurrentHashMap<>();
   private Thread serverThread;
-  private final Thread shutDownHook = new Thread(this::stop);
+  private final Thread shutDownHook = new Thread(this::doStop);
 
   private final ExecutorService executor;
   private final long requestReadTimeoutMillis;
@@ -69,6 +69,11 @@ public class AsyncHttpServer implements HttpServer {
 
   @Override
   public void stop() {
+    Runtime.getRuntime().removeShutdownHook(shutDownHook);
+    doStop();
+  }
+
+  private void doStop() {
     if (!isRunning()) {
       return;
     }
@@ -84,13 +89,6 @@ public class AsyncHttpServer implements HttpServer {
     DefaultGroovyMethods.closeQuietly(selector);
     DefaultGroovyMethods.closeQuietly(serverSocket);
     executor.shutdown();
-    try {
-      shutDownHook.join();
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-      return;
-    }
-    Runtime.getRuntime().removeShutdownHook(shutDownHook);
   }
 
   @Override
