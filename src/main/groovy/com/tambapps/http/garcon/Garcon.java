@@ -25,11 +25,14 @@ import groovy.transform.NamedParam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -106,14 +109,21 @@ public class Garcon extends AbstractHttpExchangeHandler {
     return httpServer != null && httpServer.isRunning();
   }
 
+  @SneakyThrows
   public void start(
       @NamedParam(value = "port", type = Integer.class)
       @NamedParam(value = "address", type = InetAddress.class)
       Map<?,?> args) {
     if (args != null) {
-      InetAddress inetAddress = getOrDefault(args, "address", InetAddress.class, null);
-      if (inetAddress != null) {
-        setAddress(inetAddress);
+      Object a = args.get("address");
+      if (a != null) {
+        InetAddress address;
+        if (a instanceof String) {
+          address = InetAddress.getByName((String) a);
+        } else {
+          address = getOrDefault(args, "address", InetAddress.class, null);
+        }
+        setAddress(address);
       }
       Integer port = getOrDefault(args, "port", Integer.class, null);
       if (port != null) {
@@ -309,7 +319,20 @@ public class Garcon extends AbstractHttpExchangeHandler {
   public static Garcon fromInstance(Object instance) {
     Class<?> clazz = instance.getClass();
     Garcon garcon = new Garcon();
-    for (Method method : clazz.getMethods()) {
+    Method[] methods = clazz.getMethods();
+    for (Method method : methods) {
+      if (method.getName().equals("onStart")) {
+        garcon.onStart = new MethodClosure(instance, method.getName());
+      }
+      if (method.getName().equals("onStop")) {
+        garcon.onStop = new MethodClosure(instance, method.getName());
+      }
+      if (method.getName().equals("onServerError")) {
+        garcon.onServerError = new MethodClosure(instance, method.getName());
+      }
+      if (method.getName().equals("onExchangeError")) {
+        garcon.onExchangeError = new MethodClosure(instance, method.getName());
+      }
       Get get = method.getAnnotation(Get.class);
       if (get != null) {
         garcon.define("GET", null, get.contentType(), get.value().isEmpty() ? get.path() : get.value(), instance, method);
