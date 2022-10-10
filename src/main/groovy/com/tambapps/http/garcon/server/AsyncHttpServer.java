@@ -84,6 +84,12 @@ public class AsyncHttpServer implements HttpServer {
     DefaultGroovyMethods.closeQuietly(selector);
     DefaultGroovyMethods.closeQuietly(serverSocket);
     executor.shutdown();
+    try {
+      shutDownHook.join();
+    } catch (InterruptedException e) {
+      Thread.currentThread().interrupt();
+      return;
+    }
     Runtime.getRuntime().removeShutdownHook(shutDownHook);
   }
 
