@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
-import com.tambapps.http.garcon.exception.PathNotFoundException;
+import com.tambapps.http.garcon.exception.NotFoundException;
 import lombok.Value;
 
 import java.util.ArrayList;
@@ -23,7 +23,7 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
 
   @Override
   public EndpointDefinition getEndpoint(String path, String method)
-      throws PathNotFoundException, MethodNotAllowedException {
+      throws NotFoundException, MethodNotAllowedException {
     for (DynamicEndpointsDefinition dynamicPath : dynamicPaths) {
       if (dynamicPath.getPattern().matcher(path).matches()) {
         // found path matching this definition

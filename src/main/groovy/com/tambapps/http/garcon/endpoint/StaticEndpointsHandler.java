@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
-import com.tambapps.http.garcon.exception.PathNotFoundException;
+import com.tambapps.http.garcon.exception.NotFoundException;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 
@@ -18,7 +18,7 @@ public class StaticEndpointsHandler implements EndpointsHandler {
   }
 
   @Override
-  public EndpointDefinition getEndpoint(String path, String method) throws PathNotFoundException, MethodNotAllowedException {
+  public EndpointDefinition getEndpoint(String path, String method) throws NotFoundException, MethodNotAllowedException {
     if (path.endsWith("/")) {
       path = path.substring(0, path.length() - 1);
     }
@@ -27,7 +27,7 @@ public class StaticEndpointsHandler implements EndpointsHandler {
     }
     Map<String, EndpointDefinition> methodDefinitions = endpointDefinitions.get(path);
     if (methodDefinitions == null) {
-      throw new PathNotFoundException();
+      throw new NotFoundException("No resource were found at the provided path");
     }
     EndpointDefinition endpointDefinition = methodDefinitions.get(method);
     if (endpointDefinition == null) {

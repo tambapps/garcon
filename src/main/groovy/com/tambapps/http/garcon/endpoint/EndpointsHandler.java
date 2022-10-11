@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
-import com.tambapps.http.garcon.exception.PathNotFoundException;
+import com.tambapps.http.garcon.exception.NotFoundException;
 
 /**
  * Endpoint handler
@@ -14,10 +14,10 @@ public interface EndpointsHandler {
    * @param path   the path of the endpoint
    * @param method the method of the endpoint
    * @return the endpoint for the given path and method
-   * @throws PathNotFoundException     if no endpoints exists for the given path
+   * @throws NotFoundException     if no endpoints exists for the given path
    * @throws MethodNotAllowedException if an endpoint exists for this path but not this method
    */
-  EndpointDefinition getEndpoint(String path, String method) throws PathNotFoundException,
+  EndpointDefinition getEndpoint(String path, String method) throws NotFoundException,
       MethodNotAllowedException;
 
   /**

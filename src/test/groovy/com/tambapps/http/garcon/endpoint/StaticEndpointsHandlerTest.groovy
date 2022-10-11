@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon.endpoint
 
 import com.tambapps.http.garcon.exception.MethodNotAllowedException
-import com.tambapps.http.garcon.exception.PathNotFoundException
+import com.tambapps.http.garcon.exception.NotFoundException
 import groovy.transform.CompileDynamic
 import org.junit.jupiter.api.Test
 
@@ -39,7 +39,7 @@ class StaticEndpointsHandlerTest {
     assertEquals(DEFINITION_2, endpointsHandler.getEndpoint('/foo/', 'GET'))
     assertEquals(DEFINITION_2, endpointsHandler.getEndpoint('foo/', 'GET'))
 
-    assertThrows(PathNotFoundException) {
+    assertThrows(NotFoundException) {
       endpointsHandler.getEndpoint('/bar', 'GET')
     }
     assertThrows(MethodNotAllowedException) {

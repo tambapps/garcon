@@ -13,7 +13,7 @@ import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.ParsingException;
-import com.tambapps.http.garcon.exception.PathNotFoundException;
+import com.tambapps.http.garcon.exception.NotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.logger.DefaultLogger;
@@ -32,10 +32,8 @@ import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Optional;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -263,8 +261,8 @@ public class Garcon extends AbstractHttpExchangeHandler {
     EndpointDefinition definition;
     try {
       definition = endpointsHandler.getEndpoint(request.getPath(), request.getMethod());
-    } catch (PathNotFoundException e) {
-      return default404Response();
+    } catch (NotFoundException e) {
+      return default404Response(e.getMessage());
     } catch (MethodNotAllowedException e) {
       return default405Response(request.getMethod());
     }
