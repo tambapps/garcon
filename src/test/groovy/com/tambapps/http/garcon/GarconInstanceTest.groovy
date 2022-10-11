@@ -1,5 +1,8 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.annotation.QueryParam
+import com.tambapps.http.hyperpoet.ErrorResponseException
+
 import static com.tambapps.http.garcon.ContentType.CONTENT_TYPE_JSON
 import com.tambapps.http.garcon.annotation.Get
 import com.tambapps.http.garcon.annotation.ParsedRequestBody
@@ -15,13 +18,13 @@ import org.junit.jupiter.api.Test
 import java.time.Duration
 
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertThrows
 
 // needed because project is compiled statically by default
 @CompileDynamic
 class GarconInstanceTest {
 
   private final HttpPoet poet = new HttpPoet(url: 'http://localhost:8081').tap {
-    errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(it)
     configureOkHttpClient { OkHttpClient.Builder builder -> builder.readTimeout(Duration.ofMillis(10_000))}
     enableHistory(1)
     onPreExecute = {
@@ -69,6 +72,14 @@ class GarconInstanceTest {
     assertEquals('magic', poet.post('/mirror3', body: [who: 'magic'], contentType: com.tambapps.http.hyperpoet.ContentType.JSON))
   }
 
+  @Test
+  void testQueryParams() {
+    assertEquals('p 0', poet.get('/qp?p=p'))
+    assertEquals('p 25', poet.get('/qp?p=p&count=25'))
+
+    ErrorResponseException e = assertThrows(ErrorResponseException) { poet.get('/qp') }
+    assertEquals(400, e.code)
+  }
 
   @Get("/hello")
   def getHello() {
@@ -78,6 +89,11 @@ class GarconInstanceTest {
   @Get("/hello2")
   def getHelloWho(HttpExchangeContext context) {
     return context.queryParams['who']
+  }
+
+  @Get("/qp")
+  def getQueryParam(@QueryParam("p") String p, @QueryParam(name = "count", required = false, defaultValue = "0") Integer count) {
+    return "$p $count"
   }
 
   @Post("/mirror")

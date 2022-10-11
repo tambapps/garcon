@@ -10,6 +10,7 @@ import com.tambapps.http.garcon.annotation.Put;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
+import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.exception.PathNotFoundException;
@@ -276,6 +277,8 @@ public class Garcon extends AbstractHttpExchangeHandler {
       return definition.call(context);
     } catch (ParsingException e) {
       return default400Response("Request body is malformed");
+    } catch (BadRequestException e) {
+      return default400Response(e.getMessage());
     } catch (Exception e) {
       Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {
