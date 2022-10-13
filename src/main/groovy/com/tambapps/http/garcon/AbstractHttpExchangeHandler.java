@@ -41,8 +41,14 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
       responseBody = errorResponse;
     }
 
-    Function<Object, byte[]> composer = contentType != null ? context.getComposers().getAt(contentType)
-        : context.getComposers().getDefaultValue();
+    Function<Object, byte[]> composer;
+    if (contentType != null && context.getComposers().containsKey(contentType)) {
+      composer = context.getComposers().getAt(contentType);
+      response.getHeaders().putContentType(contentType);
+    } else {
+      composer = context.getComposers().getDefaultValue();
+      response.getHeaders().putContentType(ContentType.TEXT);
+    }
     response.setBody(composer.apply(responseBody));
     return response;
   }
