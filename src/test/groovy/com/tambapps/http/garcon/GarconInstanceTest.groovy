@@ -1,6 +1,7 @@
 package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.annotation.QueryParam
+import com.tambapps.http.garcon.annotation.RequestHeader
 import com.tambapps.http.hyperpoet.ErrorResponseException
 
 import static com.tambapps.http.garcon.ContentType.CONTENT_TYPE_JSON
@@ -81,6 +82,15 @@ class GarconInstanceTest {
     assertEquals(400, e.code)
   }
 
+  @Test
+  void testHeaders() {
+    assertEquals('h 0', poet.get('/h', headers: [h: 'h']))
+    assertEquals('h 25', poet.get('/h', headers: [h: 'h', cOuNt: 25]))
+
+    ErrorResponseException e = assertThrows(ErrorResponseException) { poet.get('/h') }
+    assertEquals(400, e.code)
+  }
+
   @Get("/hello")
   def getHello() {
     return 'Hello World'
@@ -94,6 +104,11 @@ class GarconInstanceTest {
   @Get("/qp")
   def getQueryParam(@QueryParam("p") String p, @QueryParam(name = "count", required = false, defaultValue = "0") Integer count) {
     return "$p $count"
+  }
+
+  @Get("/h")
+  def getHeader(@RequestHeader("H") String h, @RequestHeader(name = "count", required = false, defaultValue = "0") Integer count) {
+    return "$h $count"
   }
 
   @Post("/mirror")

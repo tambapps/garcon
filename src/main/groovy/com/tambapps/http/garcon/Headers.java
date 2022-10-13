@@ -33,6 +33,10 @@ public class Headers extends HashMap<String, String> {
     return get(name);
   }
 
+  public String getSafe(String name) {
+    return get(formattedKey(name));
+  }
+
   public void putConnectionHeader(String value) {
     putUnsafe(CONNECTION_HEADER, value);
   }

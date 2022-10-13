@@ -3,6 +3,7 @@ package com.tambapps.http.garcon.util;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.HttpResponse;
+import com.tambapps.http.garcon.annotation.RequestHeader;
 import com.tambapps.http.garcon.annotation.ParsedRequestBody;
 import com.tambapps.http.garcon.annotation.QueryParam;
 import com.tambapps.http.garcon.exception.BadRequestException;
@@ -58,7 +59,6 @@ public class ReflectMethodClosure extends Closure<Object> {
         final Class<?> queryParamType = type;
         argSuppliers[i] = (context) -> {
           String queryParamValue = context.getQueryParams().get(queryParamName);
-          // yes equality check on string is wanted
           if (queryParamValue == null && !annotation.defaultValue().equals(QueryParam.NO_VALUE_STRING)) {
             queryParamValue = annotation.defaultValue();
           }
@@ -69,6 +69,24 @@ public class ReflectMethodClosure extends Closure<Object> {
             return smartCast(queryParamValue, queryParamType);
           } catch (GroovyCastException ignored) {
             throw new BadRequestException(String.format("Query param %s is of unexpected type", queryParamName));
+          }
+        };
+      } else if (parameter.getAnnotation(RequestHeader.class) != null) {
+        RequestHeader annotation = parameter.getAnnotation(RequestHeader.class);
+        String headerName = !annotation.value().isEmpty() ? annotation.value() : annotation.name();
+        final Class<?> headerType = type;
+        argSuppliers[i] = (context) -> {
+          String headerValue = context.getRequest().getHeaders().getSafe(headerName);
+          if (headerValue == null && !annotation.defaultValue().equals(RequestHeader.NO_VALUE_STRING)) {
+            headerValue = annotation.defaultValue();
+          }
+          if (headerValue == null && annotation.required()) {
+            throw new BadRequestException(String.format("Header %s is required", headerName));
+          }
+          try {
+            return smartCast(headerValue, headerType);
+          } catch (GroovyCastException ignored) {
+            throw new BadRequestException(String.format("Header %s is of unexpected type", headerName));
           }
         };
       } else {
