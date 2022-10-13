@@ -1,14 +1,15 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.annotation.PathVariable
 import com.tambapps.http.garcon.annotation.QueryParam
 import com.tambapps.http.garcon.annotation.RequestHeader
 import com.tambapps.http.hyperpoet.ErrorResponseException
+import com.tambapps.http.hyperpoet.interceptor.ConsolePrintingInterceptor
 
 import static com.tambapps.http.garcon.ContentType.CONTENT_TYPE_JSON
 import com.tambapps.http.garcon.annotation.Get
 import com.tambapps.http.garcon.annotation.ParsedRequestBody
 import com.tambapps.http.garcon.annotation.Post
-import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 import com.tambapps.http.hyperpoet.HttpPoet
 import groovy.transform.CompileDynamic
 import okhttp3.OkHttpClient
@@ -27,6 +28,7 @@ class GarconInstanceTest {
 
   private final HttpPoet poet = new HttpPoet(url: 'http://localhost:8081').tap {
     configureOkHttpClient { OkHttpClient.Builder builder -> builder.readTimeout(Duration.ofMillis(10_000))}
+    addInterceptor(new ConsolePrintingInterceptor())
     enableHistory(1)
     onPreExecute = {
       // to give time garcon to start
@@ -91,6 +93,14 @@ class GarconInstanceTest {
     assertEquals(400, e.code)
   }
 
+  @Test
+  void testPathVariable() {
+    assertEquals('1', poet.get('/user/1'))
+
+    ErrorResponseException e = assertThrows(ErrorResponseException) { poet.get('/user/notAnInt') }
+    assertEquals(400, e.code)
+  }
+
   @Get("/hello")
   def getHello() {
     return 'Hello World'
@@ -104,6 +114,11 @@ class GarconInstanceTest {
   @Get("/qp")
   def getQueryParam(@QueryParam("p") String p, @QueryParam(name = "count", required = false, defaultValue = "0") Integer count) {
     return "$p $count"
+  }
+
+  @Get("/user/{id}")
+  def getUser(@PathVariable("id") Integer id) {
+    return "$id"
   }
 
   @Get("/h")

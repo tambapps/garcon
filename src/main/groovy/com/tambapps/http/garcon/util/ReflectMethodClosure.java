@@ -3,6 +3,7 @@ package com.tambapps.http.garcon.util;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.HttpResponse;
+import com.tambapps.http.garcon.annotation.PathVariable;
 import com.tambapps.http.garcon.annotation.RequestHeader;
 import com.tambapps.http.garcon.annotation.ParsedRequestBody;
 import com.tambapps.http.garcon.annotation.QueryParam;
@@ -67,7 +68,7 @@ public class ReflectMethodClosure extends Closure<Object> {
           }
           try {
             return smartCast(queryParamValue, queryParamType);
-          } catch (GroovyCastException ignored) {
+          } catch (GroovyCastException|IllegalArgumentException exception) {
             throw new BadRequestException(String.format("Query param %s is of unexpected type", queryParamName));
           }
         };
@@ -85,8 +86,33 @@ public class ReflectMethodClosure extends Closure<Object> {
           }
           try {
             return smartCast(headerValue, headerType);
-          } catch (GroovyCastException ignored) {
+          } catch (GroovyCastException|IllegalArgumentException exception) {
             throw new BadRequestException(String.format("Header %s is of unexpected type", headerName));
+          }
+        };
+      } else if (parameter.getAnnotation(PathVariable.class) != null) {
+        PathVariable annotation = parameter.getAnnotation(PathVariable.class);
+        final String name;
+        if (!annotation.value().isEmpty()) {
+          name = annotation.value();
+        } else if (!annotation.name().isEmpty()) {
+          name = annotation.name();
+        } else {
+          throw new IllegalStateException("PathVariable's name is required");
+        }
+        final Class<?> variableType = type;
+        argSuppliers[i] = (context) -> {
+          if (context.getPathVariables() == null) {
+            throw new RuntimeException("No path variable were configured for method endpoint " + method.getName());
+          }
+          String value = context.getPathVariables().get(name);
+          if (value == null) {
+            throw new BadRequestException(String.format("Path variable %s is required", name));
+          }
+          try {
+            return smartCast(value, variableType);
+          } catch (GroovyCastException|IllegalArgumentException ignored) {
+            throw new BadRequestException(String.format("path variable %s is of unexpected type", name));
           }
         };
       } else {
