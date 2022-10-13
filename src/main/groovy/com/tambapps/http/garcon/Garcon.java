@@ -262,9 +262,12 @@ public class Garcon extends AbstractHttpExchangeHandler {
     try {
       definition = endpointsHandler.getEndpoint(request.getPath(), request.getMethod());
     } catch (NotFoundException e) {
-      return default404Response(e.getMessage());
+      return default404Response(
+          new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
+              contentType, accept), e);
     } catch (MethodNotAllowedException e) {
-      return default405Response(request.getMethod());
+      return default405Response(new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
+          contentType, accept), request.getMethod());
     }
 
     HttpExchangeContext context = new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
@@ -273,16 +276,14 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
     try {
       return definition.call(context);
-    } catch (ParsingException e) {
-      return default400Response("Request body is malformed");
     } catch (BadRequestException e) {
-      return default400Response(e.getMessage());
+      return default400Response(context, e);
     } catch (Exception e) {
       Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {
         onExchangeError.call(e);
       }
-      return default500Response();
+      return default500Response(context);
     }
   }
 

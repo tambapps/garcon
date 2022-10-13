@@ -1,5 +1,9 @@
 package com.tambapps.http.garcon;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
 /**
  * Abstract base class for an {@link HttpExchangeHandler}
  */
@@ -8,28 +12,38 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
   @Override
   public abstract HttpResponse processExchange(HttpRequest request);
 
-  HttpResponse default400Response(String message) {
-    return newErrorResponse(HttpStatus.BAD_REQUEST, message);
+  HttpResponse default400Response(HttpExchangeContext context, Exception e) {
+    return newErrorResponse(HttpStatus.BAD_REQUEST, context, e.getMessage());
   }
 
-  HttpResponse default404Response(String message) {
-    return newErrorResponse(HttpStatus.NOT_FOUND, message);
+  HttpResponse default404Response(HttpExchangeContext context, Exception e) {
+    return newErrorResponse(HttpStatus.NOT_FOUND, context, e.getMessage());
   }
 
-  HttpResponse default405Response(String method) {
-    return newErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, String.format("Method %s is not allowed for this path", method));
+  HttpResponse default405Response(HttpExchangeContext context, String method) {
+    return newErrorResponse(HttpStatus.METHOD_NOT_ALLOWED, context, String.format("Method %s is not allowed for this path", method));
   }
 
-  HttpResponse default500Response() {
-    return newErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, "An internal error occurred");
+  HttpResponse default500Response(HttpExchangeContext context) {
+    return newErrorResponse(HttpStatus.INTERNAL_SERVER_ERROR, context, "An internal error occurred");
   }
 
 
-  private HttpResponse newErrorResponse(HttpStatus status, String message) {
-    HttpResponse response = new HttpResponse();
+  private HttpResponse newErrorResponse(HttpStatus status, HttpExchangeContext context, String message) {
+    HttpResponse response = context.getResponse();
     response.setStatusCode(status);
-    response.setBody(message);
-    response.getHeaders().putContentType(ContentType.TEXT);
+    ContentType contentType = context.getContentType();
+    Object responseBody = message;
+    if (ContentType.JSON.equals(contentType)) {
+      Map<String, Object> errorResponse = new HashMap<>();
+      errorResponse.put("status", status.getValue());
+      errorResponse.put("message", message);
+      responseBody = errorResponse;
+    }
+
+    Function<Object, byte[]> composer = contentType != null ? context.getComposers().getAt(contentType)
+        : context.getComposers().getDefaultValue();
+    response.setBody(composer.apply(responseBody));
     return response;
   }
 
