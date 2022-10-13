@@ -278,6 +278,8 @@ public class Garcon extends AbstractHttpExchangeHandler {
       return definition.call(context);
     } catch (BadRequestException e) {
       return default400Response(context, e);
+    } catch (NotFoundException e) {
+      return default404Response(context, e);
     } catch (Exception e) {
       Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {

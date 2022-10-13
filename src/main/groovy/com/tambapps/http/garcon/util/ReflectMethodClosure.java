@@ -123,13 +123,16 @@ public class ReflectMethodClosure extends Closure<Object> {
   }
 
   // for Closure
-  public Object doCall(HttpExchangeContext context)
-      throws InvocationTargetException, IllegalAccessException {
+  public Object doCall(HttpExchangeContext context) throws Throwable {
     Object[] args = new Object[argFunctions.length];
     for (int i = 0; i < args.length; i++) {
       args[i] = argFunctions[i].supply(context);
     }
-    return method.invoke(getOwner(), args);
+    try {
+      return method.invoke(getOwner(), args);
+    } catch (InvocationTargetException e) {
+      throw e.getCause() != null ? e.getCause() : e;
+    }
   }
 
   private static Object smartCast(Object o, Class<?> aClass) {
