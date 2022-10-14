@@ -9,13 +9,16 @@ import com.tambapps.http.garcon.annotation.ParsedRequestBody;
 import com.tambapps.http.garcon.annotation.QueryParam;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import groovy.lang.Closure;
+import groovy.lang.MissingPropertyException;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
+import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
 import org.codehaus.groovy.runtime.typehandling.GroovyCastException;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.util.Map;
 
 public class ReflectMethodClosure extends Closure<Object> {
 
@@ -45,11 +48,15 @@ public class ReflectMethodClosure extends Closure<Object> {
       } else if (type == HttpResponse.class) {
         argSuppliers[i] = HttpExchangeContext::getResponse;
       } else if (parameter.getAnnotation(ParsedRequestBody.class) != null) {
+        ParsedRequestBody annotation = parameter.getAnnotation(ParsedRequestBody.class);
         final Class<?> requestBodyClazz = type;
         argSuppliers[i] = (context) -> {
           Object parsedRequestBody = context.getParsedRequestBody();
+          if (parsedRequestBody == null && annotation.required()) {
+            throw new BadRequestException("Request body is required");
+          }
           try {
-            return smartCast(parsedRequestBody, requestBodyClazz);
+            return smartCast(parsedRequestBody, requestBodyClazz, annotation.allowAdditionalProperties());
           } catch (GroovyCastException ignored) {
             throw new BadRequestException("Request body is of unexpected type");
           }
@@ -136,6 +143,9 @@ public class ReflectMethodClosure extends Closure<Object> {
   }
 
   private static Object smartCast(Object o, Class<?> aClass) {
+    return smartCast(o, aClass, false);
+  }
+  private static Object smartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties) {
     if (o == null && !aClass.isPrimitive()) {
       return null;
     } else if (aClass.isInstance(o)) {
@@ -143,6 +153,24 @@ public class ReflectMethodClosure extends Closure<Object> {
     } else if (o instanceof CharSequence) {
       // for smart number conversion
       return StringGroovyMethods.asType(o.toString(), aClass);
+    } else if (o instanceof Map && !Map.class.isAssignableFrom(aClass)
+        && !aClass.isPrimitive()
+        && !Number.class.isAssignableFrom(aClass)
+        && String.class != aClass && Character.class != aClass
+        && Boolean.class != aClass) {
+      Object newInstance = DefaultGroovyMethods.newInstance(aClass);
+      Map<?, ?> map = (Map<?, ?>) o;
+
+      for (Map.Entry<?, ?> entry : map.entrySet()) {
+        try {
+          InvokerHelper.setProperty(newInstance, entry.getKey().toString(), entry.getValue());
+        } catch (MissingPropertyException e) {
+          if (!allowAdditionalProperties) {
+            throw new BadRequestException("Unknown property " + e.getProperty());
+          }
+        }
+      }
+      return newInstance;
     } else {
       return DefaultGroovyMethods.asType(o, aClass);
     }

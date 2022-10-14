@@ -6,6 +6,7 @@ import com.tambapps.http.garcon.annotation.QueryParam
 import com.tambapps.http.garcon.annotation.RequestHeader
 import com.tambapps.http.hyperpoet.ErrorResponseException
 import com.tambapps.http.hyperpoet.interceptor.ConsolePrintingInterceptor
+import groovy.json.JsonOutput
 
 import static com.tambapps.http.garcon.ContentType.CONTENT_TYPE_JSON
 import com.tambapps.http.garcon.annotation.Get
@@ -102,6 +103,17 @@ class GarconInstanceTest {
     assertEquals(400, e.code)
   }
 
+  @Test
+  void testObjectBody() {
+    assertEquals('magic', poet.post('/objectBody',
+        body: [bar: 'magic'], contentType: com.tambapps.http.hyperpoet.ContentType.JSON))
+
+    ErrorResponseException e = assertThrows(ErrorResponseException) { poet.post('/objectBody',
+        body: [barrrrr: 'magic'], contentType: com.tambapps.http.hyperpoet.ContentType.JSON) }
+    assertEquals(400, e.code)
+    assertEquals('Unknown property barrrrr', e.body.string())
+  }
+
   @Get("/hello")
   def getHello() {
     return 'Hello World'
@@ -138,7 +150,16 @@ class GarconInstanceTest {
   }
 
   @Post(path = "/mirror3", accept = CONTENT_TYPE_JSON)
-  void postMirror2(@ParsedRequestBody Map<?, ?> requestBody, HttpResponse response) {
+  void postMirror3(@ParsedRequestBody Map<?, ?> requestBody, HttpResponse response) {
     response.body = requestBody.who
+  }
+
+  @Post(path = "/objectBody", accept = CONTENT_TYPE_JSON)
+  void postMirror4(@ParsedRequestBody Foo requestBody, HttpResponse response) {
+    response.body = requestBody.bar
+  }
+
+  static class Foo {
+    String bar
   }
 }
