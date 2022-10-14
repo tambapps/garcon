@@ -77,7 +77,7 @@ public class ReflectMethodClosure extends Closure<Object> {
         String headerName = !annotation.value().isEmpty() ? annotation.value() : annotation.name();
         final Class<?> headerType = type;
         argSuppliers[i] = (context) -> {
-          String headerValue = context.getRequest().getHeaders().getSafe(headerName);
+          String headerValue = context.getRequest().getHeaders().get(headerName);
           if (headerValue == null && !annotation.defaultValue().equals(RequestHeader.NO_VALUE_STRING)) {
             headerValue = annotation.defaultValue();
           }

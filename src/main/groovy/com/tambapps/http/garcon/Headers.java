@@ -6,9 +6,7 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- * Class representing. Note that for performance purpose, when accessing a header you should always
- * use the dash-separated, with upper-case character for each world syntax when accessing a header,
- * (e.g. 'Connection', 'Content-Type') otherwise you won't find it
+ * Class representing HTTP Headers.
  */
 public class Headers extends HashMap<String, String> {
 
@@ -29,12 +27,18 @@ public class Headers extends HashMap<String, String> {
     return put(name, String.valueOf(value));
   }
 
+  @Override
+  public String get(Object key) {
+    return super.get(formattedKey(key));
+  }
+
   public String getAt(String name) {
     return get(name);
   }
 
-  public String getSafe(String name) {
-    return get(formattedKey(name));
+  @Override
+  public String getOrDefault(Object key, String defaultValue) {
+    return super.getOrDefault(formattedKey(key), defaultValue);
   }
 
   public void putConnectionHeader(String value) {
@@ -114,12 +118,16 @@ public class Headers extends HashMap<String, String> {
 
   @Override
   public String remove(Object key) {
-    return super.remove(key != null ? formattedKey(key.toString()) : null);
+    return super.remove(formattedKey(key));
   }
 
   @Override
   public boolean remove(Object key, Object value) {
-    return super.remove(key != null ? formattedKey(key.toString()) : null, value);
+    return super.remove(formattedKey(key), value);
+  }
+
+  private Object formattedKey(Object o) {
+    return o instanceof String ? formattedKey(o.toString()) : o;
   }
 
   private String formattedKey(String s) {
@@ -133,7 +141,7 @@ public class Headers extends HashMap<String, String> {
 
   @Override
   public boolean containsKey(Object key) {
-    return super.containsKey(key != null ? formattedKey(key.toString()) : null);
+    return super.containsKey(formattedKey(key));
   }
 
   @Override
