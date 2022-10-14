@@ -32,7 +32,8 @@ import com.tambapps.http.garcon.exception.*
 import groovy.transform.Field
 
 @Field
-final Map todosById = [[userId: 1, id: 1, title: "delectus aut autem", completed: false]].collectEntries { [it.id, it] }
+final Map todosById = [[userId: 1, id: 1, title: "delectus aut autem", completed: false]].collectEntries { [it.id, it] } as LinkedHashMap
+// TODO create class Todo and use it
 
 @Post('/todos')
 postTodo(@ParsedRequestBody Map post)  {
@@ -46,7 +47,7 @@ postTodo(@ParsedRequestBody Map post)  {
 
 @Get('/todos')
 getTodos() {
-  return todosById.values().sort { it.id }
+  return todosById.values()
 }
 
 @Get('/todo/{id}')
