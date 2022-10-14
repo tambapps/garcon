@@ -1,5 +1,6 @@
 package com.tambapps.http.garcon
 
+import com.tambapps.http.garcon.annotation.Endpoint
 import com.tambapps.http.garcon.annotation.PathVariable
 import com.tambapps.http.garcon.annotation.QueryParam
 import com.tambapps.http.garcon.annotation.RequestHeader
@@ -106,7 +107,7 @@ class GarconInstanceTest {
     return 'Hello World'
   }
 
-  @Get("/hello2")
+  @Endpoint(method = "GET", path = "/hello2")
   def getHelloWho(HttpExchangeContext context) {
     return context.queryParams['who']
   }

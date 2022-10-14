@@ -3,6 +3,7 @@ package com.tambapps.http.garcon;
 import static com.tambapps.http.garcon.util.ParametersUtils.getOrDefault;
 
 import com.tambapps.http.garcon.annotation.Delete;
+import com.tambapps.http.garcon.annotation.Endpoint;
 import com.tambapps.http.garcon.annotation.Get;
 import com.tambapps.http.garcon.annotation.Patch;
 import com.tambapps.http.garcon.annotation.Post;
@@ -371,6 +372,10 @@ public class Garcon extends AbstractHttpExchangeHandler {
       Post post = method.getAnnotation(Post.class);
       if (post != null) {
         garcon.define("POST", post.accept(), post.contentType(), post.value().isEmpty() ? post.path() : post.value(), instance, method);
+      }
+      Endpoint endpoint = method.getAnnotation(Endpoint.class);
+      if (endpoint != null) {
+        garcon.define(endpoint.method(), endpoint.accept(), endpoint.contentType(), endpoint.path(), instance, method);
       }
     }
     return garcon;
