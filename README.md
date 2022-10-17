@@ -6,7 +6,7 @@ compatible with Android (you can use it in the [Android Groovy Shell](https://pl
 ## Start a server with just a few lines of code
 
 ````groovy
-def garcon =  new Garcon(InetAddress.getByName("localhost"), 8081)
+def garcon = new Garcon(InetAddress.getByName("localhost"), 8081)
 garcon.serve {
   get 'hello/{someone}', {
     return "Hello $someone"
@@ -25,7 +25,7 @@ garcon.join()
 You can implement a simple todos API (based on [JSONPlaceholder API](https://jsonplaceholder.typicode.com/)) with a Groovy script
 
 ```groovy
-@Grab('com.tambapps.http:garcon:1.1')
+@Grab('com.tambapps.http:garcon:1.1-SNAPSHOT')
 import com.tambapps.http.garcon.*
 import com.tambapps.http.garcon.annotation.*
 import com.tambapps.http.garcon.exception.*
@@ -46,9 +46,10 @@ final Map todosById = [
     new Todo(id: 4, userId: 1, title: "et porro tempora", completed: true)
 ].collectEntries { [it.id, it] }
 
+@ResponseStatus(HttpStatus.CREATED)
 @Post('/todos')
-postTodo(@ParsedRequestBody Map post)  {
-  if (!(post.userId instanceof Integer) || !(post.title instanceof String) || !(post.completed instanceof Boolean)) {
+postTodo(@ParsedRequestBody Todo post)  {
+  if (!post.userId || !post.title || post.completed == null) {
     throw new BadRequestException("Some fields are missing/malformed")
   }
   post.id = todosById.size() + 1
@@ -62,18 +63,18 @@ getTodos() {
 }
 
 @Get('/todo/{id}')
-getTodo(@PathVariable("id") Integer id) {
+getTodo(@PathVariable("id") Integer id)  {
   def todo = todosById[id]
   if (todo) return todo
   throw new NotFoundException("Todo was not found")
 }
 
 @Patch('/todo/{id}')
-patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Map patch) {
+patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Todo patch)  {
   def todo = getTodo(id)
-  if (patch.userId instanceof Integer) todo.userId = patch.userId
-  if (patch.title instanceof String) todo.title = patch.title
-  if (patch.completed instanceof Boolean) todo.completed = patch.completed
+  if (patch.userId) todo.userId = patch.userId
+  if (patch.title) todo.title = patch.title
+  if (patch.completed != null) todo.completed = patch.completed
   return todo
 }
 
