@@ -29,6 +29,7 @@ import groovy.transform.NamedParam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
+import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.MethodClosure;
 
 import java.lang.reflect.Method;
@@ -337,8 +338,37 @@ public class Garcon extends AbstractHttpExchangeHandler {
    * @return the garcon
    */
   public static Garcon fromInstance(Object instance) {
+    return fromInstance(null, instance);
+  }
+
+  /**
+   * Construct a garcon from the provided instance. All method annotated to an garcon endpoint annotation
+   * will become an endpoint of the returned garcon
+   *
+   * @param additionalParams the additional params
+   * @param instance the instance from which to construct the garcon
+   * @return the garcon
+   */
+  public static Garcon fromInstance(
+      @NamedParam(value = "contentType", type = ContentType.class)
+      @NamedParam(value = "accept", type = ContentType.class)
+      Map<?,?> additionalParams, Object instance) {
+    if (instance instanceof Class) {
+      // if a class was passed, we tried to construct an instance for it and use it as the garcon spec
+      instance = DefaultGroovyMethods.newInstance((Class<?>) instance);
+    }
     Class<?> clazz = instance.getClass();
+
+    ContentType contentType = getOrDefault(additionalParams, "contentType", ContentType.class, null);
+    ContentType accept = getOrDefault(additionalParams, "accept", ContentType.class, null);
+
     Garcon garcon = new Garcon();
+    if (contentType != null) {
+      garcon.setContentType(contentType);
+    }
+    if (accept != null) {
+      garcon.setAccept(accept);
+    }
     Method[] methods = clazz.getMethods();
     for (Method method : methods) {
       if (method.getName().equals("onStart")) {

@@ -12,6 +12,9 @@ public class ParametersUtils {
 
   public static <T> T getOrDefault(Map<?, ?> additionalParameters, String key, Class<T> clazz,
       T defaultValue) {
+    if (additionalParameters == null) {
+      return defaultValue;
+    }
     Object object = additionalParameters.get(key);
     if (object == null) {
       return defaultValue;
