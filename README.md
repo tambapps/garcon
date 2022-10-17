@@ -31,9 +31,20 @@ import com.tambapps.http.garcon.annotation.*
 import com.tambapps.http.garcon.exception.*
 import groovy.transform.Field
 
+class Todo {
+  Integer userId
+  Integer id
+  String title
+  Boolean completed
+}
+
 @Field
-final Map todosById = [[userId: 1, id: 1, title: "delectus aut autem", completed: false]].collectEntries { [it.id, it] } as LinkedHashMap
-// TODO create class Todo and use it
+final Map todosById = [
+    new Todo(id: 1, userId: 1, title: "delectus aut autem", completed: false),
+    new Todo(id: 2, userId: 1, title: "quis ut nam facilis et officia qui", completed: false),
+    new Todo(id: 3, userId: 1, title: "fugiat veniam minus", completed: false),
+    new Todo(id: 4, userId: 1, title: "et porro tempora", completed: true)
+].collectEntries { [it.id, it] }
 
 @Post('/todos')
 postTodo(@ParsedRequestBody Map post)  {
@@ -47,18 +58,18 @@ postTodo(@ParsedRequestBody Map post)  {
 
 @Get('/todos')
 getTodos() {
-  return todosById.values()
+  return todosById.values().sort { it.id }
 }
 
 @Get('/todo/{id}')
-getTodo(@PathVariable("id") Integer id)  {
+getTodo(@PathVariable("id") Integer id) {
   def todo = todosById[id]
   if (todo) return todo
   throw new NotFoundException("Todo was not found")
 }
 
 @Patch('/todo/{id}')
-patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Map patch)  {
+patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Map patch) {
   def todo = getTodo(id)
   if (patch.userId instanceof Integer) todo.userId = patch.userId
   if (patch.title instanceof String) todo.title = patch.title
@@ -67,7 +78,7 @@ patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Map patch)  {
 }
 
 @Delete('/todo/{id}')
-deleteTodo(@PathVariable("id") Integer id)  {
+deleteTodo(@PathVariable("id") Integer id) {
   def todo = getTodo(id)
   todosById.remove(id)
   return todo
@@ -77,10 +88,6 @@ void onStart(InetAddress address, int port) {
   println "Started on $address:$port"
 }
 
-Garcon.fromInstance(this).tap {
-  accept = ContentType.JSON
-  contentType = ContentType.JSON
-  address = "localhost"
-  port = 8081
-}.start()
+Garcon.fromInstance(accept: ContentType.JSON, contentType: ContentType.JSON, this)
+    .start(address: "localhost", port: 8081)
 ```
