@@ -3,6 +3,7 @@ package com.tambapps.http.garcon.util;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.HttpResponse;
+import com.tambapps.http.garcon.HttpStatus;
 import com.tambapps.http.garcon.annotation.PathVariable;
 import com.tambapps.http.garcon.annotation.RequestHeader;
 import com.tambapps.http.garcon.annotation.ParsedRequestBody;
@@ -28,11 +29,13 @@ public class ReflectMethodClosure extends Closure<Object> {
 
   private final Method method;
   private final ArgFunction[] argFunctions;
+  private HttpStatus status;
 
-  public ReflectMethodClosure(Object owner, Method method) {
+  public ReflectMethodClosure(Object owner, Method method, HttpStatus status) {
     super(owner);
     this.method = method;
     this.argFunctions = validateAndCreateArgFunctions(method);
+    this.status = status;
   }
 
   private static ArgFunction[] validateAndCreateArgFunctions(Method method) {
@@ -131,6 +134,7 @@ public class ReflectMethodClosure extends Closure<Object> {
 
   // for Closure
   public Object doCall(HttpExchangeContext context) throws Throwable {
+    context.getResponse().setStatusCode(status);
     Object[] args = new Object[argFunctions.length];
     for (int i = 0; i < args.length; i++) {
       args[i] = argFunctions[i].supply(context);

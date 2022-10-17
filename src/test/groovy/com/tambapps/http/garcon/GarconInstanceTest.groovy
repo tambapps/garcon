@@ -4,6 +4,7 @@ import com.tambapps.http.garcon.annotation.Endpoint
 import com.tambapps.http.garcon.annotation.PathVariable
 import com.tambapps.http.garcon.annotation.QueryParam
 import com.tambapps.http.garcon.annotation.RequestHeader
+import com.tambapps.http.garcon.annotation.ResponseStatus
 import com.tambapps.http.hyperpoet.ErrorResponseException
 import com.tambapps.http.hyperpoet.interceptor.ConsolePrintingInterceptor
 import groovy.json.JsonOutput
@@ -62,6 +63,7 @@ class GarconInstanceTest {
   @Test
   void test() {
     assertEquals('Hello World', poet.get('/hello'))
+    assertEquals(HttpStatus.PARTIAL_CONTENT.value, poet.history.last().responseCode)
     assertEquals('Hello World', poet.get('/hello?p=1&a=2'))
     assertEquals('Hello World', poet.get('/hello/?p=1&a=2'))
 
@@ -114,6 +116,7 @@ class GarconInstanceTest {
     assertEquals('Unknown property barrrrr', e.body.string())
   }
 
+  @ResponseStatus(HttpStatus.PARTIAL_CONTENT)
   @Get("/hello")
   def getHello() {
     return 'Hello World'

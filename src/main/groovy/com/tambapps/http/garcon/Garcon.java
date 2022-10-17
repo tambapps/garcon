@@ -8,6 +8,7 @@ import com.tambapps.http.garcon.annotation.Get;
 import com.tambapps.http.garcon.annotation.Patch;
 import com.tambapps.http.garcon.annotation.Post;
 import com.tambapps.http.garcon.annotation.Put;
+import com.tambapps.http.garcon.annotation.ResponseStatus;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
@@ -315,9 +316,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
   }
 
   private void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
-      Object instance, Method method) {
+      Object instance, Method method, HttpStatus status) {
     EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
-    Closure<?> closure = new ReflectMethodClosure(instance, method);
+    Closure<?> closure = new ReflectMethodClosure(instance, method, status);
 
     Map<String, Object> params = new HashMap<>();
     if (acceptStr != null && !acceptStr.isEmpty()) {
@@ -383,29 +384,35 @@ public class Garcon extends AbstractHttpExchangeHandler {
       if (method.getName().equals("onExchangeError")) {
         garcon.onExchangeError = new MethodClosure(instance, method.getName());
       }
+
+      HttpStatus status = HttpStatus.OK;
+      ResponseStatus responseStatus = method.getAnnotation(ResponseStatus.class);
+      if (responseStatus != null) {
+        status = responseStatus.value();
+      }
       Get get = method.getAnnotation(Get.class);
       if (get != null) {
-        garcon.define("GET", null, get.contentType(), get.value().isEmpty() ? get.path() : get.value(), instance, method);
+        garcon.define("GET", null, get.contentType(), get.value().isEmpty() ? get.path() : get.value(), instance, method, status);
       }
       Delete delete = method.getAnnotation(Delete.class);
       if (delete != null) {
-        garcon.define("DELETE", null, delete.contentType(), delete.value().isEmpty() ? delete.path() : delete.value(), instance, method);
+        garcon.define("DELETE", null, delete.contentType(), delete.value().isEmpty() ? delete.path() : delete.value(), instance, method, status);
       }
       Patch patch = method.getAnnotation(Patch.class);
       if (patch != null) {
-        garcon.define("PATCH", patch.accept(), patch.contentType(), patch.value().isEmpty() ? patch.path() : patch.value(), instance, method);
+        garcon.define("PATCH", patch.accept(), patch.contentType(), patch.value().isEmpty() ? patch.path() : patch.value(), instance, method, status);
       }
       Put put = method.getAnnotation(Put.class);
       if (put != null) {
-        garcon.define("PUT", put.accept(), put.contentType(), put.value().isEmpty() ? put.path() : put.value(), instance, method);
+        garcon.define("PUT", put.accept(), put.contentType(), put.value().isEmpty() ? put.path() : put.value(), instance, method, status);
       }
       Post post = method.getAnnotation(Post.class);
       if (post != null) {
-        garcon.define("POST", post.accept(), post.contentType(), post.value().isEmpty() ? post.path() : post.value(), instance, method);
+        garcon.define("POST", post.accept(), post.contentType(), post.value().isEmpty() ? post.path() : post.value(), instance, method, status);
       }
       Endpoint endpoint = method.getAnnotation(Endpoint.class);
       if (endpoint != null) {
-        garcon.define(endpoint.method(), endpoint.accept(), endpoint.contentType(), endpoint.path(), instance, method);
+        garcon.define(endpoint.method(), endpoint.accept(), endpoint.contentType(), endpoint.path(), instance, method, status);
       }
     }
     return garcon;
