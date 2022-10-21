@@ -3,24 +3,8 @@
 Garçon (pronounced `gar·son`, as in [garcon de café](https://en.wiktionary.org/wiki/gar%C3%A7on_de_caf%C3%A9)) is a lightweight HTTP Server library with **no dependencies** (except Groovy) and
 compatible with Android (you can use it in the [Android Groovy Shell](https://play.google.com/store/apps/details?id=com.tambapps.android.grooidshell)).
 
-## Start a server with just a few lines of code
+Its goal is to implement HTTP server the quickest and clearest way possible.
 
-````groovy
-def garcon = new Garcon(InetAddress.getByName("localhost"), 8081)
-garcon.serve {
-  get 'hello/{someone}', {
-    return "Hello $someone"
-  }
-  get '/hello', contentType: ContentType.JSON, {
-    return [hello: 'world']
-  }
-  post '/path', accept: ContentType.JSON, {
-    return "Hello ${parsedRequestBody.who}"
-  }
-}
-
-garcon.join()
-````
 ## Implement Simple CRUD API
 You can implement a simple todos API (based on [JSONPlaceholder API](https://jsonplaceholder.typicode.com/)) with a Groovy script
 
@@ -92,3 +76,24 @@ void onStart(InetAddress address, int port) {
 Garcon.fromInstance(this, accept: ContentType.JSON, contentType: ContentType.JSON)
     .start(address: "localhost", port: 8081)
 ```
+
+## Define your endpoints dynamically
+
+You can also define endpoints dynamically using `Garcon.serve(Closure)` method
+
+````groovy
+def garcon = new Garcon(InetAddress.getByName("localhost"), 8081)
+garcon.serve {
+  get 'hello/{someone}', {
+    return "Hello $someone"
+  }
+  get '/hello', contentType: ContentType.JSON, {
+    return [hello: 'world']
+  }
+  post '/path', accept: ContentType.JSON, {
+    return "Hello ${parsedRequestBody.who}"
+  }
+}
+
+garcon.join()
+````
