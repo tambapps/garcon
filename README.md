@@ -48,7 +48,7 @@ final Map todosById = [
 
 @ResponseStatus(HttpStatus.CREATED)
 @Post('/todos')
-postTodo(@ParsedRequestBody Todo post)  {
+postTodo(@ParsedRequestBody Todo post) {
   if (!post.userId || !post.title || post.completed == null) {
     throw new BadRequestException("Some fields are missing/malformed")
   }
@@ -63,14 +63,14 @@ getTodos() {
 }
 
 @Get('/todo/{id}')
-getTodo(@PathVariable("id") Integer id)  {
+getTodo(@PathVariable("id") Integer id) {
   def todo = todosById[id]
   if (todo) return todo
   throw new NotFoundException("Todo was not found")
 }
 
 @Patch('/todo/{id}')
-patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Todo patch)  {
+patchTodo(@PathVariable("id") Integer id, @ParsedRequestBody Todo patch) {
   def todo = getTodo(id)
   if (patch.userId) todo.userId = patch.userId
   if (patch.title) todo.title = patch.title
@@ -89,6 +89,6 @@ void onStart(InetAddress address, int port) {
   println "Started on $address:$port"
 }
 
-Garcon.fromInstance(accept: ContentType.JSON, contentType: ContentType.JSON, this)
+Garcon.fromInstance(this, accept: ContentType.JSON, contentType: ContentType.JSON)
     .start(address: "localhost", port: 8081)
 ```
