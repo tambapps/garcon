@@ -1,11 +1,13 @@
 package com.tambapps.http.garcon.exception;
 
+import com.tambapps.http.garcon.HttpStatus;
+
 /**
  * Exception to use when user made a bad request
  */
-public class BadRequestException extends RuntimeException {
+public class BadRequestException extends HttpStatusException {
   public BadRequestException(String message, Throwable cause) {
-    super(message, cause);
+    super(message, cause, HttpStatus.BAD_REQUEST);
   }
 
   /**
@@ -13,6 +15,6 @@ public class BadRequestException extends RuntimeException {
    * @param message the message
    */
   public BadRequestException(String message) {
-    super(message);
+    super(message, HttpStatus.BAD_REQUEST);
   }
 }

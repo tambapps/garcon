@@ -1,5 +1,7 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.exception.HttpStatusException;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -12,8 +14,8 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
   @Override
   public abstract HttpResponse processExchange(HttpRequest request);
 
-  HttpResponse default400Response(HttpExchangeContext context, Exception e) {
-    return newErrorResponse(HttpStatus.BAD_REQUEST, context, e.getMessage());
+  HttpResponse defaultHttpStatusResponse(HttpExchangeContext context, HttpStatusException e) {
+    return newErrorResponse(e.getStatusCode(), context, e.getMessage());
   }
 
   HttpResponse default404Response(HttpExchangeContext context, Exception e) {
@@ -29,7 +31,7 @@ public abstract class AbstractHttpExchangeHandler implements HttpExchangeHandler
   }
 
 
-  private HttpResponse newErrorResponse(HttpStatus status, HttpExchangeContext context, String message) {
+  private HttpResponse newErrorResponse(HttpStatusCode status, HttpExchangeContext context, String message) {
     HttpResponse response = context.getResponse();
     response.setStatusCode(status);
     ContentType contentType = context.getContentType();

@@ -13,6 +13,7 @@ import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.exception.BadRequestException;
+import com.tambapps.http.garcon.exception.HttpStatusException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.NotFoundException;
 import com.tambapps.http.garcon.io.composer.Composers;
@@ -277,10 +278,8 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
     try {
       return definition.call(context);
-    } catch (BadRequestException e) {
-      return default400Response(context, e);
-    } catch (NotFoundException e) {
-      return default404Response(context, e);
+    } catch (HttpStatusException e) {
+      return defaultHttpStatusResponse(context, e);
     } catch (Exception e) {
       Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {
