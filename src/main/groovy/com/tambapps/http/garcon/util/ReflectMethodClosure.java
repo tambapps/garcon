@@ -11,6 +11,7 @@ import com.tambapps.http.garcon.annotation.QueryParam;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import groovy.lang.Closure;
 import groovy.lang.MissingPropertyException;
+import lombok.SneakyThrows;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 import org.codehaus.groovy.runtime.InvokerHelper;
 import org.codehaus.groovy.runtime.StringGroovyMethods;
@@ -29,7 +30,7 @@ public class ReflectMethodClosure extends Closure<Object> {
 
   private final Method method;
   private final ArgFunction[] argFunctions;
-  private HttpStatus status;
+  private final HttpStatus status;
 
   public ReflectMethodClosure(Object owner, Method method, HttpStatus status) {
     super(owner);
@@ -132,8 +133,8 @@ public class ReflectMethodClosure extends Closure<Object> {
     return argSuppliers;
   }
 
-  // for Closure
-  public Object doCall(HttpExchangeContext context) throws Throwable {
+  @SneakyThrows
+  public Object doCall(HttpExchangeContext context) {
     context.getResponse().setStatusCode(status);
     Object[] args = new Object[argFunctions.length];
     for (int i = 0; i < args.length; i++) {
@@ -178,5 +179,16 @@ public class ReflectMethodClosure extends Closure<Object> {
     } else {
       return DefaultGroovyMethods.asType(o, aClass);
     }
+  }
+
+  // should improve performance (?), instead of relying on metaclass to
+  @Override
+  public Object call(Object... args) {
+    return doCall((HttpExchangeContext) args[0]);
+  }
+
+  @Override
+  public Object call(Object arguments) {
+    return doCall((HttpExchangeContext) arguments);
   }
 }
