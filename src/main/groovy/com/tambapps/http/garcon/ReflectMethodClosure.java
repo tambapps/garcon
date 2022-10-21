@@ -1,4 +1,4 @@
-package com.tambapps.http.garcon.util;
+package com.tambapps.http.garcon;
 
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpRequest;
@@ -22,7 +22,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
 import java.util.Map;
 
-public class ReflectMethodClosure extends Closure<Object> {
+class ReflectMethodClosure extends Closure<Object> {
 
   private interface ArgFunction {
     Object supply(HttpExchangeContext context);
