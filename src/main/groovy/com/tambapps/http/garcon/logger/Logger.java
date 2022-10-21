@@ -18,4 +18,10 @@ public interface Logger {
   void error(String message, Throwable e);
 
 
+  static Logger noOpLogger() {
+    return new Logger() {
+      @Override public void error(String message) {}
+      @Override public void error(String message, Throwable e) {}
+    };
+  }
 }
