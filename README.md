@@ -5,6 +5,8 @@ compatible with Android (you can use it in the [Android Groovy Shell](https://pl
 
 Its goal is to implement HTTP server the quickest and clearest way possible.
 
+This library is [hosted on Maven Central](https://search.maven.org/artifact/com.tambapps.http/garcon/1.1/jar).
+
 ## Implement Simple CRUD API
 You can implement a simple todos API (based on [JSONPlaceholder API](https://jsonplaceholder.typicode.com/)) with a Groovy script
 
