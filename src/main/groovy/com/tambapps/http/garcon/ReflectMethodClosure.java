@@ -1,9 +1,5 @@
 package com.tambapps.http.garcon;
 
-import com.tambapps.http.garcon.HttpExchangeContext;
-import com.tambapps.http.garcon.HttpRequest;
-import com.tambapps.http.garcon.HttpResponse;
-import com.tambapps.http.garcon.HttpStatus;
 import com.tambapps.http.garcon.annotation.PathVariable;
 import com.tambapps.http.garcon.annotation.RequestHeader;
 import com.tambapps.http.garcon.annotation.ParsedRequestBody;

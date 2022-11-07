@@ -6,7 +6,6 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 import com.tambapps.http.garcon.ContentType;
 import com.tambapps.http.garcon.Garcon;
 import com.tambapps.http.garcon.Headers;
-import com.tambapps.http.garcon.HttpAttachment;
 import com.tambapps.http.garcon.HttpExchangeHandler;
 import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.HttpResponse;

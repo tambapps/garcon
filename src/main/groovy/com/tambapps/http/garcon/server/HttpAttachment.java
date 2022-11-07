@@ -1,5 +1,6 @@
-package com.tambapps.http.garcon;
+package com.tambapps.http.garcon.server;
 
+import com.tambapps.http.garcon.HttpRequest;
 import com.tambapps.http.garcon.exception.RequestTimeoutException;
 import com.tambapps.http.garcon.io.parser.HttpRequestParser;
 import lombok.RequiredArgsConstructor;
@@ -7,7 +8,7 @@ import lombok.RequiredArgsConstructor;
 import java.nio.ByteBuffer;
 
 @RequiredArgsConstructor
-public class HttpAttachment {
+class HttpAttachment {
   private final HttpRequestParser requestParser = new HttpRequestParser();
 
   private final long attachedAtMillis = System.currentTimeMillis();
