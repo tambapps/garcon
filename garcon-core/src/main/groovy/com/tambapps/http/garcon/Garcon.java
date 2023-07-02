@@ -28,7 +28,6 @@ import groovy.transform.NamedParam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -345,15 +344,16 @@ public class Garcon extends AbstractHttpExchangeHandler {
    * will become an endpoint of the returned garcon
    *
    * @param additionalParams the additional params
-   * @param instance the instance from which to construct the garcon
+   * @param i the instance from which to construct the garcon
    * @return the garcon
    */
+  @SneakyThrows
   public static Garcon fromInstance(
       @NamedParam(value = "contentType", type = ContentType.class)
       @NamedParam(value = "accept", type = ContentType.class)
       Map<?,?> additionalParams, Object i) {
     // if a class was passed, we tried to construct an instance for it and use it as the garcon spec
-    Object instance = i instanceof Class ? DefaultGroovyMethods.newInstance((Class<?>) i) : i;
+    Object instance = i instanceof Class ? ((Class)i).getConstructor().newInstance() : i;
     Class<?> clazz = instance.getClass();
 
     ContentType contentType = getOrDefault(additionalParams, "contentType", ContentType.class, null);
