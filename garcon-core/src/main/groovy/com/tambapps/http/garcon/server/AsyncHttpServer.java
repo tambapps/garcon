@@ -4,7 +4,7 @@ import static com.tambapps.http.garcon.Headers.CONNECTION_CLOSE;
 import static com.tambapps.http.garcon.Headers.CONNECTION_KEEP_ALIVE;
 
 import com.tambapps.http.garcon.ContentType;
-import com.tambapps.http.garcon.Garcon;
+import com.tambapps.http.garcon.AbstractGarcon;
 import com.tambapps.http.garcon.Headers;
 import com.tambapps.http.garcon.HttpAttachment;
 import com.tambapps.http.garcon.HttpExchangeHandler;
@@ -114,7 +114,7 @@ public class AsyncHttpServer implements HttpServer {
         // represents the registration of this channel with this Selector.
         serverSocket.register(selector, SelectionKey.OP_ACCEPT);
       } catch (IOException e) {
-        Garcon.getLogger().error("Couldn't start server", e);
+        AbstractGarcon.getLogger().error("Couldn't start server", e);
         startResultQueue.add(false);
         return;
       }
@@ -142,9 +142,9 @@ public class AsyncHttpServer implements HttpServer {
         }
       } catch (ClosedSelectorException ignored) {
       } catch (IOException e) {
-        Garcon.getLogger().error("Error while running server. Stopping it", e);
+        AbstractGarcon.getLogger().error("Error while running server. Stopping it", e);
       } catch (Exception e) {
-        Garcon.getLogger().error("Unexpected Error while running server. Stopping it", e);
+        AbstractGarcon.getLogger().error("Unexpected Error while running server. Stopping it", e);
       }
       running.set(false);
       DefaultGroovyMethods.closeQuietly(selector);
@@ -246,7 +246,7 @@ public class AsyncHttpServer implements HttpServer {
       try {
         response = exchangeHandler.processExchange(request);
       } catch (Exception e) {
-        Garcon.getLogger().error("Error while processing exchange for request " + request, e);
+        AbstractGarcon.getLogger().error("Error while processing exchange for request " + request, e);
         response = new HttpResponse();
         response.setStatusCode(HttpStatus.INTERNAL_SERVER_ERROR);
         response.setBody("An internal server error occurred");

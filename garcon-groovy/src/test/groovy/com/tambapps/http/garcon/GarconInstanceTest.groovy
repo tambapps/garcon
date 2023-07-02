@@ -7,7 +7,6 @@ import com.tambapps.http.garcon.annotation.RequestHeader
 import com.tambapps.http.garcon.annotation.ResponseStatus
 import com.tambapps.http.hyperpoet.ErrorResponseException
 import com.tambapps.http.hyperpoet.interceptor.ConsolePrintingInterceptor
-import groovy.json.JsonOutput
 
 import static com.tambapps.http.garcon.ContentType.CONTENT_TYPE_JSON
 import com.tambapps.http.garcon.annotation.Get

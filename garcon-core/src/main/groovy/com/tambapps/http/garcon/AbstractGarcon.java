@@ -1,7 +1,5 @@
 package com.tambapps.http.garcon;
 
-import static com.tambapps.http.garcon.util.ParametersUtils.getOrDefault;
-
 import com.tambapps.http.garcon.annotation.Delete;
 import com.tambapps.http.garcon.annotation.Endpoint;
 import com.tambapps.http.garcon.annotation.Get;
@@ -43,7 +41,7 @@ import java.util.function.Consumer;
 /**
  * Garcon, the grooviest HTTP Server
  */
-public class Garcon extends AbstractHttpExchangeHandler {
+public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
 
   private static Logger LOGGER;
 
@@ -106,16 +104,16 @@ public class Garcon extends AbstractHttpExchangeHandler {
    * Empty constructor for garcon. Note that you'll need to set the address and the port before
    * starting it
    */
-  public Garcon() {}
+  public AbstractGarcon() {}
 
   @SneakyThrows
-  public Garcon(String address, int port) {
+  public AbstractGarcon(String address, int port) {
     this((InetAddress) null, port);
     // setting it later for SneakyThrows to work
     this.address = InetAddress.getByName(address);
   }
 
-  public Garcon(InetAddress address, int port) {
+  public AbstractGarcon(InetAddress address, int port) {
     this.address = address;
     this.port = port;
   }
@@ -124,29 +122,6 @@ public class Garcon extends AbstractHttpExchangeHandler {
     return httpServer != null && httpServer.isRunning();
   }
 
-  @SneakyThrows
-  public void start(
-      @NamedParam(value = "port", type = Integer.class)
-      @NamedParam(value = "address", type = InetAddress.class)
-      Map<?,?> args) {
-    if (args != null) {
-      Object a = args.get("address");
-      if (a != null) {
-        InetAddress address;
-        if (a instanceof String) {
-          address = InetAddress.getByName((String) a);
-        } else {
-          address = getOrDefault(args, "address", InetAddress.class, null);
-        }
-        setAddress(address);
-      }
-      Integer port = getOrDefault(args, "port", Integer.class, null);
-      if (port != null) {
-        setPort(port);
-      }
-    }
-    start();
-  }
 
   /**
    * Starts the server
@@ -190,7 +165,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
   }
 
-  public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
+  public AbstractGarcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
     EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
     closure.setDelegate(definer);
     closure.setResolveStrategy(Closure.DELEGATE_FIRST);
@@ -204,7 +179,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
    * @param closure the definition of the garcon
    * @return this
    */
-  public Garcon serve(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
+  public AbstractGarcon serve(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
     define(closure);
     start();
     return this;
@@ -281,7 +256,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     } catch (HttpStatusException e) {
       return defaultHttpStatusResponse(context, e);
     } catch (Exception e) {
-      Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
+      AbstractGarcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {
         onExchangeError.accept(e);
       }
@@ -312,7 +287,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
   }
 
-  private void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
+  void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
       Object instance, Method method, HttpStatus status) {
     EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
     Closure<?> closure = new ReflectMethodClosure(instance, method, status);
@@ -328,38 +303,16 @@ public class Garcon extends AbstractHttpExchangeHandler {
     endpointsHandler = definer.build();
   }
 
-  /**
-   * Construct a garcon from the provided instance. All method annotated to an garcon endpoint annotation
-   * will become an endpoint of the returned garcon
-   *
-   * @param instance the instance from which to construct the garcon
-   * @return the garcon
-   */
-  public static Garcon fromInstance(Object instance) {
-    return fromInstance(null, instance);
-  }
-
-  /**
-   * Construct a garcon from the provided instance. All method annotated to an garcon endpoint annotation
-   * will become an endpoint of the returned garcon
-   *
-   * @param additionalParams the additional params
-   * @param i the instance from which to construct the garcon
-   * @return the garcon
-   */
   @SneakyThrows
-  public static Garcon fromInstance(
-      @NamedParam(value = "contentType", type = ContentType.class)
-      @NamedParam(value = "accept", type = ContentType.class)
-      Map<?,?> additionalParams, Object i) {
+  static <T extends AbstractGarcon> T fromInstance(
+      T garcon,
+      ContentType contentType,
+      ContentType accept,
+      Object i) {
     // if a class was passed, we tried to construct an instance for it and use it as the garcon spec
     Object instance = i instanceof Class ? ((Class)i).getConstructor().newInstance() : i;
     Class<?> clazz = instance.getClass();
 
-    ContentType contentType = getOrDefault(additionalParams, "contentType", ContentType.class, null);
-    ContentType accept = getOrDefault(additionalParams, "accept", ContentType.class, null);
-
-    Garcon garcon = new Garcon();
     if (contentType != null) {
       garcon.setContentType(contentType);
     }

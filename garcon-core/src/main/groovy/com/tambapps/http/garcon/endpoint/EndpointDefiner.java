@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.ContentType;
-import com.tambapps.http.garcon.Garcon;
+import com.tambapps.http.garcon.AbstractGarcon;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpResponse;
 import groovy.lang.Closure;
@@ -18,18 +18,18 @@ import java.util.Collections;
 import java.util.Map;
 
 /**
- * Delegate of {@link Garcon#define(Closure)} closure, allowing to define endpoints in a Groovy way
+ * Delegate of {@link AbstractGarcon#define(Closure)} closure, allowing to define endpoints in a Groovy way
  */
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class EndpointDefiner {
 
-  private final Garcon garcon;
+  private final AbstractGarcon garcon;
 
   // path -> method -> endpoint
   private final DynamicEndpointsHandler endpointsHandler;
 
   // handler is nullable
-  public static EndpointDefiner newInstance(Garcon garcon, EndpointsHandler handler) {
+  public static EndpointDefiner newInstance(AbstractGarcon garcon, EndpointsHandler handler) {
     DynamicEndpointsHandler endpointsHandler = new DynamicEndpointsHandler();
     if (handler != null) {
       endpointsHandler.mergeWith(handler);
