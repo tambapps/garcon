@@ -6,11 +6,12 @@
 
   <groupId>com.tambapps.http</groupId>
   <artifactId>garcon</artifactId>
-  <version>1.2-SNAPSHOT</version>
+  <version>${revision}</version>
   <packaging>pom</packaging>
 
   <modules>
     <module>garcon-core</module>
+    <module>garcon-groovy</module>
   </modules>
   <name>Garcon - Groovy-friendly HTTP server library</name>
   <description>Garcon is an easy-to-use HTTP server library made for Groovy and Marcel</description>
@@ -173,6 +174,35 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <!-- required in order to properly resolve ${revision} in child pom properly, when using these modules as dependencies from external projects -->
+      <plugin>
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>flatten-maven-plugin</artifactId>
+        <version>1.5.0</version>
+        <configuration>
+          <updatePomFile>true</updatePomFile>
+          <flattenMode>resolveCiFriendliesOnly</flattenMode>
+        </configuration>
+        <executions>
+          <execution>
+            <id>flatten</id>
+            <phase>process-resources</phase>
+            <goals>
+              <goal>flatten</goal>
+            </goals>
+          </execution>
+          <execution>
+            <id>flatten.clean</id>
+            <phase>clean</phase>
+            <goals>
+              <goal>clean</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
+    </plugins>
   </build>
 
   <issueManagement>
@@ -248,6 +278,7 @@
   </profiles>
 
   <properties>
+    <revision>1.2-SNAPSHOT</revision>
     <maven.compiler.source>1.8</maven.compiler.source>
     <maven.compiler.target>1.8</maven.compiler.target>
     <java.version>1.8</java.version>

@@ -12,7 +12,6 @@ import com.tambapps.http.garcon.annotation.ResponseStatus;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointDefinition;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
-import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.exception.HttpStatusException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.NotFoundException;
@@ -30,8 +29,8 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
 import org.codehaus.groovy.runtime.DefaultGroovyMethods;
-import org.codehaus.groovy.runtime.MethodClosure;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.HashMap;
@@ -39,6 +38,8 @@ import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
 /**
  * Garcon, the grooviest HTTP Server
@@ -76,16 +77,16 @@ public class Garcon extends AbstractHttpExchangeHandler {
 
   @Getter
   @Setter
-  Closure<?> onStart;
+  BiConsumer<Object, Object> onStart;
   @Getter
   @Setter
-  Closure<?> onStop;
+  Runnable onStop;
   @Getter
   @Setter
-  Closure<?> onServerError;
+  Consumer<Object> onServerError;
   @Getter
   @Setter
-  Closure<?> onExchangeError;
+  Consumer<Object> onExchangeError;
 
   /**
    * Response composers per content type
@@ -167,7 +168,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     }
     httpServer.start(address, port);
     if (onStart != null) {
-      onStart.call(address, port);
+      onStart.accept(address, port);
     }
   }
 
@@ -185,7 +186,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     if (isRunning()) {
       httpServer.stop();
       if (onStop != null) {
-        onStop.call();
+        onStop.run();
       }
     }
   }
@@ -283,7 +284,7 @@ public class Garcon extends AbstractHttpExchangeHandler {
     } catch (Exception e) {
       Garcon.getLogger().error(String.format("Unexpected error on endpoint %s %s", context.getMethod(), context.getPath()), e);
       if (onExchangeError != null) {
-        onExchangeError.call(e);
+        onExchangeError.accept(e);
       }
       return default500Response(context);
     }
@@ -350,11 +351,9 @@ public class Garcon extends AbstractHttpExchangeHandler {
   public static Garcon fromInstance(
       @NamedParam(value = "contentType", type = ContentType.class)
       @NamedParam(value = "accept", type = ContentType.class)
-      Map<?,?> additionalParams, Object instance) {
-    if (instance instanceof Class) {
-      // if a class was passed, we tried to construct an instance for it and use it as the garcon spec
-      instance = DefaultGroovyMethods.newInstance((Class<?>) instance);
-    }
+      Map<?,?> additionalParams, Object i) {
+    // if a class was passed, we tried to construct an instance for it and use it as the garcon spec
+    Object instance = i instanceof Class ? DefaultGroovyMethods.newInstance((Class<?>) i) : i;
     Class<?> clazz = instance.getClass();
 
     ContentType contentType = getOrDefault(additionalParams, "contentType", ContentType.class, null);
@@ -370,16 +369,50 @@ public class Garcon extends AbstractHttpExchangeHandler {
     Method[] methods = clazz.getMethods();
     for (Method method : methods) {
       if (method.getName().equals("onStart")) {
-        garcon.onStart = new MethodClosure(instance, method.getName());
+        garcon.onStart = (address, port) -> {
+          try {
+            switch (method.getParameterCount()) {
+              case 0:
+                method.invoke(instance);
+                break;
+              case 1:
+                method.invoke(instance, address);
+                break;
+              default:
+                method.invoke(instance, address, port);
+                break;
+            }
+          } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+          }
+        };
       }
       if (method.getName().equals("onStop")) {
-        garcon.onStop = new MethodClosure(instance, method.getName());
+        garcon.onStop = () -> {
+          try {
+            method.invoke(instance);
+          } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+          }
+        };
       }
       if (method.getName().equals("onServerError")) {
-        garcon.onServerError = new MethodClosure(instance, method.getName());
+        garcon.onServerError = (exception) -> {
+          try {
+            method.invoke(instance, exception);
+          } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+          }
+        };;
       }
       if (method.getName().equals("onExchangeError")) {
-        garcon.onExchangeError = new MethodClosure(instance, method.getName());
+        garcon.onExchangeError = (exception) -> {
+          try {
+            method.invoke(instance, exception);
+          } catch (InvocationTargetException | IllegalAccessException e) {
+            throw new RuntimeException(e);
+          }
+        };
       }
 
       HttpStatus status = HttpStatus.OK;

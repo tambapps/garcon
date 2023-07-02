@@ -10,7 +10,7 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>garcon-core</artifactId>
+  <artifactId>garcon-groovy</artifactId>
   <packaging>jar</packaging>
 
   <name>Garcon Core</name>
@@ -19,6 +19,11 @@
   <inceptionYear>2022</inceptionYear>
 
   <dependencies>
+    <dependency>
+      <groupId>com.tambapps.http</groupId>
+      <artifactId>garcon-core</artifactId>
+      <version>${revision}</version>
+    </dependency>
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
