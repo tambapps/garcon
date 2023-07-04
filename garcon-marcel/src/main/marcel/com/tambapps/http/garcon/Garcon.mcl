@@ -1,0 +1,33 @@
+package com.tambapps.http.garcon
+
+import com.tambapps.http.garcon.endpoint.*
+import com.tambapps.http.garcon.util.ContentTypeMap
+
+import java.net.InetAddress
+
+import java.lang.reflect.Method
+
+class Garcon extends AbstractGarcon {
+
+  private ContentTypeMap parsers
+  private ContentTypeMap composers
+
+  constructor(): super()
+
+  constructor(String address, int port): super(address, port)
+
+  constructor(InetAddress address, int port): super(address, port)
+
+  internal fun MarcelEndpointDefiner newDefiner() {
+    return new GroovyEndpointDefiner(this, endpointsHandler)
+  }
+
+  internal fun Object fromMethod(Object instance, Method method, HttpStatus status) {
+    return null
+  }
+
+  internal fun HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentType contentType, ContentType accept) {
+    return new MarcelHttpExchangeContext(request, response, composers, parsers, contentType, accept);
+  }
+
+}

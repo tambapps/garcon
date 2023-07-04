@@ -1,0 +1,56 @@
+package com.tambapps.http.garcon.endpoint
+
+import com.tambapps.http.garcon.AbstractGarcon
+import com.tambapps.http.garcon.ContentType
+import com.tambapps.http.garcon.HttpExchangeContext
+
+import java.util.function.Function
+import java.util.regex.Pattern
+
+
+public class MarcelDynamicEndpointDefinition extends DynamicEndpointDefinition {
+
+  private Function function
+
+  constructor(this.function, ContentType accept, ContentType contentType, List<String> pathVariableNames,
+                           Pattern pathVariablePattern): super(accept, contentType, pathVariableNames, pathVariablePattern)
+
+
+  fun DynamicEndpointDefinition toDynamic(List pathVariableNames, Pattern pattern) {
+    return this
+  }
+
+  fun Object doCall(HttpExchangeContext context) {
+    return function.apply(context)
+  }
+}
+
+public class MarcelEndpointDefinition extends EndpointDefinition {
+
+  private Function function
+
+  constructor(this.function, ContentType accept, ContentType contentType): super(accept, contentType)
+
+
+  fun DynamicEndpointDefinition toDynamic(List pathVariableNames, Pattern pattern) {
+    return new MarcelDynamicEndpointDefinition(function, getAccept(), getContentType(), pathVariableNames, pattern)
+  }
+
+  fun Object doCall(HttpExchangeContext context) {
+    return function.apply(context)
+  }
+}
+
+
+class MarcelEndpointDefiner extends EndpointDefiner {
+
+  constructor(AbstractGarcon garcon, EndpointsHandler handler): super(garcon, handler)
+
+  fun void method(String method, String path,
+                                  Object accept = null, Object contentType = null, Object o) {
+    Function function = o
+    addEndpoint(path, method,
+            new MarcelEndpointDefinition(function, toGarconContentType(accept),
+                toGarconContentType(contentType)))
+  }
+}

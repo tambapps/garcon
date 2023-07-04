@@ -1,0 +1,9 @@
+package com.tambapps.http.garcon
+
+import com.tambapps.http.garcon.util.ContentTypeMap
+
+class MarcelHttpExchangeContext extends HttpExchangeContext {
+  constructor(HttpRequest request, HttpResponse response, ContentTypeMap composers, ContentTypeMap parsers, ContentType contentType, ContentType accept)
+    : super(request, response, composers, parsers, contentType, accept)
+
+}
