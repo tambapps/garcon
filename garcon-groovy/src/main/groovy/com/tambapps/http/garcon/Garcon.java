@@ -1,7 +1,6 @@
 package com.tambapps.http.garcon;
 
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
-import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.endpoint.GroovyEndpointDefiner;
 import com.tambapps.http.garcon.io.composer.Composers;
 import com.tambapps.http.garcon.io.parser.Parsers;

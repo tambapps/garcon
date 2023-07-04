@@ -19,7 +19,7 @@ class Garcon extends AbstractGarcon {
   constructor(InetAddress address, int port): super(address, port)
 
   internal fun MarcelEndpointDefiner newDefiner() {
-    return new GroovyEndpointDefiner(this, endpointsHandler)
+    return new MarcelEndpointDefiner(this, endpointsHandler)
   }
 
   internal fun Object fromMethod(Object instance, Method method, HttpStatus status) {
