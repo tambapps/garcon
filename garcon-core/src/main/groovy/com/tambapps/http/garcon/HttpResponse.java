@@ -41,7 +41,7 @@ public class HttpResponse {
       this.body = ByteBuffer.wrap(((byte[]) body));
     } else if (body instanceof String
           // for groovy
-          || body.getClass().getName().equals("groovy.lang.GString")) {
+          || body.getClass() != Object.class && body.getClass().getSuperclass().getName().equals("groovy.lang.GString")) {
       this.body = ByteBuffer.wrap(body.toString().getBytes());
     } else if (body instanceof InputStream) {
       this.body = ByteBuffer.wrap(getBytes(((InputStream) body)));
@@ -49,6 +49,7 @@ public class HttpResponse {
       throw new IllegalArgumentException("Cannot handle body of type " + body.getClass().getSimpleName());
     }
   }
+
   public boolean isIndefiniteLength() {
     return getContentLength() == null;
   }

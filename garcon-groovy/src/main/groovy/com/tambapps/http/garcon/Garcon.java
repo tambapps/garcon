@@ -3,6 +3,8 @@ package com.tambapps.http.garcon;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.endpoint.GroovyEndpointDefiner;
+import com.tambapps.http.garcon.io.composer.Composers;
+import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import com.tambapps.http.garcon.util.ReflectMethodClosure;
 import groovy.lang.Closure;
@@ -17,6 +19,18 @@ import java.util.Map;
 import static com.tambapps.http.garcon.util.ParametersUtils.getOrDefault;
 
 public class Garcon extends AbstractGarcon<Closure<?>> {
+
+
+  /**
+   * Response composers per content type
+   */
+  public final ContentTypeFunctionMap<Object, byte[]> composers = Composers.getMap();
+
+  /**
+   * Request parsers per content type
+   */
+  public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
+
   public Garcon() {
   }
 
@@ -51,7 +65,7 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
   }
 
   @Override
-  HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers, ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept) {
+  HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentType contentType, ContentType accept) {
     return new GroovyHttpExchangeContext(request, response, composers, parsers, contentType, accept);
   }
 

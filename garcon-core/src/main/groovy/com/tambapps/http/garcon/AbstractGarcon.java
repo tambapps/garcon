@@ -13,13 +13,10 @@ import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.exception.HttpStatusException;
 import com.tambapps.http.garcon.exception.MethodNotAllowedException;
 import com.tambapps.http.garcon.exception.NotFoundException;
-import com.tambapps.http.garcon.io.composer.Composers;
-import com.tambapps.http.garcon.io.parser.Parsers;
 import com.tambapps.http.garcon.logger.DefaultLogger;
 import com.tambapps.http.garcon.logger.Logger;
 import com.tambapps.http.garcon.server.AsyncHttpServer;
 import com.tambapps.http.garcon.server.HttpServer;
-import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -84,18 +81,8 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
   abstract EndpointDefiner<T> newDefiner(AbstractGarcon<T> garcon, EndpointsHandler<T> endpointsHandler);
   abstract T fromMethod(Object instance, Method method, HttpStatus status);
 
-  abstract HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers,
-                                                    ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept);
+  abstract HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentType contentType, ContentType accept);
 
-  /**
-   * Response composers per content type
-   */
-  public final ContentTypeFunctionMap<Object, byte[]> composers = Composers.getMap();
-
-  /**
-   * Request parsers per content type
-   */
-  public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
   EndpointsHandler<T> endpointsHandler;
 
   // can provide own HttpServer implementation
@@ -222,14 +209,14 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
       definition = endpointsHandler.getEndpoint(request.getPath(), request.getMethod());
     } catch (NotFoundException e) {
       return default404Response(
-          newContext(request, new HttpResponse(), composers, parsers,
+          newContext(request, new HttpResponse(),
               contentType, accept), e);
     } catch (MethodNotAllowedException e) {
-      return default405Response(newContext(request, new HttpResponse(), composers, parsers,
+      return default405Response(newContext(request, new HttpResponse(),
           contentType, accept), request.getMethod());
     }
 
-    HttpExchangeContext context = newContext(request, new HttpResponse(), composers, parsers,
+    HttpExchangeContext context = newContext(request, new HttpResponse(),
         definition.getContentType() != null ? definition.getContentType() : contentType,
         definition.getAccept() != null ? definition.getAccept() : accept);
 
