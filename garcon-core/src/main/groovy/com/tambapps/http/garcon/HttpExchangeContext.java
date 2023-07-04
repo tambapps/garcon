@@ -1,7 +1,7 @@
 package com.tambapps.http.garcon;
 
 import com.tambapps.http.garcon.exception.ParsingException;
-import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
+import com.tambapps.http.garcon.util.ContentTypeMap;
 import lombok.Data;
 
 import java.nio.ByteBuffer;
@@ -17,16 +17,16 @@ public abstract class HttpExchangeContext {
   // definition order matters because of @delegate
   final HttpResponse response;
   final HttpRequest request;
-  final ContentTypeFunctionMap<Object, byte[]> composers;
-  final ContentTypeFunctionMap<byte[], Object> parsers;
+  final ContentTypeMap<Function<Object, byte[]>> composers;
+  final ContentTypeMap<Function<byte[], Object>> parsers;
   final ContentType contentType;
   final ContentType accept;
   private Object parsedBody;
 
   private Map<String, String> pathVariables;
 
-  HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers,
-                      ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept) {
+  HttpExchangeContext(HttpRequest request, HttpResponse response, ContentTypeMap<Function<Object, byte[]>> composers,
+                      ContentTypeMap<Function<byte[], Object>> parsers, ContentType contentType, ContentType accept) {
     this.request = request;
     this.response = response;
     this.composers = composers;
