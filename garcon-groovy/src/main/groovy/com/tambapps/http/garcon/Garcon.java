@@ -23,12 +23,12 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
   /**
    * Response composers per content type
    */
-  public final ContentTypeFunctionMap<Object, byte[]> composers = Composers.getMap();
+  public final ContentTypeFunctionMap<Object, byte[]> composers = new ContentTypeFunctionMap<>(Composers.getMap());
 
   /**
    * Request parsers per content type
    */
-  public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
+  public final ContentTypeFunctionMap<byte[], Object> parsers = new ContentTypeFunctionMap<>(Parsers.getMap());
 
   public Garcon() {
   }

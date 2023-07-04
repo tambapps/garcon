@@ -17,6 +17,15 @@ import java.util.function.Function;
  */
 public class ContentTypeFunctionMap<T1, T2> extends ContentTypeMap<Function<T1, T2>> {
 
+
+  public ContentTypeFunctionMap() {
+    super();
+  }
+  public ContentTypeFunctionMap(ContentTypeMap<Function<T1, T2>> map) {
+    putAll(map);
+    setDefaultValue(map.getDefaultValue());
+  }
+
   /**
    * Put a function for the provided content type
    *

@@ -1,6 +1,8 @@
 package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.endpoint.*
+import com.tambapps.http.garcon.io.composer.Composers
+import com.tambapps.http.garcon.io.parser.Parsers
 import com.tambapps.http.garcon.util.ContentTypeMap
 
 import java.net.InetAddress
@@ -9,8 +11,16 @@ import java.lang.reflect.Method
 
 class Garcon extends AbstractGarcon {
 
-  private ContentTypeMap parsers
-  private ContentTypeMap composers
+
+  /**
+   * Response composers per content type
+   */
+  public final ContentTypeMap composers = Composers.getMap()
+
+  /**
+   * Request parsers per content type
+   */
+  public final ContentTypeMap parsers = Parsers.getMap()
 
   constructor(): super()
 
