@@ -12,6 +12,7 @@
   <modules>
     <module>garcon-core</module>
     <module>garcon-groovy</module>
+    <module>garcon-marcel</module>
   </modules>
   <name>Garcon - Groovy-friendly HTTP server library</name>
   <description>Garcon is an easy-to-use HTTP server library made for Groovy and Marcel</description>
@@ -52,6 +53,11 @@
   <build>
     <pluginManagement>
       <plugins>
+        <plugin>
+          <groupId>com.tambapps.marcel.maven</groupId>
+          <artifactId>marcel-maven-plugin</artifactId>
+          <version>0.0.1-SNAPSHOT</version>
+        </plugin>
         <plugin>
           <groupId>org.codehaus.gmavenplus</groupId>
           <artifactId>gmavenplus-plugin</artifactId>

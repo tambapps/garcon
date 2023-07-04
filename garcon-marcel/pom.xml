@@ -10,11 +10,11 @@
     <version>${revision}</version>
   </parent>
 
-  <artifactId>garcon-groovy</artifactId>
+  <artifactId>garcon-marcel</artifactId>
   <packaging>jar</packaging>
 
-  <name>Garcon Groovy</name>
-  <description>Garcon implementation for Groovy</description>
+  <name>Garcon Marcel</name>
+  <description>Garcon implementation for Marcel</description>
   <url>https://github.com/tambapps/garcon</url>
   <inceptionYear>2022</inceptionYear>
 
@@ -39,51 +39,21 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
-      <type>pom</type>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.gmavenplus</groupId>
-        <artifactId>gmavenplus-plugin</artifactId>
+        <groupId>com.tambapps.marcel.maven</groupId>
+        <artifactId>marcel-maven-plugin</artifactId>
         <executions>
           <execution>
             <goals>
-              <goal>addSources</goal>
-              <goal>generateStubs</goal>
               <goal>compile</goal>
-              <goal>removeStubs</goal>
-              <goal>addTestSources</goal>
-              <goal>generateTestStubs</goal>
               <goal>compileTests</goal>
-              <goal>removeTestStubs</goal>
             </goals>
           </execution>
         </executions>
-        <configuration>
-          <configScript>compiler-config.groovy</configScript>
-          <targetBytecode>${maven.compiler.target}</targetBytecode>
-          <testSources>
-            <testSource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <includes>
-                <include>**/*.groovy</include>
-              </includes>
-            </testSource>
-            <testSource>
-              <directory>${project.basedir}/src/test/groovy</directory>
-              <includes>
-                <include>**/*.groovy</include>
-              </includes>
-            </testSource>
-          </testSources>
-        </configuration>
       </plugin>
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
