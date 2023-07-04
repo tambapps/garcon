@@ -15,9 +15,9 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
-public class GroovyEndpointDefiner extends EndpointDefiner {
+public class GroovyEndpointDefiner extends EndpointDefiner<Closure<?>> {
 
-  public GroovyEndpointDefiner(AbstractGarcon garcon, EndpointsHandler handler) {
+  public GroovyEndpointDefiner(AbstractGarcon<Closure<?>> garcon, EndpointsHandler<Closure<?>> handler) {
     super(garcon, handler);
   }
 
@@ -144,6 +144,13 @@ public class GroovyEndpointDefiner extends EndpointDefiner {
     method(additionalParameters, "DELETE", path, closure);
   }
 
+  public void method(String method, String path,
+                     Object accept, Object contentType, Closure<?> closure) {
+    addEndpoint(path, method,
+        new GroovyEndpointDefinition(closure, toGarconContentType(accept),
+            toGarconContentType(contentType)));
+  }
+
   /**
    * Define an endpoint
    *
@@ -157,7 +164,7 @@ public class GroovyEndpointDefiner extends EndpointDefiner {
                      Map<?, ?> additionalParameters, String method, String path,
                      @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
     addEndpoint(path, method,
-        new EndpointDefinition(closure, getOptionalContentType(additionalParameters, "accept"),
+        new GroovyEndpointDefinition(closure, getOptionalContentType(additionalParameters, "accept"),
             getOptionalContentType(additionalParameters, "contentType")));
   }
 

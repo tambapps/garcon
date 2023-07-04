@@ -3,7 +3,6 @@ package com.tambapps.http.garcon.endpoint;
 import com.tambapps.http.garcon.ContentType;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpResponse;
-import groovy.lang.Closure;
 import lombok.Getter;
 
 import java.util.HashMap;
@@ -13,15 +12,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Getter
-public class DynamicEndpointDefinition extends EndpointDefinition {
+public abstract class DynamicEndpointDefinition<T> extends EndpointDefinition<T> {
 
   private final List<String> pathVariableNames;
   private final Pattern pathVariablePattern;
 
-  public DynamicEndpointDefinition(ThreadLocal<Closure<?>> threadLocalClosure,
-      ContentType accept, ContentType contentType, List<String> pathVariableNames,
+  public DynamicEndpointDefinition(ContentType accept, ContentType contentType, List<String> pathVariableNames,
       Pattern pathVariablePattern) {
-    super(threadLocalClosure, accept, contentType);
+    super(accept, contentType);
     this.pathVariableNames = pathVariableNames;
     this.pathVariablePattern = pathVariablePattern;
   }
@@ -41,7 +39,7 @@ public class DynamicEndpointDefinition extends EndpointDefinition {
   }
 
   @Override
-  public DynamicEndpointDefinition toDynamic(List<String> pathVariableNames, Pattern pattern) {
+  public DynamicEndpointDefinition<T> toDynamic(List<String> pathVariableNames, Pattern pattern) {
     return this;
   }
 }

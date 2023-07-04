@@ -3,15 +3,19 @@ package com.tambapps.http.garcon;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.endpoint.GroovyEndpointDefiner;
+import com.tambapps.http.garcon.util.ReflectMethodClosure;
+import groovy.lang.Closure;
+import groovy.lang.DelegatesTo;
 import groovy.transform.NamedParam;
 import lombok.SneakyThrows;
 
+import java.lang.reflect.Method;
 import java.net.InetAddress;
 import java.util.Map;
 
 import static com.tambapps.http.garcon.util.ParametersUtils.getOrDefault;
 
-public class Garcon extends AbstractGarcon {
+public class Garcon extends AbstractGarcon<Closure<?>> {
   public Garcon() {
   }
 
@@ -24,9 +28,38 @@ public class Garcon extends AbstractGarcon {
   }
 
   @Override
-  EndpointDefiner newDefiner(AbstractGarcon garcon, EndpointsHandler endpointsHandler) {
+  GroovyEndpointDefiner newDefiner(AbstractGarcon<Closure<?>> garcon, EndpointsHandler<Closure<?>> endpointsHandler) {
     return new GroovyEndpointDefiner(garcon, endpointsHandler);
   }
+
+
+  public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
+    EndpointDefiner<Closure<?>> definer = newDefiner(this, endpointsHandler);
+    closure.setDelegate(definer);
+    closure.setResolveStrategy(Closure.DELEGATE_FIRST);
+    closure.call();
+
+    endpointsHandler = definer.build();
+    return this;
+  }
+
+
+  @Override
+  protected Closure<?> fromMethod(Object instance, Method method, HttpStatus status) {
+    return new ReflectMethodClosure(instance, method, status);
+  }
+
+  /**
+   * Define endpoints and starts the server
+   * @param closure the definition of the garcon
+   * @return this
+   */
+  public Garcon serve(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
+    define(closure);
+    start();
+    return this;
+  }
+
 
   @SneakyThrows
   public void start(
@@ -60,7 +93,7 @@ public class Garcon extends AbstractGarcon {
    * @param instance the instance from which to construct the garcon
    * @return the garcon
    */
-  public static AbstractGarcon fromInstance(Object instance) {
+  public static AbstractGarcon<Closure<?>> fromInstance(Object instance) {
     return fromInstance(null, instance);
   }
 

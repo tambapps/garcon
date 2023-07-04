@@ -13,9 +13,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue
 @CompileDynamic
 class DynamicEndpointsHandlerTest {
 
-  private static final EndpointDefinition DEFINITION_1 = new DynamicEndpointDefinition(null, null, null, null, null)
-  private static final EndpointDefinition DEFINITION_2 = new DynamicEndpointDefinition(null, null, null, null, null)
-  private static final EndpointDefinition DEFINITION_3 = new DynamicEndpointDefinition(null, null, null, null, null)
+  private static final EndpointDefinition DEFINITION_1 = new GroovyDynamicEndpointDefinition(null, null, null, null, null)
+  private static final EndpointDefinition DEFINITION_2 = new GroovyDynamicEndpointDefinition(null, null, null, null, null)
+  private static final EndpointDefinition DEFINITION_3 = new GroovyDynamicEndpointDefinition(null, null, null, null, null)
 
   @Test
   void testDynamic() {

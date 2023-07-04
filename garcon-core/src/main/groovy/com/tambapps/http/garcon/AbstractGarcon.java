@@ -20,8 +20,6 @@ import com.tambapps.http.garcon.logger.Logger;
 import com.tambapps.http.garcon.server.AsyncHttpServer;
 import com.tambapps.http.garcon.server.HttpServer;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
-import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -29,8 +27,6 @@ import lombok.SneakyThrows;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -40,7 +36,7 @@ import java.util.function.Consumer;
 /**
  * Garcon, the grooviest HTTP Server
  */
-public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
+public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
 
   private static Logger LOGGER;
 
@@ -93,7 +89,7 @@ public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
    * Request parsers per content type
    */
   public final ContentTypeFunctionMap<byte[], Object> parsers = Parsers.getMap();
-  private EndpointsHandler endpointsHandler;
+  EndpointsHandler<T> endpointsHandler;
 
   // can provide own HttpServer implementation
   @Getter
@@ -164,26 +160,7 @@ public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
     }
   }
 
-  abstract EndpointDefiner newDefiner(AbstractGarcon garcon, EndpointsHandler endpointsHandler);
-  public AbstractGarcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
-    EndpointDefiner definer = newDefiner(this, endpointsHandler);
-    closure.setDelegate(definer);
-    closure.setResolveStrategy(Closure.DELEGATE_FIRST);
-    closure.call();
-    endpointsHandler = definer.build();
-    return this;
-  }
-
-  /**
-   * Define endpoints and starts the server
-   * @param closure the definition of the garcon
-   * @return this
-   */
-  public AbstractGarcon serve(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
-    define(closure);
-    start();
-    return this;
-  }
+  abstract EndpointDefiner<T> newDefiner(AbstractGarcon<T> garcon, EndpointsHandler<T> endpointsHandler);
 
   /**
    * Sets the address to use when starting the server
@@ -287,10 +264,12 @@ public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
     }
   }
 
+  protected abstract T fromMethod(Object instance, Method method, HttpStatus status);
+
   void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
       Object instance, Method method, HttpStatus status) {
-    EndpointDefiner definer = newDefiner(this, endpointsHandler);
-    Closure<?> closure = new ReflectMethodClosure(instance, method, status);
+    EndpointDefiner<T> definer = newDefiner(this, endpointsHandler);
+    T closure = fromMethod(instance, method, status);
 
     ContentType accept = acceptStr != null && !acceptStr.isEmpty() ? ContentType.valueOf(acceptStr) : null;
     ContentType contentType = contentTypeStr != null && !contentTypeStr.isEmpty() ? ContentType.valueOf(contentTypeStr) : null;

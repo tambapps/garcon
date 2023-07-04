@@ -16,18 +16,18 @@ import java.util.regex.Pattern;
  * Endpoints handler that supports both static and dynamic paths, at the cost of taking more time
  * to find a specific endpoint
  */
-public class DynamicEndpointsHandler extends StaticEndpointsHandler {
+public class DynamicEndpointsHandler<T> extends StaticEndpointsHandler<T> {
 
   private static final Pattern PATH_VARIABLE_PATTERN = Pattern.compile("\\{(\\w+)\\}");
-  final List<DynamicEndpointsDefinition> dynamicPaths = new ArrayList<>();
+  final List<DynamicEndpointsDefinition<T>> dynamicPaths = new ArrayList<>();
 
   @Override
-  public EndpointDefinition getEndpoint(String path, String method)
+  public EndpointDefinition<T> getEndpoint(String path, String method)
       throws NotFoundException, MethodNotAllowedException {
-    for (DynamicEndpointsDefinition dynamicPath : dynamicPaths) {
+    for (DynamicEndpointsDefinition<T> dynamicPath : dynamicPaths) {
       if (dynamicPath.getPattern().matcher(path).matches()) {
         // found path matching this definition
-        EndpointDefinition endpointDefinition = dynamicPath.getMethodEndpointMap().get(method);
+        EndpointDefinition<T> endpointDefinition = dynamicPath.getMethodEndpointMap().get(method);
         if (endpointDefinition == null) {
           throw new MethodNotAllowedException();
         }
@@ -41,16 +41,16 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
     return dynamicPaths.isEmpty();
   }
 
-  StaticEndpointsHandler asStatic() {
-    return new StaticEndpointsHandler(endpointDefinitions);
+  StaticEndpointsHandler<T> asStatic() {
+    return new StaticEndpointsHandler<>(endpointDefinitions);
   }
 
-  void mergeWith(EndpointsHandler handler) {
+  void mergeWith(EndpointsHandler<T> handler) {
     if (handler instanceof DynamicEndpointsHandler) {
-      endpointDefinitions.putAll(((DynamicEndpointsHandler) handler).endpointDefinitions);
-      dynamicPaths.addAll(((DynamicEndpointsHandler) handler).dynamicPaths);
+      endpointDefinitions.putAll(((DynamicEndpointsHandler<T>) handler).endpointDefinitions);
+      dynamicPaths.addAll(((DynamicEndpointsHandler<T>) handler).dynamicPaths);
     } else if (handler instanceof StaticEndpointsHandler) {
-      endpointDefinitions.putAll(((StaticEndpointsHandler) handler).endpointDefinitions);
+      endpointDefinitions.putAll(((StaticEndpointsHandler<T>) handler).endpointDefinitions);
     } else {
       throw new IllegalArgumentException(
           String.format("Unknown subclass %s of EndpointsHandler", handler.getClass()));
@@ -63,7 +63,7 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
   }
 
   @Override
-  public void defineEndpoint(String path, String method, EndpointDefinition endpointDefinition) {
+  public void defineEndpoint(String path, String method, EndpointDefinition<T> endpointDefinition) {
     Matcher matcher = PATH_VARIABLE_PATTERN.matcher(path);
     List<String> pathVariableNames = new ArrayList<>();
     while (matcher.find()) {
@@ -77,7 +77,7 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
   }
 
   public void defineDynamicEndpoint(String path, String method, List<String> pathVariableNames,
-      EndpointDefinition endpointDefinition) {
+      EndpointDefinition<T> endpointDefinition) {
     Matcher m = PATH_VARIABLE_PATTERN.matcher(path);
     StringBuffer sb = new StringBuffer();
     while (m.find()) {
@@ -88,15 +88,15 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
     // in case of trailing slash
     sb.append("/?");
     Pattern pattern = Pattern.compile(sb.toString());
-    Optional<DynamicEndpointsDefinition> optDefinition = dynamicPaths.stream()
+    Optional<DynamicEndpointsDefinition<T>> optDefinition = dynamicPaths.stream()
         .filter(d -> d.getPattern().pattern().equals(pattern.pattern()))
         .findFirst();
 
-    DynamicEndpointsDefinition definition;
+    DynamicEndpointsDefinition<T> definition;
     if (optDefinition.isPresent()) {
       definition = optDefinition.get();
     } else {
-      definition = new DynamicEndpointsDefinition(Pattern.compile(sb.toString()), new HashMap<>());
+      definition = new DynamicEndpointsDefinition<>(Pattern.compile(sb.toString()), new HashMap<>());
       dynamicPaths.add(definition);
     }
 
@@ -109,9 +109,9 @@ public class DynamicEndpointsHandler extends StaticEndpointsHandler {
   }
 
   @Value
-  private static class DynamicEndpointsDefinition {
+  private static class DynamicEndpointsDefinition<T> {
     Pattern pattern;
 
-    Map<String, EndpointDefinition> methodEndpointMap;
+    Map<String, EndpointDefinition<T>> methodEndpointMap;
   }
 }

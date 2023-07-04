@@ -3,7 +3,6 @@ package com.tambapps.http.garcon.endpoint;
 import com.tambapps.http.garcon.ContentType;
 import com.tambapps.http.garcon.HttpExchangeContext;
 import com.tambapps.http.garcon.HttpResponse;
-import groovy.lang.Closure;
 import lombok.Getter;
 
 import java.util.List;
@@ -14,10 +13,8 @@ import java.util.regex.Pattern;
  * The definition of an endpoint
  */
 @Getter
-public class EndpointDefinition {
+public abstract class EndpointDefinition<T> {
 
-  // needed because we modify the delegate before calling the closure
-  private final ThreadLocal<Closure<?>> threadLocalClosure;
   private final ContentType accept;
   private final ContentType contentType;
 
@@ -27,30 +24,17 @@ public class EndpointDefinition {
    * @param accept             the accept content type (request)
    * @param contentType        the response content type
    */
-  public EndpointDefinition(Closure<?> closure, ContentType accept, ContentType contentType) {
-    this(ThreadLocal.withInitial(() -> (Closure<?>) closure.clone()), accept, contentType);
-  }
-
-  /**
-   * Constructs an endpoint definition
-   *
-   * @param threadLocalClosure the thread-local closure
-   * @param accept             the accept content type (request)
-   * @param contentType        the response content type
-   */
-  protected EndpointDefinition(ThreadLocal<Closure<?>> threadLocalClosure, ContentType accept, ContentType contentType) {
-    this.threadLocalClosure = threadLocalClosure;
+  protected EndpointDefinition(ContentType accept, ContentType contentType) {
     this.accept = accept;
     this.contentType = contentType;
   }
 
-  public HttpResponse call(HttpExchangeContext context) {
-    // rehydrating
-    Closure<?> closure = threadLocalClosure.get();
-    HttpResponse response = context.getResponse();
+  abstract Object doCall(HttpExchangeContext context);
 
-    closure.setDelegate(context);
-    Object returnValue = closure.call(context);
+  public HttpResponse call(HttpExchangeContext context) {
+    Object returnValue = doCall(context);
+
+    HttpResponse response = context.getResponse();
     if (response.getBody() == null && returnValue != null) {
       ContentType contentType = context.getContentType();
       if (contentType != null) {
@@ -68,8 +52,6 @@ public class EndpointDefinition {
     return response;
   }
 
-  public DynamicEndpointDefinition toDynamic(List<String> pathVariableNames, Pattern pattern) {
-    return new DynamicEndpointDefinition(threadLocalClosure, accept, contentType, pathVariableNames, pattern);
-  }
+  public abstract DynamicEndpointDefinition<T> toDynamic(List<String> pathVariableNames, Pattern pattern);
 
 }

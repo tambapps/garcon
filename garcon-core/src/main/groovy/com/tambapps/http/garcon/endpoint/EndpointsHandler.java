@@ -6,7 +6,7 @@ import com.tambapps.http.garcon.exception.NotFoundException;
 /**
  * Endpoint handler
  */
-public interface EndpointsHandler {
+public interface EndpointsHandler<T> {
 
   /**
    * Get the endpoint for the given path and method
@@ -17,7 +17,7 @@ public interface EndpointsHandler {
    * @throws NotFoundException     if no endpoints exists for the given path
    * @throws MethodNotAllowedException if an endpoint exists for this path but not this method
    */
-  EndpointDefinition getEndpoint(String path, String method) throws NotFoundException,
+  EndpointDefinition<T> getEndpoint(String path, String method) throws NotFoundException,
       MethodNotAllowedException;
 
   /**

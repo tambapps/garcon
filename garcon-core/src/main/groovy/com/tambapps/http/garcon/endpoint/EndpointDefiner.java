@@ -2,14 +2,12 @@ package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.ContentType;
 import com.tambapps.http.garcon.AbstractGarcon;
-import com.tambapps.http.garcon.HttpExchangeContext;
 import groovy.lang.Closure;
-import groovy.lang.DelegatesTo;
 
 /**
  * Delegate of {@link AbstractGarcon#define(Closure)} closure, allowing to define endpoints in a Groovy way
  */
-public abstract class EndpointDefiner {
+public abstract class EndpointDefiner<T> {
 
   private final AbstractGarcon garcon;
 
@@ -26,13 +24,8 @@ public abstract class EndpointDefiner {
     this.endpointsHandler = endpointsHandler;
   }
 
-  public void method(String method, String path,
-                     Object accept, Object contentType,
-                     @DelegatesTo(HttpExchangeContext.class) Closure<?> closure) {
-    addEndpoint(path, method,
-        new EndpointDefinition(closure, toGarconContentType(accept),
-            toGarconContentType(contentType)));
-  }
+  public abstract void method(String method, String path,
+                     Object accept, Object contentType, T closure);
 
   /**
    * Sets the underlying garcon's response content type
@@ -56,7 +49,7 @@ public abstract class EndpointDefiner {
    * Build an endpoint handler
    * @return the built endpoint handler
    */
-  public EndpointsHandler build() {
+  public EndpointsHandler<T> build() {
     return endpointsHandler.isStatic() ? endpointsHandler.asStatic() : endpointsHandler;
   }
 
