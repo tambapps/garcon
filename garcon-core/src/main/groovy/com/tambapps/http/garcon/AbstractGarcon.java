@@ -22,7 +22,6 @@ import com.tambapps.http.garcon.server.HttpServer;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
-import groovy.transform.NamedParam;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.SneakyThrows;
@@ -165,8 +164,9 @@ public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
     }
   }
 
+  abstract EndpointDefiner newDefiner(AbstractGarcon garcon, EndpointsHandler endpointsHandler);
   public AbstractGarcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
-    EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
+    EndpointDefiner definer = newDefiner(this, endpointsHandler);
     closure.setDelegate(definer);
     closure.setResolveStrategy(Closure.DELEGATE_FIRST);
     closure.call();
@@ -289,17 +289,13 @@ public abstract class AbstractGarcon extends AbstractHttpExchangeHandler {
 
   void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
       Object instance, Method method, HttpStatus status) {
-    EndpointDefiner definer = EndpointDefiner.newInstance(this, endpointsHandler);
+    EndpointDefiner definer = newDefiner(this, endpointsHandler);
     Closure<?> closure = new ReflectMethodClosure(instance, method, status);
 
-    Map<String, Object> params = new HashMap<>();
-    if (acceptStr != null && !acceptStr.isEmpty()) {
-      params.put("accept", ContentType.valueOf(acceptStr));
-    }
-    if (contentTypeStr != null && !contentTypeStr.isEmpty()) {
-      params.put("contentType", ContentType.valueOf(contentTypeStr));
-    }
-    definer.method(params, httpMethod, path, closure);
+    ContentType accept = acceptStr != null && !acceptStr.isEmpty() ? ContentType.valueOf(acceptStr) : null;
+    ContentType contentType = contentTypeStr != null && !contentTypeStr.isEmpty() ? ContentType.valueOf(contentTypeStr) : null;
+
+    definer.method(httpMethod, path, accept, contentType, closure);
     endpointsHandler = definer.build();
   }
 

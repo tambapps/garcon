@@ -1,5 +1,8 @@
 package com.tambapps.http.garcon;
 
+import com.tambapps.http.garcon.endpoint.EndpointDefiner;
+import com.tambapps.http.garcon.endpoint.EndpointsHandler;
+import com.tambapps.http.garcon.endpoint.GroovyEndpointDefiner;
 import groovy.transform.NamedParam;
 import lombok.SneakyThrows;
 
@@ -18,6 +21,11 @@ public class Garcon extends AbstractGarcon {
 
   public Garcon(InetAddress address, int port) {
     super(address, port);
+  }
+
+  @Override
+  EndpointDefiner newDefiner(AbstractGarcon garcon, EndpointsHandler endpointsHandler) {
+    return new GroovyEndpointDefiner(garcon, endpointsHandler);
   }
 
   @SneakyThrows
