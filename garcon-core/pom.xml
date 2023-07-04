@@ -34,50 +34,16 @@
       <artifactId>junit-jupiter-engine</artifactId>
       <scope>test</scope>
     </dependency>
-    <dependency>
-      <groupId>org.apache.groovy</groupId>
-      <artifactId>groovy-all</artifactId>
-      <type>pom</type>
-      <scope>provided</scope>
-    </dependency>
   </dependencies>
 
   <build>
     <plugins>
       <plugin>
-        <groupId>org.codehaus.gmavenplus</groupId>
-        <artifactId>gmavenplus-plugin</artifactId>
-        <executions>
-          <execution>
-            <goals>
-              <goal>addSources</goal>
-              <goal>generateStubs</goal>
-              <goal>compile</goal>
-              <goal>removeStubs</goal>
-              <goal>addTestSources</goal>
-              <goal>generateTestStubs</goal>
-              <goal>compileTests</goal>
-              <goal>removeTestStubs</goal>
-            </goals>
-          </execution>
-        </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
         <configuration>
-          <configScript>compiler-config.groovy</configScript>
-          <targetBytecode>${maven.compiler.target}</targetBytecode>
-          <testSources>
-            <testSource>
-              <directory>${project.basedir}/src/test/java</directory>
-              <includes>
-                <include>**/*.groovy</include>
-              </includes>
-            </testSource>
-            <testSource>
-              <directory>${project.basedir}/src/test/groovy</directory>
-              <includes>
-                <include>**/*.groovy</include>
-              </includes>
-            </testSource>
-          </testSources>
+          <source>8</source>
+          <target>8</target>
         </configuration>
       </plugin>
       <plugin>
