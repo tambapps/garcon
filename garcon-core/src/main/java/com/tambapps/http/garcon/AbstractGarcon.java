@@ -78,7 +78,7 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
   Consumer<Object> onExchangeError;
 
 
-  abstract EndpointDefiner<T> newDefiner(AbstractGarcon<T> garcon, EndpointsHandler<T> endpointsHandler);
+  abstract EndpointDefiner<T> newDefiner();
   abstract T fromMethod(Object instance, Method method, HttpStatus status);
 
   abstract HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentType contentType, ContentType accept);
@@ -259,7 +259,7 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
 
   void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
       Object instance, Method method, HttpStatus status) {
-    EndpointDefiner<T> definer = newDefiner(this, endpointsHandler);
+    EndpointDefiner<T> definer = newDefiner();
     T closure = fromMethod(instance, method, status);
 
     ContentType accept = acceptStr != null && !acceptStr.isEmpty() ? ContentType.valueOf(acceptStr) : null;

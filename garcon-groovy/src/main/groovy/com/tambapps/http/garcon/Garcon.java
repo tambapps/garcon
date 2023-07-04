@@ -44,7 +44,7 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
 
 
   public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
-    EndpointDefiner<Closure<?>> definer = newDefiner(this, endpointsHandler);
+    EndpointDefiner<Closure<?>> definer = newDefiner();
     closure.setDelegate(definer);
     closure.setResolveStrategy(Closure.DELEGATE_FIRST);
     closure.call();
@@ -55,8 +55,8 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
 
 
   @Override
-  GroovyEndpointDefiner newDefiner(AbstractGarcon<Closure<?>> garcon, EndpointsHandler<Closure<?>> endpointsHandler) {
-    return new GroovyEndpointDefiner(garcon, endpointsHandler);
+  GroovyEndpointDefiner newDefiner() {
+    return new GroovyEndpointDefiner(this, endpointsHandler);
   }
 
   @Override
