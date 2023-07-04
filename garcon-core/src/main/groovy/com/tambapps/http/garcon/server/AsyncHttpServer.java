@@ -15,9 +15,9 @@ import com.tambapps.http.garcon.exception.BadProtocolException;
 import com.tambapps.http.garcon.exception.BadRequestException;
 import com.tambapps.http.garcon.exception.RequestTimeoutException;
 import com.tambapps.http.garcon.io.composer.HttpResponseComposer;
+import com.tambapps.http.garcon.util.IoUtils;
 import lombok.AllArgsConstructor;
 import lombok.Setter;
-import org.codehaus.groovy.runtime.DefaultGroovyMethods;
 
 import java.io.IOException;
 import java.net.InetAddress;
@@ -86,8 +86,8 @@ public class AsyncHttpServer implements HttpServer {
       Thread.currentThread().interrupt();
       return;
     }
-    DefaultGroovyMethods.closeQuietly(selector);
-    DefaultGroovyMethods.closeQuietly(serverSocket);
+    IoUtils.closeQuietly(selector);
+    IoUtils.closeQuietly(serverSocket);
     executor.shutdown();
   }
 
@@ -147,8 +147,8 @@ public class AsyncHttpServer implements HttpServer {
         AbstractGarcon.getLogger().error("Unexpected Error while running server. Stopping it", e);
       }
       running.set(false);
-      DefaultGroovyMethods.closeQuietly(selector);
-      DefaultGroovyMethods.closeQuietly(serverSocket);
+      IoUtils.closeQuietly(selector);
+      IoUtils.closeQuietly(serverSocket);
     };
 
     serverThread = new Thread(serverRunnable, "garcon-loop");
@@ -173,7 +173,7 @@ public class AsyncHttpServer implements HttpServer {
     buffer.clear();
     int read = ch.read(buffer);
     if (read == -1) {
-      DefaultGroovyMethods.closeQuietly(selectionKey.channel());
+      IoUtils.closeQuietly(selectionKey.channel());
     } else if (read > 0) {
       buffer.flip();
       HttpAttachment attachment = (HttpAttachment) selectionKey.attachment();
@@ -185,7 +185,7 @@ public class AsyncHttpServer implements HttpServer {
           selectionKey.interestOps(SelectionKey.OP_WRITE);
         }
       } catch (BadProtocolException | RequestTimeoutException e) {
-        DefaultGroovyMethods.closeQuietly(selectionKey.channel());
+        IoUtils.closeQuietly(selectionKey.channel());
       } catch (BadRequestException e) {
         HttpResponse response = new HttpResponse();
         response.setStatusCode(HttpStatus.BAD_REQUEST);
@@ -214,7 +214,7 @@ public class AsyncHttpServer implements HttpServer {
       selectionKey.interestOps(SelectionKey.OP_READ);
       attachment.reset();
     } else {
-      DefaultGroovyMethods.closeQuietly(channel);
+      IoUtils.closeQuietly(channel);
     }
   }
 

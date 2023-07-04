@@ -2,9 +2,6 @@ package com.tambapps.http.garcon;
 
 import com.tambapps.http.garcon.exception.ParsingException;
 import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
-import groovy.lang.Delegate;
-import groovy.lang.MissingPropertyException;
-import groovy.transform.Generated;
 import lombok.Data;
 
 import java.nio.ByteBuffer;
@@ -15,12 +12,10 @@ import java.util.function.Function;
  * Context used for endpoint definition closures, as delegate
  */
 @Data
-public class HttpExchangeContext {
+public abstract class HttpExchangeContext {
 
   // definition order matters because of @delegate
-  @Delegate
   final HttpResponse response;
-  @Delegate
   final HttpRequest request;
   final ContentTypeFunctionMap<Object, byte[]> composers;
   final ContentTypeFunctionMap<byte[], Object> parsers;
@@ -94,7 +89,6 @@ public class HttpExchangeContext {
    * Returns whether the response is 2XX successful
    * @return whether the response is 2XX successful
    */
-  @Generated
   public boolean is2xxSuccessful() {
     return this.response.is2xxSuccessful();
   }
@@ -103,7 +97,6 @@ public class HttpExchangeContext {
    * Sets the response body
    * @param body the body to set
    */
-  @Generated
   public void setBody(Object body) {
     this.response.setBody(body);
   }
@@ -112,7 +105,6 @@ public class HttpExchangeContext {
    * Returns whether the response is indefinite length
    * @return whether the response is indefinite length
    */
-  @Generated
   public boolean isIndefiniteLength() {
     return this.response.isIndefiniteLength();
   }
@@ -121,7 +113,6 @@ public class HttpExchangeContext {
    * Returns the response's content length
    * @return the response's content length
    */
-  @Generated
   public Integer getContentLength() {
     return this.response.getContentLength();
   }
@@ -130,7 +121,6 @@ public class HttpExchangeContext {
    * Returns the whether the response is keep alive
    * @return the whether the response is keep alive
    */
-  @Generated
   public boolean isKeepAlive() {
     return this.response.isKeepAlive();
   }
@@ -139,7 +129,6 @@ public class HttpExchangeContext {
    * Returns the response's HTTP version
    * @return the response's HTTP version
    */
-  @Generated
   public String getHttpVersion() {
     return this.response.getHttpVersion();
   }
@@ -148,7 +137,6 @@ public class HttpExchangeContext {
    * Returns the response's status code
    * @return the response's status code
    */
-  @Generated
   public HttpStatusCode getStatusCode() {
     return this.response.getStatusCode();
   }
@@ -157,7 +145,6 @@ public class HttpExchangeContext {
    * Returns the response's body
    * @return the response's body
    */
-  @Generated
   public ByteBuffer getBody() {
     return this.response.getBody();
   }
@@ -167,7 +154,6 @@ public class HttpExchangeContext {
    *
    * @param statusCode the response's status code
    */
-  @Generated
   public void setStatusCode(HttpStatusCode statusCode) {
     this.response.setStatusCode(statusCode);
   }
@@ -177,7 +163,6 @@ public class HttpExchangeContext {
    *
    * @return the request's method
    */
-  @Generated
   public String getMethod() {
     return this.request.getMethod();
   }
@@ -187,7 +172,6 @@ public class HttpExchangeContext {
    *
    * @return the request's path
    */
-  @Generated
   public String getPath() {
     return this.request.getPath();
   }
@@ -197,32 +181,8 @@ public class HttpExchangeContext {
    *
    * @return request's query params
    */
-  @Generated
   public Map<String, String> getQueryParams() {
     return this.request.getQueryParams();
-  }
-
-  // useful for meta programming
-  public Object propertyMissing(String propertyName) {
-    if (pathVariables != null) {
-      String s = pathVariables.get(propertyName);
-      if (s != null) {
-        return s;
-      }
-    }
-    String q = getQueryParams().get(propertyName);
-    if (q != null) {
-      return q;
-    }
-    String reqH = getRequestHeaders().get(propertyName);
-    if (reqH != null) {
-      return reqH;
-    }
-    String resH = getResponseHeaders().get(propertyName);
-    if (resH != null) {
-      return resH;
-    }
-    throw new MissingPropertyException(propertyName, getClass());
   }
 
 }

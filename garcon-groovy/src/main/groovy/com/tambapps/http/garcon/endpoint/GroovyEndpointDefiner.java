@@ -15,6 +15,10 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.Map;
 
+
+/**
+ * Delegate of {@link com.tambapps.http.garcon.Garcon#define(Closure)} closure, allowing to define endpoints in a Groovy way
+ */
 public class GroovyEndpointDefiner extends EndpointDefiner<Closure<?>> {
 
   public GroovyEndpointDefiner(AbstractGarcon<Closure<?>> garcon, EndpointsHandler<Closure<?>> handler) {

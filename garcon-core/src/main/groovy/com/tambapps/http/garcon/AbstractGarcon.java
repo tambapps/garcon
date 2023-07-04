@@ -80,6 +80,13 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
   @Setter
   Consumer<Object> onExchangeError;
 
+
+  abstract EndpointDefiner<T> newDefiner(AbstractGarcon<T> garcon, EndpointsHandler<T> endpointsHandler);
+  abstract T fromMethod(Object instance, Method method, HttpStatus status);
+
+  abstract HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers,
+                                                    ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept);
+
   /**
    * Response composers per content type
    */
@@ -160,8 +167,6 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
     }
   }
 
-  abstract EndpointDefiner<T> newDefiner(AbstractGarcon<T> garcon, EndpointsHandler<T> endpointsHandler);
-
   /**
    * Sets the address to use when starting the server
    * @param address the address
@@ -217,14 +222,14 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
       definition = endpointsHandler.getEndpoint(request.getPath(), request.getMethod());
     } catch (NotFoundException e) {
       return default404Response(
-          new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
+          newContext(request, new HttpResponse(), composers, parsers,
               contentType, accept), e);
     } catch (MethodNotAllowedException e) {
-      return default405Response(new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
+      return default405Response(newContext(request, new HttpResponse(), composers, parsers,
           contentType, accept), request.getMethod());
     }
 
-    HttpExchangeContext context = new HttpExchangeContext(request, new HttpResponse(), composers, parsers,
+    HttpExchangeContext context = newContext(request, new HttpResponse(), composers, parsers,
         definition.getContentType() != null ? definition.getContentType() : contentType,
         definition.getAccept() != null ? definition.getAccept() : accept);
 
@@ -264,7 +269,6 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
     }
   }
 
-  protected abstract T fromMethod(Object instance, Method method, HttpStatus status);
 
   void define(String httpMethod, String acceptStr, String contentTypeStr, String path,
       Object instance, Method method, HttpStatus status) {

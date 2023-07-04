@@ -3,6 +3,7 @@ package com.tambapps.http.garcon;
 import com.tambapps.http.garcon.endpoint.EndpointDefiner;
 import com.tambapps.http.garcon.endpoint.EndpointsHandler;
 import com.tambapps.http.garcon.endpoint.GroovyEndpointDefiner;
+import com.tambapps.http.garcon.util.ContentTypeFunctionMap;
 import com.tambapps.http.garcon.util.ReflectMethodClosure;
 import groovy.lang.Closure;
 import groovy.lang.DelegatesTo;
@@ -27,11 +28,6 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
     super(address, port);
   }
 
-  @Override
-  GroovyEndpointDefiner newDefiner(AbstractGarcon<Closure<?>> garcon, EndpointsHandler<Closure<?>> endpointsHandler) {
-    return new GroovyEndpointDefiner(garcon, endpointsHandler);
-  }
-
 
   public Garcon define(@DelegatesTo(EndpointDefiner.class) Closure<?> closure) {
     EndpointDefiner<Closure<?>> definer = newDefiner(this, endpointsHandler);
@@ -45,8 +41,18 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
 
 
   @Override
-  protected Closure<?> fromMethod(Object instance, Method method, HttpStatus status) {
+  GroovyEndpointDefiner newDefiner(AbstractGarcon<Closure<?>> garcon, EndpointsHandler<Closure<?>> endpointsHandler) {
+    return new GroovyEndpointDefiner(garcon, endpointsHandler);
+  }
+
+  @Override
+  Closure<?> fromMethod(Object instance, Method method, HttpStatus status) {
     return new ReflectMethodClosure(instance, method, status);
+  }
+
+  @Override
+  HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentTypeFunctionMap<Object, byte[]> composers, ContentTypeFunctionMap<byte[], Object> parsers, ContentType contentType, ContentType accept) {
+    return new GroovyHttpExchangeContext(request, response, composers, parsers, contentType, accept);
   }
 
   /**

@@ -2,11 +2,7 @@ package com.tambapps.http.garcon.endpoint;
 
 import com.tambapps.http.garcon.ContentType;
 import com.tambapps.http.garcon.AbstractGarcon;
-import groovy.lang.Closure;
 
-/**
- * Delegate of {@link AbstractGarcon#define(Closure)} closure, allowing to define endpoints in a Groovy way
- */
 public abstract class EndpointDefiner<T> {
 
   private final AbstractGarcon garcon;

@@ -1,10 +1,11 @@
 package com.tambapps.http.garcon;
 
-import groovy.lang.GString;
+import com.tambapps.http.garcon.util.IoUtils;
 import lombok.Data;
 import lombok.SneakyThrows;
-import org.codehaus.groovy.runtime.IOGroovyMethods;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.nio.ByteBuffer;
 
@@ -35,12 +36,15 @@ public class HttpResponse {
     }
     if (body instanceof ByteBuffer) {
       this.body = (ByteBuffer) body;
-    } else if (body instanceof byte[]) {
+    } else // for Groovy
+      if (body instanceof byte[]) {
       this.body = ByteBuffer.wrap(((byte[]) body));
-    } else if (body instanceof String || body instanceof GString) {
+    } else if (body instanceof String
+          // for groovy
+          || body.getClass().getName().equals("groovy.lang.GString")) {
       this.body = ByteBuffer.wrap(body.toString().getBytes());
     } else if (body instanceof InputStream) {
-      this.body = ByteBuffer.wrap(IOGroovyMethods.getBytes(((InputStream) body)));
+      this.body = ByteBuffer.wrap(getBytes(((InputStream) body)));
     } else {
       throw new IllegalArgumentException("Cannot handle body of type " + body.getClass().getSimpleName());
     }
@@ -55,5 +59,21 @@ public class HttpResponse {
 
   public boolean isKeepAlive() {
     return Headers.CONNECTION_KEEP_ALIVE.equalsIgnoreCase(headers.get(Headers.CONNECTION_HEADER));
+  }
+
+  private static byte[] getBytes(InputStream is) throws IOException {
+    ByteArrayOutputStream answer = new ByteArrayOutputStream();
+    // reading the content of the stream within a byte buffer
+    byte[] byteBuffer = new byte[8192];
+    int nbByteRead /* = 0*/;
+    try {
+      while ((nbByteRead = is.read(byteBuffer)) != -1) {
+        // appends buffer
+        answer.write(byteBuffer, 0, nbByteRead);
+      }
+    } finally {
+      IoUtils.closeQuietly(is);
+    }
+    return answer.toByteArray();
   }
 }

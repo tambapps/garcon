@@ -8,7 +8,6 @@ import lombok.SneakyThrows;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 /**
  * Content type function map
