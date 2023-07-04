@@ -1,0 +1,15 @@
+package com.tambapps.http.garcon.util
+
+import com.tambapps.http.garcon.HttpStatus
+
+import java.lang.reflect.Method
+
+class ReflectMethodInvoker extends AbstractReflectMethodInvoker {
+
+  constructor(Object owner, Method method, HttpStatus status): super(owner, method, status)
+
+  internal fun Object smartCast(Object o, Class aClass, boolean allowAdditionalProperties) {
+    return aClass.cast(o)
+  }
+
+}

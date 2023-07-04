@@ -1,0 +1,21 @@
+package com.tambapps.http.garcon.util
+
+import com.tambapps.http.garcon.HttpExchangeContext
+import com.tambapps.http.garcon.HttpStatus
+
+import java.util.function.Function
+import java.lang.reflect.Method
+
+class ReflectMethodFunction implements Function {
+
+  private final ReflectMethodInvoker reflectMethodInvoker
+
+  constructor(Object owner, Method method, HttpStatus status) {
+    this.reflectMethodInvoker = new ReflectMethodInvoker(owner, method, status)
+  }
+
+  fun Object apply(Object o) {
+    reflectMethodInvoker.invoke(o as HttpExchangeContext)
+  }
+
+}

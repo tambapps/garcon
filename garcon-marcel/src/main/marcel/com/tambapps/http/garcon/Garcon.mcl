@@ -4,6 +4,7 @@ import com.tambapps.http.garcon.endpoint.*
 import com.tambapps.http.garcon.io.composer.Composers
 import com.tambapps.http.garcon.io.parser.Parsers
 import com.tambapps.http.garcon.util.ContentTypeMap
+import com.tambapps.http.garcon.util.ReflectMethodFunction
 
 import java.net.InetAddress
 
@@ -33,7 +34,7 @@ class Garcon extends AbstractGarcon {
   }
 
   internal fun Object fromMethod(Object instance, Method method, HttpStatus status) {
-    return null
+    return new ReflectMethodFunction(instance, method, status)
   }
 
   internal fun HttpExchangeContext newContext(HttpRequest request, HttpResponse response, ContentType contentType, ContentType accept) {
