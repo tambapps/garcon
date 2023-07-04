@@ -55,7 +55,7 @@ abstract class AbstractReflectMethodInvoker {
           }
           try {
             return smartCast(parsedRequestBody, requestBodyClazz, annotation.allowAdditionalProperties());
-          } catch (IllegalArgumentException ignored) {
+          } catch (IllegalArgumentException|ClassCastException ignored) {
             throw new BadRequestException("Request body is of unexpected type");
           }
         };
@@ -73,7 +73,7 @@ abstract class AbstractReflectMethodInvoker {
           }
           try {
             return smartCast(queryParamValue, queryParamType);
-          } catch (IllegalArgumentException exception) {
+          } catch (IllegalArgumentException|ClassCastException exception) {
             throw new BadRequestException(String.format("Query param %s is of unexpected type", queryParamName));
           }
         };
@@ -91,7 +91,7 @@ abstract class AbstractReflectMethodInvoker {
           }
           try {
             return smartCast(headerValue, headerType);
-          } catch (IllegalArgumentException exception) {
+          } catch (IllegalArgumentException|ClassCastException exception) {
             throw new BadRequestException(String.format("Header %s is of unexpected type", headerName));
           }
         };
@@ -116,7 +116,7 @@ abstract class AbstractReflectMethodInvoker {
           }
           try {
             return smartCast(value, variableType);
-          } catch (IllegalArgumentException ignored) {
+          } catch (IllegalArgumentException|ClassCastException ignored) {
             throw new BadRequestException(String.format("path variable %s is of unexpected type", name));
           }
         };
