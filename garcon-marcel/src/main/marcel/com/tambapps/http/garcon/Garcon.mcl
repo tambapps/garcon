@@ -29,7 +29,7 @@ class Garcon extends AbstractGarcon {
 
   constructor(InetAddress address, int port): super(address, port)
 
-  internal fun MarcelEndpointDefiner newDefiner() {
+  internal fun EndpointDefiner newDefiner() {
     return new MarcelEndpointDefiner(this, endpointsHandler)
   }
 
@@ -41,4 +41,13 @@ class Garcon extends AbstractGarcon {
     return new MarcelHttpExchangeContext(request, response, composers, parsers, contentType, accept);
   }
 
+  static fun Garcon fromInstance(Object instance, ContentType contentType = null, ContentType accept = null) {
+    return AbstractGarcon.fromInstance(new Garcon(), contentType, accept, instance);
+  }
+
+  fun void start(String address, int port) {
+    setAddress(address)
+    setPort(port)
+    start()
+  }
 }

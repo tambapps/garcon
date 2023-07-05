@@ -112,7 +112,7 @@ public class Garcon extends AbstractGarcon<Closure<?>> {
    * @param instance the instance from which to construct the garcon
    * @return the garcon
    */
-  public static AbstractGarcon<Closure<?>> fromInstance(Object instance) {
+  public static Garcon fromInstance(Object instance) {
     return fromInstance(null, instance);
   }
 

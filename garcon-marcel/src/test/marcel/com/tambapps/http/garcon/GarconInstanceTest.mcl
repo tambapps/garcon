@@ -1,0 +1,15 @@
+package com.tambapps.http.garcon
+
+import com.tambapps.http.garcon.annotation.*
+
+import org.junit.jupiter.api.Test
+
+class GarconInstanceTest {
+
+
+  @Get("/hello")
+  fun String getHello() {
+      return 'Hello World'
+    }
+
+}
