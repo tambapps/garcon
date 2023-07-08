@@ -2,14 +2,97 @@ package com.tambapps.http.garcon
 
 import com.tambapps.http.garcon.annotation.*
 
+import com.tambapps.http.hyperpoet.HttpPoet
+import com.tambapps.http.hyperpoet.interceptor.ConsolePrintingInterceptor
+
+import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+
+import static org.junit.jupiter.api.Assertions.assertEquals
 
 class GarconInstanceTest {
 
 
+  private final HttpPoet poet = newPoet()
+  private final Garcon garcon = newGarcon()
+
+ @BeforeEach
+  fun void init() {
+    garcon.start(address: 'localhost', port: 8081)
+    Thread.sleep(100L)
+  }
+
+  @AfterEach
+  fun void dispose() {
+    garcon.stop()
+  }
+
+  @Test
+  fun void test() {
+    assertEquals('Hello World', poet.get('/hello').value)
+  }
+
   @Get("/hello")
   fun String getHello() {
       return 'Hello World'
-    }
+  }
 
+ @Endpoint(method = "GET", path = "/hello2")
+  fun Object getHelloWho(HttpExchangeContext context) {
+    return context.queryParams['who']
+  }
+
+  @Get("/qp")
+  fun Object getQueryParam(@QueryParam("p") String p, @QueryParam(name = "count", required = false, defaultValue = "0") Integer count) {
+    return "$p $count"
+  }
+
+  @Get("/user/{id}")
+  fun Object getUser(@PathVariable("id") Integer id) {
+    return "$id"
+  }
+
+  @Get("/h")
+  fun Object getHeader(@RequestHeader("H") String h, @RequestHeader(name = "count", required = false, defaultValue = "0") Integer count) {
+    return "$h $count"
+  }
+
+  @Post("/mirror")
+  fun Object postMirror(HttpRequest request) {
+    return new String(request.body)
+  }
+
+  @Post("/mirror2")
+  fun void postMirror2(HttpRequest request, HttpResponse response) {
+    response.body = request.body
+  }
+
+  @Post(path = "/mirror3", accept = 'application/json')
+  fun void postMirror3(@ParsedRequestBody Map requestBody, HttpResponse response) {
+    response.body = requestBody['who']
+  }
+
+  private fun Garcon newGarcon() {
+    Garcon garcon = Garcon.fromInstance(this)
+    garcon.onServerError = { Exception e -> e.printStackTrace() }
+    garcon.onExchangeError = { Exception e -> e.printStackTrace() }
+    return garcon
+  }
+
+  private fun HttpPoet newPoet() {
+    HttpPoet poet = new HttpPoet('http://localhost:8081')
+    poet.addInterceptor(new ConsolePrintingInterceptor())
+    poet.enableHistory(1)
+  }
+/*
+  @Post(path = "/objectBody", accept = 'application/json')
+  fun void postMirror4(@ParsedRequestBody Foo requestBody, HttpResponse response) {
+    response.body = requestBody.bar
+  }
+
+  class Foo {
+    String bar
+  }
+  */
 }
