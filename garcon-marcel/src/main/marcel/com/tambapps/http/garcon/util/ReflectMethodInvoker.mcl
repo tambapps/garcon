@@ -9,8 +9,14 @@ class ReflectMethodInvoker extends AbstractReflectMethodInvoker {
   constructor(Object owner, Method method, HttpStatus status): super(owner, method, status)
 
   internal fun Object smartCast(Object o, Class aClass, boolean allowAdditionalProperties) {
-    if (aClass === DynamicObject.class) return DynamicObject.of(o)
-    else return aClass.cast(o)
+    return switch (aClass) {
+      DynamicObject.class -> DynamicObject.of(o)
+      Integer.class -> DynamicObject.of(o).toInt()
+      Float.class -> DynamicObject.of(o).toFloat()
+      Double.class -> DynamicObject.of(o).toDouble()
+      Long.class -> DynamicObject.of(o).tolong()
+      else -> aClass.cast(o)
+    }
   }
 
 }

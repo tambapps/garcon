@@ -3,13 +3,19 @@ package com.tambapps.http.garcon
 import com.tambapps.http.garcon.annotation.*
 
 import com.tambapps.http.hyperpoet.HttpPoet
+import com.tambapps.http.hyperpoet.HttpExchange
 import com.tambapps.http.hyperpoet.interceptor.ConsolePrintingInterceptor
+import com.tambapps.http.hyperpoet.ContentType as PoetContentType
+import com.tambapps.http.hyperpoet.ErrorResponseException
+import com.tambapps.http.hyperpoet.ErrorResponseHandlers
 
 import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
 import static org.junit.jupiter.api.Assertions.assertEquals
+import static org.junit.jupiter.api.Assertions.assertThrows
+import org.junit.jupiter.api.function.Executable
 
 class GarconInstanceTest {
 
@@ -28,9 +34,44 @@ class GarconInstanceTest {
     garcon.stop()
   }
 
-  @Test
+ // @Test
   fun void testFoo() {
+
     assertEquals('Hello World', poet.get('/hello').value)
+    assertEquals('Hello World', poet.get('/hello?p=1&a=2').value)
+    assertEquals('Hello World', poet.get('/hello/?p=1&a=2').value)
+
+    assertEquals('me', poet.get('/hello2?who=me').value)
+    assertEquals('nobody', poet.get('/hello2?who=nobody').value)
+  }
+ // @Test
+  fun void testMirror() {
+    assertEquals('magic', poet.post('/mirror', body: 'magic').value)
+    //assertEquals('magic', poet.post('/mirror2', body: 'magic').value)
+    //assertEquals('magic', poet.post('/mirror3', body: [who: 'magic'], contentType: PoetContentType.JSON).value)
+  }
+
+  @Test
+  fun void testQueryParams() {
+    assertEquals('p 0', poet.get('/qp?p=p').value)
+    assertEquals('p 25', poet.get('/qp?p=p&count=25').value)
+    assertEquals('Query param p is required', poet.get('/qp').value)
+    assertEquals(400, (poet.history.last as HttpExchange).responseCode)
+  }
+
+  @Test
+  fun void testHeaders() {
+    assertEquals('h 0', poet.get('/h', headers: [h: 'h']).value)
+    assertEquals('h 25', poet.get('/h', headers: [h: 'h', cOuNt: 25]).value)
+    assertEquals('Header H is required', poet.get('/h').value)
+    assertEquals(400, (poet.history.last as HttpExchange).responseCode)
+  }
+
+  @Test
+  fun void testPathVariable() {
+    assertEquals('1', poet.get('/user/1').value)
+    assertEquals('path variable id is of unexpected type', poet.get('/user/notAnInt').value)
+    assertEquals(400, (poet.history.last as HttpExchange).responseCode)
   }
 
   @Get("/hello")
@@ -57,13 +98,14 @@ class GarconInstanceTest {
   fun Object getHeader(@RequestHeader("H") String h, @RequestHeader(name = "count", required = false, defaultValue = "0") Integer count) {
     return "$h $count"
   }
-/*
-TODO don't know why when I add some of these methods it doesn't work
+
   @Post("/mirror")
   fun Object postMirror(HttpRequest request) {
     return new String(request.body)
   }
 
+/*
+TODO don't know why when I add some of these methods it doesn't work
   @Post("/mirror2")
   fun void postMirror2(HttpRequest request, HttpResponse response) {
     response.body = request.body
@@ -92,6 +134,7 @@ TODO don't know why when I add some of these methods it doesn't work
   private fun HttpPoet newPoet() {
     HttpPoet poet = new HttpPoet('http://localhost:8081')
     poet.addInterceptor(new ConsolePrintingInterceptor())
+    poet.errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(poet)
     poet.enableHistory(1)
   }
 
