@@ -81,8 +81,8 @@ public class DynamicEndpointsHandler<T> extends StaticEndpointsHandler<T> {
     Matcher m = PATH_VARIABLE_PATTERN.matcher(path);
     StringBuffer sb = new StringBuffer();
     while (m.find()) {
-      // yes, we neeed to backslash the backslash because the replacement string is not interpreted as a litteral string
-      m.appendReplacement(sb, "(\\\\w+)");
+      // yes, we need to backslash the backslash because the replacement string is not interpreted as a litteral string
+      m.appendReplacement(sb, "([\\\\w\\\\d-_]+)");
     }
     m.appendTail(sb);
     // in case of trailing slash
