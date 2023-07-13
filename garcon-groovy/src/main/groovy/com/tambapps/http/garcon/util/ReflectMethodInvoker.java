@@ -18,20 +18,16 @@ public class ReflectMethodInvoker extends AbstractReflectMethodInvoker {
   }
 
   @Override
-  protected Object smartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties) {
+  protected Object doSmartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties) {
     try {
-      return doSmartCast(o, aClass, allowAdditionalProperties);
+      return doGroovySmartCast(o, aClass, allowAdditionalProperties);
     } catch (GroovyCastException e) {
       throw new IllegalArgumentException(e);
     }
   }
 
-  protected Object doSmartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties) {
-    if (o == null && !aClass.isPrimitive()) {
-      return null;
-    } else if (aClass.isInstance(o)) {
-      return o;
-    } else if (o instanceof CharSequence) {
+  protected Object doGroovySmartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties) {
+    if (o instanceof CharSequence) {
       // for smart number conversion
       return StringGroovyMethods.asType(o.toString(), aClass);
     } else if (o instanceof Map && !Map.class.isAssignableFrom(aClass)

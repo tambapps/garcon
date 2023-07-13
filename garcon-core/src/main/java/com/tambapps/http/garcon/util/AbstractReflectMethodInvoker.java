@@ -14,6 +14,11 @@ import lombok.SneakyThrows;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Parameter;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.Optional;
+import java.util.OptionalInt;
+import java.util.UUID;
 
 abstract class AbstractReflectMethodInvoker {
 
@@ -54,7 +59,7 @@ abstract class AbstractReflectMethodInvoker {
             throw new BadRequestException("Request body is required");
           }
           try {
-            return smartCast(parsedRequestBody, requestBodyClazz, annotation.allowAdditionalProperties());
+            return doSmartCast(parsedRequestBody, requestBodyClazz, annotation.allowAdditionalProperties());
           } catch (IllegalArgumentException|ClassCastException ignored) {
             throw new BadRequestException("Request body is of unexpected type");
           }
@@ -145,7 +150,26 @@ abstract class AbstractReflectMethodInvoker {
     return smartCast(o, aClass, false);
   }
 
-  abstract Object smartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties);
+  Object smartCast(Object o, Class aClass, boolean allowAdditionalProperties) {
+    if (aClass == Optional.class) {
+      return Optional.ofNullable(o);
+    } else if (o == null) {
+      return null;
+    } else if (aClass.isInstance(o)) {
+      return o;
+    } else if (aClass == UUID.class) {
+      return UUID.fromString(o.toString());
+    } else if (aClass.isEnum()) {
+      return Enum.valueOf(aClass, o.toString());
+    } else if (aClass == LocalDate.class) {
+      return LocalDate.parse(o.toString());
+    } else if (aClass == LocalDateTime.class) {
+      return LocalDateTime.parse(o.toString());
+    } else {
+      return doSmartCast(o, aClass, allowAdditionalProperties);
+    }
+  }
+  abstract Object doSmartCast(Object o, Class<?> aClass, boolean allowAdditionalProperties);
 
 
 }
