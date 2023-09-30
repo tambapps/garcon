@@ -314,7 +314,7 @@
     <maven.compiler.target>1.8</maven.compiler.target>
     <java.version>1.8</java.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <marcel.version>0.0.1-SNAPSHOT</marcel.version>
+    <marcel.version>0.0.2</marcel.version>
     <hyperpoet.version>1.4.0-SNAPSHOT</hyperpoet.version>
   </properties>
 </project>

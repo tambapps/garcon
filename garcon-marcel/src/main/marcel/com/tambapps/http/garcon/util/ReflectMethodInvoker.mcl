@@ -11,10 +11,10 @@ class ReflectMethodInvoker extends AbstractReflectMethodInvoker {
   internal fun Object doSmartCast(Object o, Class aClass, boolean allowAdditionalProperties) {
     return switch (aClass) {
       DynamicObject.class -> DynamicObject.of(o)
-      Integer.class -> DynamicObject.of(o).toInt()
-      Float.class -> DynamicObject.of(o).toFloat()
-      Double.class -> DynamicObject.of(o).toDouble()
-      Long.class -> DynamicObject.of(o).tolong()
+      Integer.class -> DynamicObject.of(o).asInt()
+      Float.class -> DynamicObject.of(o).asFloat()
+      Double.class -> DynamicObject.of(o).asDouble()
+      Long.class -> DynamicObject.of(o).aslong()
       else -> aClass.cast(o)
     }
   }
