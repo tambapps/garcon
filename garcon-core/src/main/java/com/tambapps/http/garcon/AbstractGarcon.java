@@ -148,6 +148,7 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
   public void stop() {
     if (isRunning()) {
       httpServer.stop();
+      httpServer = null;
       if (onStop != null) {
         onStop.run();
       }
