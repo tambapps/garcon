@@ -52,6 +52,11 @@ class GarconInstanceTest {
   }
 
   @Test
+  fun void testObjectBody() {
+    assertEquals('zoo', poet.post('/objectBody', body: [bar: 'zoo'], contentType: PoetContentType.JSON).value)
+  }
+
+  @Test
   fun void testQueryParams() {
     assertEquals('p 0', poet.get('/qp?p=p').value)
     assertEquals('p 25', poet.get('/qp?p=p&count=25').value)

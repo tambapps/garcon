@@ -53,15 +53,12 @@ class GarconServer {
     response.body = requestBody['who']
   }
 
-/*
-TODO fix this and test this endpoint
   @Post(path = "/objectBody", accept = 'application/json')
-  fun void postMirror4(@ParsedRequestBody Foo requestBody, HttpResponse response) {
-    response.body = requestBody.bar
+  fun void postMirror4(@ParsedRequestBody dynobj requestBody, HttpResponse response) {
+    response.body = requestBody.bar.toString()
   }
 
   class Foo {
     String bar
   }
-  */
 }
