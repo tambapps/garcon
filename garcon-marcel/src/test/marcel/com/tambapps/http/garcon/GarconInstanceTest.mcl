@@ -33,7 +33,7 @@ class GarconInstanceTest {
     GARCON.stop()
   }
 
- // @Test
+  @Test
   fun void testFoo() {
 
     assertEquals('Hello World', poet.get('/hello').value)
@@ -43,11 +43,12 @@ class GarconInstanceTest {
     assertEquals('me', poet.get('/hello2?who=me').value)
     assertEquals('nobody', poet.get('/hello2?who=nobody').value)
   }
- // @Test
+
+  @Test
   fun void testMirror() {
     assertEquals('magic', poet.post('/mirror', body: 'magic').value)
-    //assertEquals('magic', poet.post('/mirror2', body: 'magic').value)
-    //assertEquals('magic', poet.post('/mirror3', body: [who: 'magic'], contentType: PoetContentType.JSON).value)
+    assertEquals('magic', poet.post('/mirror2', body: 'magic').value)
+    assertEquals('magic', poet.post('/mirror3', body: [who: 'magic'], contentType: PoetContentType.JSON).value)
   }
 
   @Test
