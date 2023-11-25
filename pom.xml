@@ -19,6 +19,15 @@
   <url>https://github.com/tambapps/garcon</url>
   <inceptionYear>2022</inceptionYear>
 
+  <properties>
+    <revision>2.0-SNAPSHOT</revision>
+    <maven.compiler.source>1.8</maven.compiler.source>
+    <maven.compiler.target>1.8</maven.compiler.target>
+    <java.version>1.8</java.version>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+    <marcel.version>0.1.0-SNAPSHOT</marcel.version>
+    <hyperpoet.version>1.4.0-SNAPSHOT</hyperpoet.version>
+  </properties>
 
   <dependencyManagement>
     <dependencies>
@@ -308,13 +317,4 @@
     </profile>
   </profiles>
 
-  <properties>
-    <revision>2.0-SNAPSHOT</revision>
-    <maven.compiler.source>1.8</maven.compiler.source>
-    <maven.compiler.target>1.8</maven.compiler.target>
-    <java.version>1.8</java.version>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <marcel.version>0.0.2</marcel.version>
-    <hyperpoet.version>1.4.0-SNAPSHOT</hyperpoet.version>
-  </properties>
 </project>

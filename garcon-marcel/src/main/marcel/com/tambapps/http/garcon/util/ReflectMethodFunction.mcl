@@ -14,8 +14,7 @@ class ReflectMethodFunction implements Function {
     this.reflectMethodInvoker = new ReflectMethodInvoker(owner, method, status)
   }
 
-  fun Object apply(Object o) {
-    reflectMethodInvoker.invoke(o as HttpExchangeContext)
-  }
+  fun Object apply(Object o) -> reflectMethodInvoker.invoke(o as HttpExchangeContext)
+
 
 }

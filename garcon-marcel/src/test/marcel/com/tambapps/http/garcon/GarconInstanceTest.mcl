@@ -136,6 +136,7 @@ TODO don't know why when I add some of these methods it doesn't work
     poet.addInterceptor(new ConsolePrintingInterceptor())
     poet.errorResponseHandler = ErrorResponseHandlers.parseResponseHandler(poet)
     poet.enableHistory(1)
+    return poet
   }
 
 }
