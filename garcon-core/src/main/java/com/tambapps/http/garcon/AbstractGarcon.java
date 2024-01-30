@@ -127,6 +127,7 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
     }
     if (httpServer == null) {
       // use our default implementation
+      // TODO support virtualThreads using reflection
       httpServer = new AsyncHttpServer(Executors.newFixedThreadPool(maxThreads, new GarconThreadPool()), requestReadTimeoutMillis, this);
     }
     httpServer.start(address, port);
@@ -366,5 +367,24 @@ public abstract class AbstractGarcon<T> extends AbstractHttpExchangeHandler {
       }
     }
     return garcon;
+  }
+
+  @Override
+  public String toString() {
+    StringBuilder builder = new StringBuilder()
+        .append(getClass().getSimpleName())
+        .append("(address=")
+        .append(address)
+        .append(", port=")
+        .append(port);
+    if (contentType != null) {
+      builder.append(", contentType=")
+          .append(contentType);
+    }
+    if (accept != null) {
+      builder.append(", accept=")
+          .append(accept);
+    }
+    return builder.append(')').toString();
   }
 }
