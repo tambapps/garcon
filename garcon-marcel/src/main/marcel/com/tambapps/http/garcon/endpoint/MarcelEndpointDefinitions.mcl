@@ -12,7 +12,7 @@ public class MarcelDynamicEndpointDefinition extends DynamicEndpointDefinition {
 
   private Function function
 
-  constructor(this.function, ContentType accept, ContentType contentType, List<String> pathVariableNames,
+  constructor(this.function, ContentType accept, ContentType contentType, List pathVariableNames,
                            Pattern pathVariablePattern): super(accept, contentType, pathVariableNames, pathVariablePattern)
 
 
