@@ -1,11 +1,12 @@
-# Garçon - lightweight HTTP Server library for Groovy
+# Garçon - lightweight HTTP Server library for Groovy and Marcel
 
-Garçon (pronounced `gar·son`, as in [garcon de café](https://en.wiktionary.org/wiki/gar%C3%A7on_de_caf%C3%A9)) is a lightweight HTTP Server library with **no dependencies** (except Groovy) and
-compatible with Android (you can use it in the [Android Groovy Shell](https://play.google.com/store/apps/details?id=com.tambapps.android.grooidshell)).
+Garçon (pronounced `gar·son`, as in [garçon de café](https://en.wiktionary.org/wiki/gar%C3%A7on_de_caf%C3%A9)) is a lightweight HTTP Server library for Groovy and [Marcel](https://tambapps.github.io/marcel/), my own programming language.
 
 Its goal is to implement HTTP server the quickest and clearest way possible.
 
-This library is [hosted on Maven Central](https://search.maven.org/artifact/com.tambapps.http/garcon/1.1/jar).
+This library is hosted on Maven Central.
+- [garcon-groovy](https://central.sonatype.com/artifact/com.tambapps.http/garcon-groovy/2.0).
+- [garcon-marcel](https://central.sonatype.com/artifact/com.tambapps.http/garcon-marcel/2.0).
 
 ## Implement Simple CRUD API
 
